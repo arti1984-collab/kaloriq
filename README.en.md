@@ -190,6 +190,8 @@ If the app should be free for everyone, the PWA is the direct route: no App Stor
 
 **https://arti1984-collab.github.io/kaloriq/**
 
+> Detailed step-by-step guide in German and English: [INSTALL-IPHONE.md](INSTALL-IPHONE.md)
+
 1. Open this address in **Safari**.
 2. Tap **Share** → **Add to Home Screen** → **Add**.
 3. Kaloriq appears with its own icon and opens fullscreen; data stays on the device.
@@ -336,7 +338,8 @@ AGENTS.md               Working rules for changes to the app
 THIRD_PARTY_NOTICES.md  Third-party notices (ZXing, Apache-2.0)
 LICENSES/               Apache-2.0 license text
 ANDROID.md              APK build, signing, native scanner and step counter
-DEPLOY.md               Fixed web address (Cloudflare Pages / Netlify)
+DEPLOY.md               Fixed web address (GitHub Pages / Cloudflare / Netlify)
+INSTALL-IPHONE.md       iPhone installation (Deutsch / English)
 README.en.md            This page in English
 docs/screenshots/       Screenshots for README and GitHub
 public/

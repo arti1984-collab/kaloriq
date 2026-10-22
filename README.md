@@ -190,6 +190,8 @@ Wenn die App für alle kostenlos sein soll, ist die PWA der direkte Weg: kein Ap
 
 **https://arti1984-collab.github.io/kaloriq/**
 
+> Ausführliche Schritt-für-Schritt-Anleitung auf Deutsch und Englisch: [INSTALL-IPHONE.md](INSTALL-IPHONE.md)
+
 1. Diese Adresse in **Safari** öffnen.
 2. **Teilen** antippen → **Zum Home-Bildschirm** → **Hinzufügen**.
 3. Kaloriq erscheint mit eigenem Icon und startet im Vollbild; die Daten bleiben lokal auf dem Gerät.
@@ -337,7 +339,8 @@ AGENTS.md               Arbeitsregeln für Änderungen an der App
 THIRD_PARTY_NOTICES.md  Drittanbieter-Hinweise (ZXing, Apache-2.0)
 LICENSES/               Apache-2.0-Lizenztext
 ANDROID.md              APK-Bau, Signatur, nativer Scanner und Schrittzähler
-DEPLOY.md               Feste Web-Adresse (Cloudflare Pages / Netlify)
+DEPLOY.md               Feste Web-Adresse (GitHub Pages / Cloudflare / Netlify)
+INSTALL-IPHONE.md       iPhone-Installation (Deutsch / English)
 README.en.md            Englische Fassung dieser Seite
 docs/screenshots/       Screenshots für README und GitHub
 public/
