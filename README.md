@@ -4,6 +4,27 @@ Kalorien-, Makro- und Fasten-Tracker mit KI-Foto-Erkennung – als installierbar
 
 Eigenständige Implementierung der Funktionen, die Apps wie Yazio bieten. Kein fremder Code, keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.**
 
+**Aktuelle Version: 1.1.9** · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.1.9) · [Changelog](CHANGELOG.md)
+
+![Kaloriq – Tagebuch, Fortschritt, Fasten und Profil](docs/screenshots/uebersicht.png)
+
+> Screenshots mit Demo-Daten im hellen Design. Die App folgt automatisch dem Systemdesign (hell/dunkel).
+
+---
+
+## Screenshots
+
+| Tagebuch | Fortschritt |
+|---|---|
+| [![Tagebuch](docs/screenshots/tagebuch.png)](docs/screenshots/tagebuch.png) | [![Fortschritt](docs/screenshots/fortschritt.png)](docs/screenshots/fortschritt.png) |
+
+| Fasten | Profil |
+|---|---|
+| [![Fasten](docs/screenshots/fasten.png)](docs/screenshots/fasten.png) | [![Profil](docs/screenshots/profil.png)](docs/screenshots/profil.png) |
+
+Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzelansicht und
+als 2×2-Montage (`uebersicht.png`).
+
 ---
 
 ## Funktionen
@@ -24,6 +45,66 @@ Eigenständige Implementierung der Funktionen, die Apps wie Yazio bieten. Kein f
 | **Daten** | JSON-Export/-Import, Zurücksetzen |
 | **Sprache** | Deutsch / English – Umschaltung unter **Profil → Sprache**, alle Screens sofort übersetzt |
 | **APK** | Eigene Android-App, komplett offline (`npm run apk`) – siehe [ANDROID.md](ANDROID.md) |
+
+### Tagebuch & KI-Tracking
+
+- Tagesring mit **verbleibenden Kalorien**, Prozentanzeige und Makro-Balken
+  (Protein / Kohlenhydrate / Fett) – alles aus dem persönlichen Plan.
+- Vier Mahlzeiten (Frühstück, Mittag, Abend, Snacks), Einträge **bearbeiten,
+  verschieben und löschen**, Tage vor- und zurückblättern, Tagesnotiz.
+- **Streak**: zählt Tage in Folge mit mindestens einem Eintrag.
+- Lebensmittel hinzufügen über die lokale Datenbank (~130 Lebensmittel,
+  offline), Open-Food-Facts-Suche, **Barcode** (Kamera in Chrome, Nummer in der
+  APK), eigene Lebensmittel und Favoriten.
+- **KI-Foto oder -Text**: Gemini schätzt Bestandteile, Gramm, Kalorien und
+  Makros; jede Position ist vor dem Speichern editierbar und einzeln
+  abwählbar. Ohne API-Key läuft ein klar markierter Demo-Modus.
+
+### Wasser
+
+- Freie Eingabe in **ml oder Litern** (z. B. `250`, `0,5`, `1 l`) plus
+  Schnellwerte (+250 ml, +500 ml, +750 ml, +1 l) und Minus-Taste.
+- Fortschrittsbalken und Tagesziel aus dem Gewicht (35 ml pro kg, 1,5–4 l).
+- Wird pro Tag gespeichert und erscheint in der Wochenhistorie.
+
+### Schritte
+
+- **Android-APK:** nativer Schrittzähler über `TYPE_STEP_COUNTER`. Der Sensor
+  zählt auch bei geschlossener App weiter; beim nächsten Öffnen trägt Kaloriq
+  die Differenz nach.
+- Tageswechsel, Neustart des Geräts und lange Pausen (> 20 h) werden
+  abgefangen; **veraltete Sensorwerte** (älter als 5 Minuten) werden ignoriert,
+  damit keine falschen Schritte entstehen.
+- Tagesziel, manuelle Korrektur und Speicherung pro Tag. In der PWA zählt der
+  Bewegungssensor nur, solange die App geöffnet ist.
+
+### Fortschritt & Gewicht
+
+- Gewichtseingabe, Verlaufskurve, Zielgewicht, **BMI** und Prognose bis zum
+  Ziel auf Basis des eingestellten Tempos.
+- Grundumsatz (Mifflin-St Jeor), Gesamtumsatz (PAL) und Tagesziel auf einen
+  Blick.
+- Wochenauswertung: Ø Kalorien, Balken pro Tag, Makro-Durchschnitt und
+  Tageshistorie mit Einträgen und Wasser.
+
+### Fasten
+
+- Pläne **14:10, 16:8, 18:6, 20:4 und 24 h**.
+- Live-Timer mit verbleibender Zeit, Fortschrittsring, Start/Stop und
+  Verlauf der letzten sieben Tage.
+- Ein laufendes Fasten bleibt beim Schließen der App erhalten und wird beim
+  nächsten Öffnen weitergezählt.
+
+### Profil, Sprache & Daten
+
+- Körperdaten, Ziel und Tempo ändern → Kalorien- und Makroplan werden sofort
+  neu berechnet; Makro-Verteilung, Wasser- und Schrittziel einstellbar.
+- **Deutsch / English** sofort umschaltbar (inkl. Datums- und Zahlenformat);
+  Einträge und Profil bleiben unverändert.
+- **JSON-Export/-Import**, automatische Sicherungen (alle 12 Stunden, maximal
+  drei Stände) und ein Zurücksetzen, das vorher automatisch sichert.
+- Gemini-Key lokal oder über den Server-Proxy; Modellliste direkt aus der
+  Google-API laden.
 
 ---
 
@@ -135,6 +216,43 @@ Eintrag, bleibt der deutsche Text stehen – die App funktioniert also immer.
 
 ---
 
+## Entwicklungsablauf
+
+Kaloriq ist bewusst **ohne Bundler und ohne npm-Abhängigkeiten** gebaut: reine
+ES-Module, die der Browser direkt lädt. Dadurch ist jede Änderung sofort
+sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
+
+### Regeln für jede Änderung
+
+1. **Version erhöhen:** Nach jeder Änderung an `public/` (Code, Styles, Texte,
+   Manifest, Icons) steigt die Version – siehe [Versionierung](#versionierung).
+2. **Daten nie löschen:** `localStorage` (`kaloriq.state.v1`) bleibt erhalten.
+   `migrate()` ergänzt nur fehlende Felder; vor Import und Zurücksetzen wird
+   automatisch gesichert.
+3. **Testen:** Desktop-Browser (Chrome/Edge) und Android – PWA im Browser
+   **und** die installierte APK. Neue JS-Dateien zusätzlich in die
+   `SHELL`-Liste von `public/sw.js` eintragen, sonst fehlen sie offline.
+4. **APK bauen:** `npm run apk` erzeugt eine signierte
+   `Kaloriq-<Version>.apk`. Der Signaturschlüssel liegt nur lokal unter
+   `android-app/keystore/` und ist **nicht** im Repository.
+5. **Veröffentlichen:** Commit und Push nach `main`; die APK als
+   GitHub-Release anhängen.
+
+### Versionen
+
+| Version | Schwerpunkt |
+|---|---|
+| **1.1.9** | Schutz vor veralteten Sensorwerten; Release-APK |
+| **1.1.8** | Import setzt den nativen Schritt-Zählerstand zurück |
+| **1.1.7** | Nativer Android-Schrittzähler (auch bei geschlossener App) |
+| **1.1.6** | Schnellzugriff repariert, Wasser frei in ml/l, erster Schrittzähler |
+| **≤ 1.1.5** | Basisversion (nicht einzeln dokumentiert) |
+
+Der ausführliche Verlauf mit allen Änderungen, Behobenem und technischen
+Notizen steht in **[CHANGELOG.md](CHANGELOG.md)**.
+
+---
+
 ## Versionierung
 
 Bei jeder Änderung wird die Version erhöht – ein Befehl, vier Stellen:
@@ -190,6 +308,11 @@ Alles Richtwerte – **kein medizinisches Gerät**, keine Diagnose, keine Therap
 
 ```
 server.mjs              Zero-Dependency-Server + optionaler Gemini-Proxy
+CHANGELOG.md            Versionsverlauf und Entwicklungsregeln
+AGENTS.md               Arbeitsregeln für Änderungen an der App
+ANDROID.md              APK-Bau, Signatur und nativer Schrittzähler
+DEPLOY.md               Feste Web-Adresse (Cloudflare Pages / Netlify)
+docs/screenshots/       Screenshots für README und GitHub
 public/
   index.html            App-Shell
   manifest.webmanifest  PWA-Manifest (Icons, Shortcuts)
