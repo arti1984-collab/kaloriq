@@ -5,8 +5,67 @@ import { store, addEntries, todayKey, MEALS } from '../store.js';
 import { searchLocal, searchRemote, lookupBarcode, foodEmoji, customFoodFromInput } from '../foods.js';
 import { estimate, prepareImage, detectProxy } from '../ai.js';
 import { esc, fmt, icon, toast, openSheet, haptic } from '../ui.js';
+import { tr } from '../i18n.js';
 
 const mealLabel = (id) => MEALS.find((m) => m.id === id)?.label || 'Mahlzeit';
+
+const NATIVE_SCAN_ERRORS = {
+  open_failed: 'Scanner konnte nicht geöffnet werden.',
+  no_code: 'Kein Barcode erkannt.',
+  read_failed: 'Scan-Ergebnis konnte nicht gelesen werden.',
+};
+
+/* ---------------- Nativer Barcode-Scanner (APK) ---------------- */
+
+function hasNativeScanner() {
+  return typeof window !== 'undefined'
+    && window.AndroidBarcodeScanner
+    && typeof window.AndroidBarcodeScanner.scan === 'function';
+}
+
+/**
+ * Öffnet den nativen Scanner und wartet auf das Ergebnis.
+ * Löst mit dem erkannten Code auf, bei Abbruch mit einem leeren String.
+ */
+function scanWithNative() {
+  return new Promise((resolve, reject) => {
+    if (!hasNativeScanner()) {
+      reject(new Error(tr('Scanner nicht verfügbar.')));
+      return;
+    }
+
+    let settled = false;
+    let timer = 0;
+    const finish = (fn, value) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (window.__kaloriqBarcode === onResult) delete window.__kaloriqBarcode;
+      fn(value);
+    };
+    const onResult = (result) => {
+      if (!result || result.cancelled) return finish(resolve, '');
+      if (result.error) {
+        const message = NATIVE_SCAN_ERRORS[result.error] || 'Scan fehlgeschlagen. Bitte erneut versuchen.';
+        return finish(reject, new Error(tr(message)));
+      }
+      const value = String(result.value || '').trim();
+      if (!value) return finish(reject, new Error(tr('Kein Barcode erkannt.')));
+      finish(resolve, value);
+    };
+
+    window.__kaloriqBarcode = onResult;
+    timer = setTimeout(
+      () => finish(reject, new Error(tr('Zeitüberschreitung beim Scan. Bitte erneut versuchen.'))),
+      120000
+    );
+    try {
+      window.AndroidBarcodeScanner.scan(tr('Barcode scannen'));
+    } catch {
+      finish(reject, new Error(tr('Scanner konnte nicht geöffnet werden.')));
+    }
+  });
+}
 
 // Open Food Facts erlaubt nur wenige Suchanfragen pro Minute → Ergebnisse cachen.
 const remoteCache = new Map();
@@ -258,7 +317,8 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
 
   /* ---------- Barcode ---------- */
   function renderBarcode() {
-    const supported = 'BarcodeDetector' in window;
+    const native = hasNativeScanner();
+    const supported = native || 'BarcodeDetector' in window;
     panel.innerHTML = `
       <div class="card" style="padding:16px">
         <div class="field" style="margin-bottom:10px">
@@ -292,7 +352,36 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
     panel.querySelector('[data-lookup]').addEventListener('click', () => doLookup());
     input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doLookup(); });
 
-    panel.querySelector('[data-scan]')?.addEventListener('click', () => startScanner(out, doLookup));
+    const scanBtn = panel.querySelector('[data-scan]');
+    scanBtn?.addEventListener('click', async () => {
+      // In der PWA bleibt der bisherige Kamera-Scan über BarcodeDetector.
+      if (!native) {
+        startScanner(out, doLookup);
+        return;
+      }
+      if (scanBtn.disabled) return;
+
+      scanBtn.disabled = true;
+      const label = scanBtn.innerHTML;
+      scanBtn.textContent = tr('Scanner wird geöffnet …');
+      out.innerHTML = `<div class="pill">${esc(tr('Scanner wird geöffnet …'))}</div>`;
+
+      try {
+        const code = await scanWithNative();
+        if (!code) {
+          out.innerHTML = '';
+          return;
+        }
+        input.value = code;
+        haptic(30);
+        await doLookup(code);
+      } catch (err) {
+        out.innerHTML = `<div class="ai-note">${esc(err.message)}</div>`;
+      } finally {
+        scanBtn.disabled = false;
+        scanBtn.innerHTML = label;
+      }
+    });
   }
 
   async function startScanner(out, onCode) {

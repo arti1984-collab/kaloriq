@@ -4,7 +4,7 @@ Kalorien-, Makro- und Fasten-Tracker mit KI-Foto-Erkennung – als installierbar
 
 Eigenständige Implementierung der Funktionen bekannter Kalorien-Tracker. Kein fremder Code, keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.**
 
-**Aktuelle Version: 1.1.9** · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.1.9) · [Changelog](CHANGELOG.md)
+**Aktuelle Version: 1.2.1** · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.1) · [Changelog](CHANGELOG.md)
 
 ![Kaloriq – Tagebuch, Fortschritt, Fasten und Profil](docs/screenshots/uebersicht.png)
 
@@ -34,7 +34,7 @@ als 2×2-Montage (`uebersicht.png`).
 | **Onboarding** | Geschlecht, Alter, Größe, Gewicht, Zielgewicht, Aktivität, Ziel (ab-/zunehmen/halten), Tempo → Kalorien- und Makroplan (Mifflin-St Jeor + PAL) |
 | **Tagebuch** | Frühstück / Mittag / Abend / Snacks, Tagesring, Makro-Balken, Einträge bearbeiten & löschen, Tage blättern, Serie (Streak) |
 | **Lebensmittelsuche** | ~130 lokale Lebensmittel (offline, Richtwerte pro 100 g) + Open Food Facts auf Anfrage |
-| **Barcode** | Kamera-Scan (`BarcodeDetector`, Android Chrome) oder Nummer eintippen → Open Food Facts |
+| **Barcode** | Kamera-Scan in der APK (nativer ZXing-Scanner) und in Chrome (`BarcodeDetector`) oder Nummer eintippen → Open Food Facts |
 | **KI-Tracking** | Foto **oder** Text → Gemini schätzt Bestandteile, Gramm, Kalorien & Makros. Jede Position editierbar, einzelne Positionen abwählbar |
 | **Eigene Lebensmittel** | Mit Nährwerten pro 100 g + optionaler Portion, dauerhaft gespeichert |
 | **Wasser** | Freie Eingabe in **ml oder Litern**, Schnellwerte (+250 ml … +1 l), Tagesfortschritt, Ziel aus Gewicht |
@@ -54,8 +54,8 @@ als 2×2-Montage (`uebersicht.png`).
   verschieben und löschen**, Tage vor- und zurückblättern, Tagesnotiz.
 - **Streak**: zählt Tage in Folge mit mindestens einem Eintrag.
 - Lebensmittel hinzufügen über die lokale Datenbank (~130 Lebensmittel,
-  offline), Open-Food-Facts-Suche, **Barcode** (Kamera in Chrome, Nummer in der
-  APK), eigene Lebensmittel und Favoriten.
+  offline), Open-Food-Facts-Suche, **Barcode** (Kamera-Scan in APK und Chrome,
+  Nummer überall eintippbar), eigene Lebensmittel und Favoriten.
 - **KI-Foto oder -Text**: Gemini schätzt Bestandteile, Gramm, Kalorien und
   Makros; jede Position ist vor dem Speichern editierbar und einzeln
   abwählbar. Ohne API-Key läuft ein klar markierter Demo-Modus.
@@ -242,6 +242,7 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 | Version | Schwerpunkt |
 |---|---|
+| **1.2.1** | Nativer Barcode-Scanner in der APK (ZXing), englische Scan-Beschriftung |
 | **1.1.9** | Schutz vor veralteten Sensorwerten; Release-APK |
 | **1.1.8** | Import setzt den nativen Schritt-Zählerstand zurück |
 | **1.1.7** | Nativer Android-Schrittzähler (auch bei geschlossener App) |
@@ -310,7 +311,7 @@ Alles Richtwerte – **kein medizinisches Gerät**, keine Diagnose, keine Therap
 server.mjs              Zero-Dependency-Server + optionaler Gemini-Proxy
 CHANGELOG.md            Versionsverlauf und Entwicklungsregeln
 AGENTS.md               Arbeitsregeln für Änderungen an der App
-ANDROID.md              APK-Bau, Signatur und nativer Schrittzähler
+ANDROID.md              APK-Bau, Signatur, nativer Scanner und Schrittzähler
 DEPLOY.md               Feste Web-Adresse (Cloudflare Pages / Netlify)
 docs/screenshots/       Screenshots für README und GitHub
 public/
@@ -336,7 +337,7 @@ scripts/tunnel.mjs      HTTPS-Tunnel für die Installation (npm run tunnel)
 ### Technische Entscheidungen
 
 - **Kein Build-Schritt, keine Frameworks** – ES-Module, die direkt im Browser laufen. Änderungen sind sofort sichtbar, die App bleibt über Jahre wartbar.
-- **Keine externen Abhängigkeiten** – weder npm-Pakete noch CDNs; funktioniert auch, wenn Bibliotheken verschwinden.
+- **Keine externen Abhängigkeiten in der App** – weder npm-Pakete noch CDNs; funktioniert auch, wenn Bibliotheken verschwinden. Nur die APK-Hülle bindet ZXing für den nativen Barcode-Scanner ein.
 - **Daten in `localStorage`** – ein JSON-Dokument, per Export/Import sicherbar.
 - **Bottom-Sheets mit History-Eintrag** – die Android-Zurück-Taste schließt zuerst das offene Sheet, statt die App zu verlassen.
 
@@ -346,7 +347,7 @@ scripts/tunnel.mjs      HTTPS-Tunnel für die Installation (npm run tunnel)
 
 - **Open Food Facts limitiert** Suchanfragen pro Minute. Deshalb: lokale DB zuerst, Online-Suche gedrosselt, Ergebnisse gecacht, 30-Sekunden-Pause nach einem Limit-Fehler.
 - **Kein Account, keine Synchronisierung** zwischen Geräten (bewusst). Sync ließe sich später über einen kleinen Server oder Supabase ergänzen.
-- **Barcode-Scan in der APK:** das WebView kennt `BarcodeDetector` nicht, dort wird die Nummer eingetippt (in Chrome funktioniert der Scan). Ein natives Scan-Plugin ließe sich ergänzen.
+- **Barcode-Scan:** In der APK öffnet sich der native Scanner (ZXing, offline, ohne Google Play-Dienste); in Chrome nutzt die PWA den `BarcodeDetector`. In beiden Fällen bleibt die manuelle Eingabe der Nummer möglich.
 - **Schrittzähler:** In der APK liest ein natives Plugin den Hardware-Schrittzähler (`TYPE_STEP_COUNTER`). Der Sensor zählt kumulativ seit dem Geräteneustart weiter, auch wenn die App geschlossen ist – beim nächsten Öffnen wird die Differenz nachgetragen. Nach einem Tageswechsel ohne App-Kontakt werden die Schritte dem Tag des Öffnens zugerechnet; nach mehr als 20 Stunden Pause wird der Stand neu gesetzt, statt willkürlich zu verteilen. Im Browser (PWA) bleibt es beim Bewegungssensor und Zählen nur bei geöffneter App. Schritte lassen sich außerdem jederzeit manuell korrigieren.
 - **Rezeptdatenbank, Fitnessarmband-Anbindung und Community** sind nicht enthalten.
 

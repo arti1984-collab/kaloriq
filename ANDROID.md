@@ -85,7 +85,7 @@ Updates mit demselben Schlüssel). Ein Backup liegt im Projekt-ZIP.
 | Offline | ✅ alles lokal in der APK, auch ohne Netz |
 | KI-Schätzung | ✅ direkt zu Google mit deinem Key (kein Server-Proxy) |
 | Key-Speicherung | auf dem Gerät (Profil → KI-Tracking) |
-| Barcode-Scan | ⚠️ `BarcodeDetector` fehlt im WebView → Nummer eintippen |
+| Barcode-Scan | ✅ nativer ZXing-Scanner (Kamera, offline) – zusätzlich bleibt die Nummer eintippbar |
 | Schrittzähler | ✅ Gerätesensor (`TYPE_STEP_COUNTER`) – trägt Schritte aus der Zeit mit geschlossener App beim nächsten Öffnen nach |
 | Kamera/Fotos | ✅ über den Android-Dateiauswahl-Dialog |
 | Installation | ✅ eigenes Icon, Vollbild, kein Browser |
@@ -102,14 +102,45 @@ android-app/
   package.json            Capacitor-Abhängigkeiten (nur für den Build)
   keystore/               Signaturschlüssel (geheim halten!)
   www/                    Web-Stand (generiert, nicht bearbeiten)
-  android/                natives Android-Projekt (generiert)
-    app/build.gradle      versionName/versionCode (wird von npm run bump gesetzt)
+  android/                natives Android-Projekt (Hülle; Java-Brücken unter app/src/main/java)
+    app/build.gradle      versionName/versionCode (wird von npm run bump gesetzt) + ZXing-Abhängigkeit
+    app/src/main/java/    MainActivity, Scanner- und Schrittzähler-Brücken
     app/src/main/res/     Icons + Splash (aus public/icons erzeugt)
 ```
 
 `android-app/www` und `android-app/android/build` sind **generiert** – Änderungen
 dort werden beim nächsten `npm run apk` überschrieben. Der einzige Ort für
 Inhalte ist `public/`.
+
+---
+
+## Nativer Barcode-Scanner
+
+Das Android-WebView stellt `BarcodeDetector` nicht bereit. In der APK öffnet der
+Button **Scannen** deshalb eine native Scanner-Activity auf Basis von
+[ZXing Android Embedded](https://github.com/journeyapps/zxing-android-embedded)
+(offline, ohne Google Play-Dienste).
+
+| Datei | Aufgabe |
+| --- | --- |
+| `app/src/main/java/de/kaloriq/app/BarcodeScannerBridge.java` | JS-Brücke (`window.AndroidBarcodeScanner`), startet den Scan und liefert das Ergebnis an `window.__kaloriqBarcode` |
+| `.../BarcodeScanActivity.java` | eigene Scanner-Activity im Hochformat; verdrängt die Web-App nicht aus dem Task |
+| `.../MainActivity.java` | registriert die Brücke und leitet `onActivityResult` weiter |
+| `.../AndroidManifest.xml` | deklariert die Scanner-Activity (`exported=false`); `CAMERA` ist bereits für Fotos vorhanden |
+| `app/build.gradle` | `com.journeyapps:zxing-android-embedded:4.3.0` |
+| `public/js/views/add.js` | erkennt die Brücke, zeigt den Scan-Button, verarbeitet Ergebnis/Abbruch/Fehler; in der PWA weiterhin `BarcodeDetector` |
+
+**Ablauf:** `scan()` öffnet die Kamera-Activity. Nach einem Treffer liefert
+ZXing den Code und das Format zurück; die Web-App trägt ihn ins Barcode-Feld ein
+und startet die Open-Food-Facts-Suche. Bei Abbruch bleibt die manuelle Eingabe.
+Die Kamera-Berechtigung fragt die Scanner-Activity beim ersten Scan ab.
+
+**Fehlercodes:** `open_failed`, `no_code`, `read_failed`. Die Web-App übersetzt
+sie und zeigt eine verständliche Meldung an.
+
+Beim Bauen nicht überschreiben: `MainActivity.java`, `BarcodeScannerBridge.java`,
+`BarcodeScanActivity.java` und `StepCounterBridge.java` liegen im nativen Projekt
+und werden von `cap sync` nicht neu erzeugt.
 
 ---
 

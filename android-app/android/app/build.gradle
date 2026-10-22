@@ -14,8 +14,8 @@ android {
         applicationId "de.kaloriq.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10109
-        versionName "1.1.9"
+        versionCode 10201
+        versionName "1.2.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -60,6 +60,8 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+    // Nativer Barcode-Scanner (ZXing, offline, ohne Google Play-Dienste)
+    implementation "com.journeyapps:zxing-android-embedded:4.3.0"
 }
 
 apply from: 'capacitor.build.gradle'

@@ -4,7 +4,7 @@ Alle nennenswerten Änderungen an **Kaloriq**. Die Versionen folgen
 [SemVer](https://semver.org/lang/de/): Patch für Fixes, Minor für neue
 Funktionen, Major für Brüche.
 
-> Die Stände **1.1.6 bis 1.1.9** entstanden am 22.10.2026. Ältere Versionen
+> Die Stände **1.1.6 bis 1.2.1** entstanden am 22.10.2026. Ältere Versionen
 > wurden nicht einzeln dokumentiert; ihre Funktionen sind unter
 > [Basisversion](#basisversion-vor-116) zusammengefasst.
 
@@ -40,6 +40,40 @@ demselben Quellstand gebaut. Jede Änderung durchläuft denselben Ablauf:
 Tage, Gewichte oder Einträge. Vor Import und Zurücksetzen wird automatisch ein
 Snapshot angelegt; zusätzlich existieren automatische Sicherungen (alle 12
 Stunden, maximal drei Stände) und der JSON-Export.
+
+---
+
+## [1.2.1] – 22.10.2026
+
+### Hinzugefügt
+
+- **Nativer Barcode-Scanner in der APK:** Der Button **Scannen** öffnet die
+  Kamera direkt in der App (ZXing, offline, ohne Google Play-Dienste). Der
+  erkannte Code wird ins Barcode-Feld übernommen und über Open Food Facts
+  gesucht. Die PWA nutzt weiterhin den `BarcodeDetector`; die manuelle Eingabe
+  der Nummer bleibt überall möglich.
+- Eigene Scanner-Activity im Hochformat. Die Web-App bleibt beim Zurückkehren
+  erhalten; die Kamera-Berechtigung wird beim ersten Scan abgefragt.
+- Klare Fehlercodes (`open_failed`, `no_code`, `read_failed`) mit deutschen und
+  englischen Meldungen; Abbruch und Zeitüberschreitung werden abgefangen.
+
+### Geändert
+
+- Die APK-Hülle bindet `com.journeyapps:zxing-android-embedded:4.3.0` ein. Die
+  Web-App selbst bleibt weiterhin ohne npm-Abhängigkeiten und Bundler.
+- Service-Worker-Cache auf `kaloriq-v18` erhöht; Android-`versionName` 1.2.1,
+  `versionCode` 10201.
+- README, ANDROID.md und dieser Changelog beschreiben den nativen Scanner.
+
+### Behoben
+
+- Englische Beschriftung des Scan-Buttons (`Scannen` → `Scan`).
+
+### Veröffentlicht
+
+- Signierte `Kaloriq-1.2.1.apk` als GitHub-Release `v1.2.1`.
+
+> 1.2.0 war ein interner Build mit dem Scanner und wurde nicht veröffentlicht.
 
 ---
 
