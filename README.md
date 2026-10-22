@@ -44,7 +44,7 @@ als 2×2-Montage (`uebersicht.png`).
 | **Gewicht** | Eingabe, Verlaufskurve, Zielgewicht, BMI, Prognose bis zum Ziel |
 | **Woche** | Ø Kalorien, Balkendiagramm pro Tag, Makro-Durchschnitt, Tageshistorie |
 | **Fasten** | 14:10 / 16:8 / 18:6 / 20:4 / 24 h, Live-Timer, Verlauf der letzten 7 Tage |
-| **Daten** | JSON-Export/-Import, Zurücksetzen |
+| **Daten** | JSON-Export/-Import, automatische Sicherungen, IndexedDB-Zweitkopie, Zurücksetzen |
 | **Sprache** | Deutsch / English – Umschaltung unter **Profil → Sprache**, alle Screens sofort übersetzt |
 | **APK** | Eigene Android-App, komplett offline (`npm run apk`) – siehe [ANDROID.md](ANDROID.md) |
 

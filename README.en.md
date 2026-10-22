@@ -44,7 +44,7 @@ as a 2×2 montage (`uebersicht.png`).
 | **Weight** | Input, history chart, target weight, BMI, forecast to goal |
 | **Week** | Average calories, bar chart per day, macro average, daily history |
 | **Fasting** | 14:10 / 16:8 / 18:6 / 20:4 / 24 h, live timer, history of the last 7 days |
-| **Data** | JSON export/import, reset |
+| **Data** | JSON export/import, automatic backups, IndexedDB second copy, reset |
 | **Language** | German / English – switch under **Profile → Language**, all screens translated instantly |
 | **APK** | Standalone Android app, fully offline (`npm run apk`) – see [ANDROID.md](ANDROID.md) |
 
