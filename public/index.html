@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>Kaloriq – Kalorien &amp; KI-Tracking</title>
+<meta name="description" content="Kalorien, Makros, Wasser, Gewicht und Fasten tracken – mit KI-Foto-Erkennung.">
+<meta name="theme-color" content="#f5f6f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c100f" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kaloriq">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <main class="view" id="view" role="main"></main>
+    <nav class="tabbar" id="tabbar" aria-label="Hauptnavigation"></nav>
+    <button class="fab" id="fab" type="button" aria-label="KI-Tracking starten">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.2l.9-1.4A2 2 0 0 1 10.3 3.7h3.4a2 2 0 0 1 1.7.9l.9 1.4h1.2A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z"/>
+        <circle cx="12" cy="12.4" r="3.4"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="sheet-root" id="sheet-root"></div>
+  <div class="toast-root" id="toast-root" aria-live="polite"></div>
+
+  <noscript>Kaloriq braucht JavaScript.</noscript>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

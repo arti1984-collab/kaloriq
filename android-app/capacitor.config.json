@@ -1,0 +1,11 @@
+{
+  "appId": "de.kaloriq.app",
+  "appName": "Kaloriq",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#0f1115"
+  }
+}

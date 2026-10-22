@@ -1,0 +1,17 @@
+{
+  "name": "kaloriq-android",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Android-Verpackung für Kaloriq (Capacitor) – baut aus dist/ eine installierbare APK",
+  "type": "module",
+  "scripts": {
+    "copy": "node prepare.mjs",
+    "sync": "node prepare.mjs && cap sync android",
+    "apk": "node prepare.mjs && cap sync android && cd android && gradlew.bat assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/cli": "8.5.3",
+    "@capacitor/core": "8.5.3"
+  }
+}

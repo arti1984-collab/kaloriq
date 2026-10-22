@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Kaloriq</string>
+    <string name="title_activity_main">Kaloriq</string>
+    <string name="package_name">de.kaloriq.app</string>
+    <string name="custom_url_scheme">de.kaloriq.app</string>
+</resources>
