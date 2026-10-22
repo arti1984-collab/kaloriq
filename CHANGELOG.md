@@ -82,6 +82,9 @@ IndexedDB gespiegelt) und der JSON-Export.
 - Portion (auch 0,5 / 1,5 / 2) ins Tagebuch übernehmen, Eintrag anzeigen und
   wieder entfernen.
 - JSON-Import mit gültigen Rezepten sowie deutsche und englische Oberfläche.
+- Signierte APK (`de.kaloriq.app`, `versionName 1.2.4`, `versionCode 10204`)
+  gebaut, Signatur und Version geprüft und als GitHub-Release `v1.2.4` mit
+  APK-Asset veröffentlicht.
 
 ---
 
