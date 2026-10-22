@@ -6,7 +6,7 @@ Calorie, macro and fasting tracker with AI photo recognition – as an installab
 
 An independent implementation of the features of well-known calorie trackers. No third-party brands or assets, no cloud: **all data stays on the device.** The barcode scanner uses ZXing (Apache-2.0) – natively in the Android APK and as a locally bundled JavaScript library in Safari/Firefox – see [third-party notices](THIRD_PARTY_NOTICES.md).
 
-**Current version: 1.2.2** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.2) · [Changelog](CHANGELOG.md)
+**Current version: 1.2.3** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.3) · [Changelog](CHANGELOG.md)
 
 ![Kaloriq – diary, progress, fasting and profile](docs/screenshots/uebersicht.png)
 
@@ -205,7 +205,7 @@ If the app should be free for everyone, the PWA is the direct route: no App Stor
 **What is different on iPhone:**
 
 - **Steps:** no native background step counter; the motion sensor only counts while the app is open.
-- **Storage:** iOS may clear web storage under pressure. Regular JSON exports via **Profile → Export data** are the safest backup.
+- **Storage:** Kaloriq requests persistent storage and keeps an automatic second copy in IndexedDB. A JSON export via **Profile → Export data** remains available as an optional extra backup.
 - **App Store:** The app would also be free for users there, but you pay **$99 per year** plus a Mac with Xcode. The PWA costs neither you nor users anything.
 
 ## Setting up AI (Google Gemini)
@@ -252,9 +252,9 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 1. **Bump the version:** After every change to `public/` (code, styles, texts,
    manifest, icons), the version increases – see [Versioning](#versioning).
-2. **Never delete data:** `localStorage` (`kaloriq.state.v1`) is preserved.
-   `migrate()` only adds missing fields; a backup is created automatically
-   before import and reset.
+2. **Never delete data:** `localStorage` (`kaloriq.state.v1`) and the IndexedDB
+   second copy (`kaloriq.storage.v1`) are preserved. `migrate()` only adds
+   missing fields; a backup is created automatically before import and reset.
 3. **Test:** Desktop browsers (Chrome/Edge/Safari) and Android – the PWA in the
    browser **and** the installed APK; test the barcode scanner additionally in
    Safari and on iPhone. Add new JS files to the `SHELL` list in
@@ -268,6 +268,7 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.2.3** | Persistent storage and IndexedDB second copy against iOS storage cleanup |
 | **1.2.2** | Barcode scanner for Safari/Firefox (ZXing JS), camera cleanup, iPhone docs |
 | **1.2.1** | Native barcode scanner in the APK (ZXing), English scan label |
 | **1.1.9** | Protection against stale sensor values; release APK |
@@ -298,15 +299,19 @@ present, the APK's `versionName`/`versionCode` are updated as well.
 
 ## Updates & data backup
 
-**An update does not delete data.** App data lives in browser storage
-(`localStorage`, key `kaloriq.state.v1`); new JS files never overwrite it. On
-load, `migrate()` in `public/js/store.js` only adds missing fields – existing
-values, days, weights and the API key remain unchanged.
+**An update does not delete data.** App data lives in browser storage:
+`localStorage` (`kaloriq.state.v1`) as the fast primary copy and IndexedDB
+(`kaloriq.storage.v1`) as an automatic second copy. On startup, the app restores
+the second copy if iOS has cleared `localStorage` under storage pressure. It
+also requests persistent storage (`navigator.storage.persist()`) so the browser
+clears the data less often. New JS files never overwrite these copies. On load,
+`migrate()` in `public/js/store.js` only adds missing fields – existing values,
+days, weights and the API key remain unchanged.
 
 Additionally:
 
-- **Automatic backups:** every 12 hours, up to 3 snapshots. Restore under
-  **Profile → Backups**.
+- **Automatic backups:** every 12 hours, up to 3 snapshots – mirrored in
+  IndexedDB. Restore under **Profile → Backups**.
 - Before **importing data** and **resetting everything**, the current state is
   backed up automatically – both are recoverable.
 - **Manual backup:** Profile → Export data (JSON).
@@ -355,7 +360,7 @@ public/
     zxing.LICENSE.txt   Apache-2.0 license text for the ZXing JS library
   js/
     app.js              Bootstrap, router, tabs, install prompt
-    store.js            State + localStorage, days, statistics
+    store.js            State + localStorage/IndexedDB, days, statistics
     calc.js             BMR/TDEE/goals, macros, fasting plans
     foods.js            Local DB (~130 foods) + Open Food Facts
     i18n.js             Language switching (dictionary, patterns, DOM translation)
@@ -372,7 +377,7 @@ scripts/tunnel.mjs      HTTPS tunnel for installation (npm run tunnel)
 
 - **No build step, no frameworks** – ES modules that run directly in the browser. Changes are immediately visible, and the app remains maintainable for years.
 - **No external runtime dependencies** – no npm packages or CDNs. The only third-party library (ZXing JS for the Safari scanner) is bundled locally under `public/vendor/` and keeps working even if libraries or CDNs disappear. The APK additionally bundles ZXing natively.
-- **Data in `localStorage`** – a single JSON document, backed up via export/import.
+- **Data in `localStorage` + IndexedDB** – a JSON document as the fast primary copy, automatically mirrored to IndexedDB and backed up via export/import. Persistent storage additionally protects against storage cleanup by iOS.
 - **Bottom sheets with a history entry** – the Android back button closes the open sheet first instead of leaving the app.
 
 ---

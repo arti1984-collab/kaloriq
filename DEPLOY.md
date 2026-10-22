@@ -92,12 +92,15 @@ Tipp: Der API-Key steckt in der exportierten Datei und ist danach wieder gesetzt
 
 ## Warum Updates keine Daten löschen
 
-- App-Daten liegen in `localStorage` unter `kaloriq.state.v1` – Code-Dateien
-  haben darauf keinen Zugriff und überschreiben sie nie.
+- App-Daten liegen in `localStorage` unter `kaloriq.state.v1` und zusätzlich
+  als IndexedDB-Zweitkopie in `kaloriq.storage.v1` – Code-Dateien haben darauf
+  keinen Zugriff und überschreiben sie nie. Beim Start stellt die App die
+  Zweitkopie wieder her, falls der Browser `localStorage` geräumt hat.
 - Neue Felder werden beim Laden ergänzt, vorhandene Werte bleiben
   (`migrate()` in `public/js/store.js`).
 - Zusätzlich legt die App automatisch **alle 12 Stunden** eine Sicherung an
-  (max. 3 Stände). Zurückholen: **Profil → Sicherungen**.
+  (max. 3 Stände, ebenfalls in IndexedDB gespiegelt). Zurückholen:
+  **Profil → Sicherungen**.
 - Vor **Import** und **Zurücksetzen** wird der aktuelle Stand automatisch
   gesichert.
 

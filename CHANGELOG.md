@@ -4,7 +4,7 @@ Alle nennenswerten Änderungen an **Kaloriq**. Die Versionen folgen
 [SemVer](https://semver.org/lang/de/): Patch für Fixes, Minor für neue
 Funktionen, Major für Brüche.
 
-> Die Stände **1.1.6 bis 1.2.2** entstanden am 22.10.2026. Ältere Versionen
+> Die Stände **1.1.6 bis 1.2.3** entstanden am 22.10.2026. Ältere Versionen
 > wurden nicht einzeln dokumentiert; ihre Funktionen sind unter
 > [Basisversion](#basisversion-vor-116) zusammengefasst.
 
@@ -37,10 +37,48 @@ demselben Quellstand gebaut. Jede Änderung durchläuft denselben Ablauf:
    Daten bleiben erhalten.
 
 **Datensicherheit bei jedem Schritt:** Der Zustand liegt in `localStorage`
-(`kaloriq.state.v1`). `migrate()` ergänzt nur fehlende Felder und löscht keine
-Tage, Gewichte oder Einträge. Vor Import und Zurücksetzen wird automatisch ein
-Snapshot angelegt; zusätzlich existieren automatische Sicherungen (alle 12
-Stunden, maximal drei Stände) und der JSON-Export.
+(`kaloriq.state.v1`) und wird zusätzlich in IndexedDB (`kaloriq.storage.v1`)
+gespiegelt. `migrate()` ergänzt nur fehlende Felder und löscht keine Tage,
+Gewichte oder Einträge. Beim Start stellt die App die Zweitkopie wieder her,
+falls `localStorage` fehlt, beschädigt oder älter ist. Vor Import und
+Zurücksetzen wird automatisch ein Snapshot angelegt; zusätzlich existieren
+automatische Sicherungen (alle 12 Stunden, maximal drei Stände, ebenfalls in
+IndexedDB gespiegelt) und der JSON-Export.
+
+---
+
+## [1.2.3] – 22.10.2026
+
+### Hinzugefügt
+
+- **Schutz vor iOS-Speicherbereinigung:** Kaloriq fordert persistenten Speicher
+  über `navigator.storage.persist()` an (Safari ab iOS 15.2) und versucht es
+  beim ersten Tippen erneut, falls der Browser eine Nutzergeste verlangt.
+- **IndexedDB-Zweitkopie:** Zustand, automatische Sicherungen und deren
+  Zeitstempel werden zusätzlich in `kaloriq.storage.v1` gespeichert. Beim Start
+  stellt `hydrateFromDurable()` die Kopie automatisch wieder her, wenn
+  `localStorage` fehlt, beschädigt oder älter ist. Das Zurücksetzen der App
+  bleibt Vorrang vor einer alten Sicherung.
+- Lokal getestet: `localStorage` gelöscht und beschädigt → Zustand und
+  Sicherungen wurden aus IndexedDB wiederhergestellt; leerer Erststart zeigt
+  weiterhin das Onboarding.
+
+### Geändert
+
+- Der Start wartet höchstens 1,2 Sekunden auf die IndexedDB-Prüfung und rendert
+  danach; eine späte Wiederherstellung löst automatisch ein Neu-Rendern aus.
+- `saveSettings()` und `recalc()` aktualisieren `updatedAt`, damit die
+  Wiederherstellung den neueren Stand erkennt.
+- Der iOS-Speicherhinweis wurde aus README, README.en und INSTALL-IPHONE
+  entfernt und durch die Beschreibung der persistenten Zweitkopie ersetzt.
+  AGENTS.md, DEPLOY.md und ANDROID.md nennen das neue Speicherverhalten.
+- Service-Worker-Cache auf `kaloriq-v20` erhöht; Android-`versionName` 1.2.3,
+  `versionCode` 10203.
+
+### Veröffentlicht
+
+- GitHub Pages mit der IndexedDB-Wiederherstellung und signierte
+  `Kaloriq-1.2.3.apk` als GitHub-Release `v1.2.3`.
 
 ---
 

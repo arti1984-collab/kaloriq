@@ -1,6 +1,6 @@
 {
   "name": "kaloriq",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "private": true,
   "description": "Kalorien- und Makro-Tracker mit KI-Foto-Erkennung (PWA, Android & iPhone)",
   "type": "module",

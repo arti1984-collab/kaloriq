@@ -1,12 +1,110 @@
 /* ============================================================
    Kaloriq – State & Persistenz
-   Daten liegen lokal auf dem Gerät (localStorage).
+   Daten liegen lokal auf dem Gerät: localStorage (schnell) und
+   IndexedDB (zweite Kopie, falls iOS den Web-Speicher räumt).
    ============================================================ */
 import { computeTargets, round1, clamp } from './calc.js';
 import { locale } from './i18n.js';
 
 const KEY = 'kaloriq.state.v1';
 const LISTENERS = new Set();
+
+/* ---------- Dauerhafte Zweitkopie (IndexedDB) ----------
+   localStorage bleibt die synchrone Hauptkopie. Zusätzlich wird jeder Stand
+   in IndexedDB gespiegelt. Räumt iOS localStorage unter Speicherdruck auf,
+   stellt Kaloriq beim nächsten Start die letzte Kopie automatisch wieder her.
+   Zusätzlich wird persistenter Speicher angefordert (navigator.storage). */
+const DB_NAME = 'kaloriq.storage.v1';
+const DB_STORE = 'kv';
+
+let dbPromise = null;
+
+function openDb() {
+  if (typeof indexedDB === 'undefined') {
+    return Promise.reject(new Error('IndexedDB nicht verfügbar'));
+  }
+  if (!dbPromise) {
+    dbPromise = new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = () => {
+        if (!req.result.objectStoreNames.contains(DB_STORE)) {
+          req.result.createObjectStore(DB_STORE);
+        }
+      };
+      req.onsuccess = () => {
+        const db = req.result;
+        if (db.objectStoreNames.contains(DB_STORE)) {
+          resolve(db);
+          return;
+        }
+        // Eine ältere/leere Datenbank reparieren, statt dauerhaft ohne Store
+        // weiterzulaufen (z. B. nach einem abgebrochenen Erststart).
+        const nextVersion = db.version + 1;
+        db.close();
+        const repair = indexedDB.open(DB_NAME, nextVersion);
+        repair.onupgradeneeded = () => {
+          if (!repair.result.objectStoreNames.contains(DB_STORE)) {
+            repair.result.createObjectStore(DB_STORE);
+          }
+        };
+        repair.onsuccess = () => resolve(repair.result);
+        repair.onerror = () => reject(repair.error || new Error('IndexedDB nicht verfügbar'));
+        repair.onblocked = () => reject(new Error('IndexedDB blockiert'));
+      };
+      req.onerror = () => reject(req.error || new Error('IndexedDB nicht verfügbar'));
+      req.onblocked = () => reject(new Error('IndexedDB blockiert'));
+    }).catch((err) => {
+      dbPromise = null;
+      throw err;
+    });
+  }
+  return dbPromise;
+}
+
+async function idbGet(key) {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readonly');
+    const req = tx.objectStore(DB_STORE).get(key);
+    req.onsuccess = () => resolve(req.result ?? null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbPut(key, value) {
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).put(value, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error || new Error('IndexedDB abgebrochen'));
+  });
+}
+
+function mirror(key, value) {
+  if (typeof indexedDB === 'undefined' || value == null) return;
+  idbPut(key, value).catch(() => { /* Zweitkopie ist optional */ });
+}
+
+function safeGet(key) {
+  try { return localStorage.getItem(key); } catch { return null; }
+}
+
+function safeSet(key, value) {
+  try { localStorage.setItem(key, value); return true; } catch { return false; }
+}
+
+/** Fordert persistenten Speicher an; Safari unterstützt das ab iOS 15.2. */
+export async function requestPersistentStorage() {
+  try {
+    if (!navigator.storage?.persist) return false;
+    if (await navigator.storage.persisted?.()) return true;
+    return await navigator.storage.persist();
+  } catch {
+    return false;
+  }
+}
 
 export const MEALS = [
   { id: 'breakfast', label: 'Frühstück', icon: '☀️' },
@@ -158,36 +256,115 @@ function snapshot(force = false) {
   const now = Date.now();
   if (!force && now - lastBackupAt < BACKUP_GAP) return;
   try {
-    const raw = localStorage.getItem(BACKUP_KEY);
+    const raw = safeGet(BACKUP_KEY);
     const list = raw ? JSON.parse(raw) : [];
     const dayCount = Object.keys(state.days || {}).length;
     const next = [
       { at: now, dayCount, data: JSON.stringify(state) },
       ...(Array.isArray(list) ? list : []).filter((b) => b && b.data),
     ].slice(0, BACKUP_MAX);
-    localStorage.setItem(BACKUP_KEY, JSON.stringify(next));
+    const serialized = JSON.stringify(next);
+    safeSet(BACKUP_KEY, serialized);
     lastBackupAt = now;
-    localStorage.setItem(BACKUP_META, String(now));
+    safeSet(BACKUP_META, String(now));
+    mirror(BACKUP_KEY, serialized);
+    mirror(BACKUP_META, String(now));
   } catch (err) {
     console.warn('Auto-Sicherung fehlgeschlagen:', err);
   }
 }
 
 function persist() {
+  let raw;
   try {
-    localStorage.setItem(KEY, JSON.stringify(state));
-    snapshot();
-    return true;
+    raw = JSON.stringify(state);
   } catch (err) {
     console.warn('Speichern fehlgeschlagen:', err);
     return false;
   }
+
+  // localStorage ist die schnelle Hauptkopie; IndexedDB die Zweitkopie.
+  const localOk = safeSet(KEY, raw);
+  mirror(KEY, raw);
+  snapshot();
+  return localOk;
 }
 
 function emit(reason = 'update') {
   for (const fn of LISTENERS) {
     try { fn(state, reason); } catch (err) { console.error(err); }
   }
+}
+
+/**
+ * Stellt bei Bedarf die IndexedDB-Zweitkopie wieder her.
+ * localStorage bleibt Vorrang, solange es vorhanden und nicht älter ist –
+ * so überschreibt ein bewusstes Zurücksetzen nicht die alte Sicherung.
+ */
+export async function hydrateFromDurable() {
+  const localRaw = safeGet(KEY);
+  let local = null;
+  if (localRaw) {
+    try { local = migrate(JSON.parse(localRaw)); } catch { local = null; }
+  }
+
+  let durableRaw = null;
+  try { durableRaw = await idbGet(KEY); } catch { return false; }
+  let durable = null;
+  if (durableRaw) {
+    try { durable = migrate(JSON.parse(durableRaw)); } catch { durable = null; }
+  }
+
+  if (!durable) {
+    mirror(KEY, JSON.stringify(state));
+  } else {
+    const localTime = Number(local?.updatedAt) || 0;
+    const durableTime = Number(durable.updatedAt) || 0;
+    let restored = false;
+
+    if (!local || durableTime > localTime) {
+      state = durable;
+      safeSet(KEY, JSON.stringify(state));
+      restored = true;
+    } else {
+      // Lokaler Stand ist aktueller: Zweitkopie nachziehen.
+      mirror(KEY, JSON.stringify(state));
+    }
+
+    // Auch die automatischen Sicherungen aus der Zweitkopie zurückholen.
+    const localBackups = safeGet(BACKUP_KEY);
+    if (localBackups) {
+      mirror(BACKUP_KEY, localBackups);
+    } else {
+      try {
+        const backups = await idbGet(BACKUP_KEY);
+        if (backups) safeSet(BACKUP_KEY, backups);
+      } catch { /* ignorieren */ }
+    }
+
+    const localMeta = safeGet(BACKUP_META);
+    if (localMeta) {
+      mirror(BACKUP_META, localMeta);
+    } else {
+      try {
+        const meta = await idbGet(BACKUP_META);
+        if (meta) {
+          safeSet(BACKUP_META, meta);
+          lastBackupAt = Number(meta) || lastBackupAt;
+        }
+      } catch { /* ignorieren */ }
+    }
+
+    if (restored) emit('hydrate');
+    return restored;
+  }
+
+  // Noch keine Zweitkopie vorhanden: bestehende Sicherungen ebenfalls spiegeln.
+  const localBackups = safeGet(BACKUP_KEY);
+  if (localBackups) mirror(BACKUP_KEY, localBackups);
+  const localMeta = safeGet(BACKUP_META);
+  if (localMeta) mirror(BACKUP_META, localMeta);
+  return false;
 }
 
 export const store = {
@@ -207,6 +384,7 @@ export const store = {
   /** Zielwerte aus dem Profil neu berechnen. */
   recalc(profile = state.profile) {
     state.targets = computeTargets(profile);
+    state.updatedAt = Date.now();
     persist();
     return state.targets;
   },
@@ -220,6 +398,7 @@ export const store = {
   },
   saveSettings(patch) {
     state.settings = { ...state.settings, ...patch };
+    state.updatedAt = Date.now();
     persist();
     emit('settings');
     return state.settings;

@@ -1,7 +1,7 @@
 /* ============================================================
    Kaloriq – Bootstrap & Navigation
    ============================================================ */
-import { store } from './store.js';
+import { store, hydrateFromDurable, requestPersistentStorage } from './store.js';
 import { $, icon, setActiveTab, toast } from './ui.js';
 import { setLang, applyI18n, watchI18n } from './i18n.js';
 import { detectProxy } from './ai.js';
@@ -83,7 +83,14 @@ function scheduleRender() {
   });
 }
 
-function boot() {
+async function boot() {
+  // Zuerst die IndexedDB-Zweitkopie prüfen, den Start aber nicht blockieren.
+  const hydration = hydrateFromDurable().catch(() => false);
+  await Promise.race([
+    hydration,
+    new Promise((resolve) => setTimeout(resolve, 1200)),
+  ]);
+
   setLang(store.get().settings.lang || 'de');
   paintTabbar();
   watchI18n();
@@ -99,7 +106,14 @@ function boot() {
 
   $('#fab').addEventListener('click', () => openAiSheet());
 
-  store.subscribe(() => scheduleRender());
+  store.subscribe((state, reason) => {
+    if (reason === 'hydrate') {
+      setLang(state.settings.lang || 'de');
+      paintTabbar();
+    }
+    if (reason === 'onboarding') requestPersistentStorage();
+    scheduleRender();
+  });
   window.addEventListener('hashchange', () => {
     const next = location.hash.replace('#/', '');
     if (VIEWS[next] && next !== currentTab) {
@@ -111,6 +125,11 @@ function boot() {
   detectProxy();
   render();
   resumeSteps();
+
+  // Persistenten Speicher anfordern (iOS ab 15.2) und bei Bedarf nach dem
+  // ersten Tippen erneut versuchen, falls der Browser eine Geste verlangt.
+  requestPersistentStorage();
+  window.addEventListener('pointerdown', () => requestPersistentStorage(), { once: true, passive: true });
 
   // Android-Shortcut "KI-Tracking" (?action=ai)
   const params = new URLSearchParams(location.search);
@@ -150,4 +169,7 @@ function boot() {
   window.addEventListener('offline', () => toast('Offline – lokale Daten funktionieren weiter', 'err'));
 }
 
-boot();
+boot().catch((err) => {
+  console.error('Start fehlgeschlagen:', err);
+  render();
+});

@@ -61,7 +61,9 @@ adb install -r Kaloriq-<Version>.apk
 ## Daten und Updates
 
 - Die App speichert wie die PWA in `localStorage` des WebViews
-  (`kaloriq.state.v1`, `kaloriq.backups.v1`).
+  (`kaloriq.state.v1`, `kaloriq.backups.v1`) und hält zusätzlich eine
+  IndexedDB-Zweitkopie (`kaloriq.storage.v1`) für die automatische
+  Wiederherstellung.
 - **Update über die alte Version installieren** (gleiche `applicationId`,
   gleicher Signaturschlüssel) → **Daten bleiben erhalten**.
 - **Deinstallieren löscht die App-Daten.** Vorher: Profil → Daten exportieren

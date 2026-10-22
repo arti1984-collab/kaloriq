@@ -24,7 +24,7 @@ Service-Worker-Cache auseinander.
 
 ## 2. Daten nie löschen
 
-- Speicher: `localStorage`, Schlüssel `kaloriq.state.v1`
+- Speicher: `localStorage`, Schlüssel `kaloriq.state.v1`; zusätzlich IndexedDB-Zweitkopie in `kaloriq.storage.v1`
 - Migration nur ergänzend (`migrate()` in `public/js/store.js`)
 - Automatische Sicherungen (`kaloriq.backups.v1`) nicht abschalten
 - Vor destruktiven Aktionen `snapshot(true)` aufrufen

@@ -1,5 +1,5 @@
 /* Kaloriq Service Worker – App-Shell offline verfuegbar. */
-const VERSION = 'kaloriq-v19';
+const VERSION = 'kaloriq-v20';
 const SHELL = [
   '/',
   '/index.html',

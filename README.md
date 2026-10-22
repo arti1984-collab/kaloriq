@@ -6,7 +6,7 @@ Kalorien-, Makro- und Fasten-Tracker mit KI-Foto-Erkennung – als installierbar
 
 Eigenständige Implementierung der Funktionen bekannter Kalorien-Tracker. Keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.** Für den Barcode-Scanner wird ZXing (Apache-2.0) verwendet – nativ in der Android-APK und als lokal mitgelieferte JavaScript-Bibliothek in Safari/Firefox – siehe [Drittanbieter-Hinweise](THIRD_PARTY_NOTICES.md).
 
-**Aktuelle Version: 1.2.2** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.2) · [Changelog](CHANGELOG.md)
+**Aktuelle Version: 1.2.3** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.3) · [Changelog](CHANGELOG.md)
 
 ![Kaloriq – Tagebuch, Fortschritt, Fasten und Profil](docs/screenshots/uebersicht.png)
 
@@ -206,7 +206,7 @@ Wenn die App für alle kostenlos sein soll, ist die PWA der direkte Weg: kein Ap
 **Was auf dem iPhone anders ist:**
 
 - **Schritte:** kein nativer Hintergrund-Schrittzähler; der Bewegungssensor zählt nur, solange die App geöffnet ist.
-- **Speicher:** iOS kann Web-Speicher unter Speicherdruck aufräumen. Regelmäßige JSON-Exporte über **Profil → Daten exportieren** sind die sicherste Sicherung.
+- **Speicher:** Kaloriq fordert persistenten Speicher an und hält zusätzlich eine automatische Zweitkopie in IndexedDB. Ein JSON-Export über **Profil → Daten exportieren** bleibt als freiwillige Zusatzsicherung möglich.
 - **App Store:** Dort wäre die App für Nutzer ebenfalls kostenlos, aber für dich fallen **99 US-Dollar pro Jahr** plus Mac/Xcode an. Die PWA kostet weder dich noch die Nutzer etwas.
 
 ## KI einrichten (Google Gemini)
@@ -253,9 +253,10 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 1. **Version erhöhen:** Nach jeder Änderung an `public/` (Code, Styles, Texte,
    Manifest, Icons) steigt die Version – siehe [Versionierung](#versionierung).
-2. **Daten nie löschen:** `localStorage` (`kaloriq.state.v1`) bleibt erhalten.
-   `migrate()` ergänzt nur fehlende Felder; vor Import und Zurücksetzen wird
-   automatisch gesichert.
+2. **Daten nie löschen:** `localStorage` (`kaloriq.state.v1`) und die
+   IndexedDB-Zweitkopie (`kaloriq.storage.v1`) bleiben erhalten. `migrate()`
+   ergänzt nur fehlende Felder; vor Import und Zurücksetzen wird automatisch
+   gesichert.
 3. **Testen:** Desktop-Browser (Chrome/Edge/Safari) und Android – PWA im
    Browser **und** die installierte APK; den Barcode-Scanner zusätzlich in
    Safari bzw. auf dem iPhone. Neue JS-Dateien zusätzlich in die `SHELL`-Liste
@@ -270,6 +271,7 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 | Version | Schwerpunkt |
 |---|---|
+| **1.2.3** | Persistenter Speicher und IndexedDB-Zweitkopie gegen iOS-Speicherbereinigung |
 | **1.2.2** | Barcode-Scanner für Safari/Firefox (ZXing JS), Kamera-Aufräumen, iPhone-Doku |
 | **1.2.1** | Nativer Barcode-Scanner in der APK (ZXing), englische Scan-Beschriftung |
 | **1.1.9** | Schutz vor veralteten Sensorwerten; Release-APK |
@@ -300,15 +302,19 @@ vorhanden, werden auch `versionName`/`versionCode` der APK mitgesetzt.
 
 ## Updates & Datensicherung
 
-**Ein Update löscht keine Daten.** App-Daten liegen im Browser-Speicher
-(`localStorage`, Schlüssel `kaloriq.state.v1`); neue JS-Dateien überschreiben den
-nie. Beim Laden ergänzt `migrate()` in `public/js/store.js` nur fehlende Felder –
+**Ein Update löscht keine Daten.** App-Daten liegen im Browser-Speicher: `localStorage`
+(`kaloriq.state.v1`) als schnelle Hauptkopie und IndexedDB (`kaloriq.storage.v1`)
+als automatische Zweitkopie. Beim Start stellt die App die Zweitkopie wieder her,
+falls iOS `localStorage` unter Speicherdruck geräumt hat. Zusätzlich fordert sie
+persistenten Speicher an (`navigator.storage.persist()`), damit der Browser die
+Daten seltener aufräumt. Neue JS-Dateien überschreiben diese Kopien nie. Beim
+Laden ergänzt `migrate()` in `public/js/store.js` nur fehlende Felder –
 vorhandene Werte, Tage, Gewichte und der API-Key bleiben unverändert.
 
 Zusätzlich:
 
-- **Automatische Sicherungen:** alle 12 Stunden, maximal 3 Stände.
-  Zurückholen unter **Profil → Sicherungen**.
+- **Automatische Sicherungen:** alle 12 Stunden, maximal 3 Stände – gespiegelt
+  in IndexedDB. Zurückholen unter **Profil → Sicherungen**.
 - Vor **Daten importieren** und **Alles zurücksetzen** wird der aktuelle Stand
   automatisch gesichert – beides ist rückholbar.
 - **Manuelles Backup:** Profil → Daten exportieren (JSON).
@@ -357,7 +363,7 @@ public/
     zxing.LICENSE.txt   Apache-2.0-Lizenztext der ZXing-JS-Bibliothek
   js/
     app.js              Bootstrap, Router, Tabs, Install-Prompt
-    store.js            State + localStorage, Tage, Statistik
+    store.js            State + localStorage/IndexedDB, Tage, Statistik
     calc.js             BMR/TDEE/Ziele, Makros, Fasten-Pläne
     foods.js            Lokale DB (~130 Lebensmittel) + Open Food Facts
     i18n.js             Sprachumschaltung (Wörterbuch, Muster, DOM-Übersetzung)
@@ -374,7 +380,7 @@ scripts/tunnel.mjs      HTTPS-Tunnel für die Installation (npm run tunnel)
 
 - **Kein Build-Schritt, keine Frameworks** – ES-Module, die direkt im Browser laufen. Änderungen sind sofort sichtbar, die App bleibt über Jahre wartbar.
 - **Keine externen Laufzeit-Abhängigkeiten** – weder npm-Pakete noch CDNs. Die einzige externe Bibliothek (ZXing JS für den Safari-Scanner) liegt lokal unter `public/vendor/` und wird mitgeliefert; sie funktioniert auch, wenn Bibliotheken oder CDNs verschwinden. Die APK bindet ZXing zusätzlich nativ ein.
-- **Daten in `localStorage`** – ein JSON-Dokument, per Export/Import sicherbar.
+- **Daten in `localStorage` + IndexedDB** – ein JSON-Dokument als schnelle Hauptkopie, automatisch in IndexedDB gespiegelt und per Export/Import sicherbar. Persistenter Speicher schützt zusätzlich vor der Speicherbereinigung durch iOS.
 - **Bottom-Sheets mit History-Eintrag** – die Android-Zurück-Taste schließt zuerst das offene Sheet, statt die App zu verlassen.
 
 ---
