@@ -2,7 +2,7 @@
 
 Kalorien-, Makro- und Fasten-Tracker mit KI-Foto-Erkennung – als installierbare Web-App (PWA), optimiert für **Android** (läuft genauso auf dem iPhone).
 
-Eigenständige Implementierung der Funktionen bekannter Kalorien-Tracker. Kein fremder Code, keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.**
+Eigenständige Implementierung der Funktionen bekannter Kalorien-Tracker. Keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.** Für den nativen Barcode-Scanner der Android-APK wird ZXing (Apache-2.0) verwendet – siehe [Drittanbieter-Hinweise](THIRD_PARTY_NOTICES.md).
 
 **Aktuelle Version: 1.2.1** · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.1) · [Changelog](CHANGELOG.md)
 
@@ -311,6 +311,8 @@ Alles Richtwerte – **kein medizinisches Gerät**, keine Diagnose, keine Therap
 server.mjs              Zero-Dependency-Server + optionaler Gemini-Proxy
 CHANGELOG.md            Versionsverlauf und Entwicklungsregeln
 AGENTS.md               Arbeitsregeln für Änderungen an der App
+THIRD_PARTY_NOTICES.md  Drittanbieter-Hinweise (ZXing, Apache-2.0)
+LICENSES/               Apache-2.0-Lizenztext
 ANDROID.md              APK-Bau, Signatur, nativer Scanner und Schrittzähler
 DEPLOY.md               Feste Web-Adresse (Cloudflare Pages / Netlify)
 docs/screenshots/       Screenshots für README und GitHub
@@ -353,4 +355,4 @@ scripts/tunnel.mjs      HTTPS-Tunnel für die Installation (npm run tunnel)
 
 ## Rechtliches
 
-Nachbau der *Funktionen* gängiger Ernährungs-Apps zu Lernzwecken. Kein fremder Code, keine fremden Marken und keine fremde Gestaltung übernommen. „Kaloriq" ist ein eigener Name. Nährwertangaben sind Näherungswerte und ersetzen keine fachliche Beratung.
+Nachbau der *Funktionen* gängiger Ernährungs-Apps zu Lernzwecken. Der App-Code ist eigenständig; für den nativen Barcode-Scanner wird die Open-Source-Bibliothek ZXing verwendet (Apache-2.0, siehe [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)). Keine fremden Marken und keine fremde Gestaltung übernommen. „Kaloriq" ist ein eigener Name. Nährwertangaben sind Näherungswerte und ersetzen keine fachliche Beratung.

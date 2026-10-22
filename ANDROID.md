@@ -119,7 +119,9 @@ Inhalte ist `public/`.
 Das Android-WebView stellt `BarcodeDetector` nicht bereit. In der APK öffnet der
 Button **Scannen** deshalb eine native Scanner-Activity auf Basis von
 [ZXing Android Embedded](https://github.com/journeyapps/zxing-android-embedded)
-(offline, ohne Google Play-Dienste).
+(offline, ohne Google Play-Dienste). ZXing steht unter Apache-2.0; Hinweise
+und Lizenztext: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md),
+[`LICENSES/Apache-2.0.txt`](LICENSES/Apache-2.0.txt).
 
 | Datei | Aufgabe |
 | --- | --- |

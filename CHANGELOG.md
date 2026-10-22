@@ -64,6 +64,7 @@ Stunden, maximal drei Stände) und der JSON-Export.
 - Service-Worker-Cache auf `kaloriq-v18` erhöht; Android-`versionName` 1.2.1,
   `versionCode` 10201.
 - README, ANDROID.md und dieser Changelog beschreiben den nativen Scanner.
+- Drittanbieter-Hinweise für ZXing (Apache-2.0) ergänzt.
 
 ### Behoben
 
