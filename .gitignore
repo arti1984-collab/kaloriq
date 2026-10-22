@@ -2,6 +2,7 @@
 node_modules/
 android-app/node_modules/
 dist/
+dist-pages/
 android-app/www/
 android-app/android/build/
 android-app/android/app/build/

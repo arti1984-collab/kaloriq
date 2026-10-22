@@ -10,6 +10,7 @@
     "tunnel": "node scripts/tunnel.mjs",
     "icons": "node scripts/make-icons.mjs",
     "build:static": "node scripts/build-static.mjs",
+    "build:pages": "node scripts/build-pages.mjs",
     "apk": "node scripts/build-apk.mjs",
     "bump": "node scripts/bump-version.mjs"
   },
