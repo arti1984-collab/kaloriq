@@ -4,7 +4,7 @@ Alle nennenswerten Änderungen an **Kaloriq**. Die Versionen folgen
 [SemVer](https://semver.org/lang/de/): Patch für Fixes, Minor für neue
 Funktionen, Major für Brüche.
 
-> Die Stände **1.1.6 bis 1.2.4** entstanden am 22.10.2026. Ältere Versionen
+> Die Stände **1.1.6 bis 1.2.5** entstanden am 22.10.2026. Ältere Versionen
 > wurden nicht einzeln dokumentiert; ihre Funktionen sind unter
 > [Basisversion](#basisversion-vor-116) zusammengefasst.
 
@@ -44,6 +44,29 @@ falls `localStorage` fehlt, beschädigt oder älter ist. Vor Import und
 Zurücksetzen wird automatisch ein Snapshot angelegt; zusätzlich existieren
 automatische Sicherungen (alle 12 Stunden, maximal drei Stände, ebenfalls in
 IndexedDB gespiegelt) und der JSON-Export.
+
+---
+
+## [1.2.5] – 22.10.2026
+
+### Hinzugefügt
+
+- **TikTok-Link:** Im Profil unter **App** und auf der GitHub-Projektseite
+  verlinkt Kaloriq jetzt den Account
+  [@kaloriq](https://www.tiktok.com/@kaloriq).
+
+### Geändert
+
+- Service-Worker-Cache auf `kaloriq-v22` erhöht; Android-`versionName` 1.2.5,
+  `versionCode` 10205. `dist\` wurde neu gebaut.
+
+### Getestet
+
+- Profil-Link geprüft: öffnet `https://www.tiktok.com/@kaloriq` in einem neuen
+  Tab (`target="_blank"`, `rel="noopener noreferrer"`).
+- Signierte APK (`de.kaloriq.app`, `versionName 1.2.5`, `versionCode 10205`)
+  gebaut, Signatur und Version geprüft und als GitHub-Release `v1.2.5`
+  veröffentlicht.
 
 ---
 

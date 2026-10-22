@@ -36,6 +36,7 @@ const PATHS = {
   search: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
   barcode: '<path d="M4 6v12M7 6v12M10 6v8M13 6v12M16 6v8M19 6v12"/>',
   bowl: '<path d="M4 11h16a8 8 0 0 1-16 0z"/><path d="M8 8c0-1.7 1.3-3 3-3M13 8c0-1.7 1.3-3 3-3"/>',
+  tiktok: '<path d="M14 3.5v10.2"/><circle cx="10.7" cy="14" r="3.4"/><path d="M14 4c.6 2.4 2.2 4 4.6 4.3"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   left: '<path d="M14.5 5l-7 7 7 7"/>',
   right: '<path d="M9.5 5l7 7-7 7"/>',

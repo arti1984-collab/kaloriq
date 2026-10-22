@@ -104,6 +104,10 @@ export function renderProfile(root) {
         <span class="grow"><span class="t">Auf dem Handy installieren</span><span class="s">Als App mit eigenem Icon</span></span>
         <span class="pill">Android</span>
       </button>
+      <a class="row" href="https://www.tiktok.com/@kaloriq" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit">
+        <span class="grow"><span class="t">TikTok</span><span class="s">@kaloriq</span></span>
+        ${icon('tiktok', 'chev')}
+      </a>
       <button class="row" data-recipes>
         <span class="grow">
           <span class="t">Rezepte</span>

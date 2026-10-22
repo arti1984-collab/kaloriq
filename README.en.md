@@ -6,7 +6,9 @@ Calorie, macro and fasting tracker with AI photo recognition – as an installab
 
 An independent implementation of the features of well-known calorie trackers. No third-party brands or assets, no cloud: **all data stays on the device.** The barcode scanner uses ZXing (Apache-2.0) – natively in the Android APK and as a locally bundled JavaScript library in Safari/Firefox – see [third-party notices](THIRD_PARTY_NOTICES.md).
 
-**Current version: 1.2.4** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.4) · [Changelog](CHANGELOG.md)
+**Current version: 1.2.5** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.5) · [Changelog](CHANGELOG.md)
+
+Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
 ![Kaloriq – diary, progress, fasting and profile](docs/screenshots/uebersicht.png)
 
@@ -281,6 +283,7 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.2.5** | TikTok link in the profile and on the GitHub project page |
 | **1.2.4** | Local recipes with ingredients, nutrition, servings, diary logging and JSON exchange |
 | **1.2.3** | Persistent storage and IndexedDB second copy against iOS storage cleanup |
 | **1.2.2** | Barcode scanner for Safari/Firefox (ZXing JS), camera cleanup, iPhone docs |
