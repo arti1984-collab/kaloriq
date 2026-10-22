@@ -4,9 +4,9 @@
 
 Calorie, macro and fasting tracker with AI photo recognition – as an installable web app (PWA), optimized for **Android** (runs the same way on iPhone).
 
-An independent implementation of the features of well-known calorie trackers. No third-party brands or assets, no cloud: **all data stays on the device.** The native barcode scanner in the Android APK uses ZXing (Apache-2.0) – see [third-party notices](THIRD_PARTY_NOTICES.md).
+An independent implementation of the features of well-known calorie trackers. No third-party brands or assets, no cloud: **all data stays on the device.** The barcode scanner uses ZXing (Apache-2.0) – natively in the Android APK and as a locally bundled JavaScript library in Safari/Firefox – see [third-party notices](THIRD_PARTY_NOTICES.md).
 
-**Current version: 1.2.1** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.1) · [Changelog](CHANGELOG.md)
+**Current version: 1.2.2** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.2) · [Changelog](CHANGELOG.md)
 
 ![Kaloriq – diary, progress, fasting and profile](docs/screenshots/uebersicht.png)
 
@@ -36,7 +36,7 @@ as a 2×2 montage (`uebersicht.png`).
 | **Onboarding** | Sex, age, height, weight, target weight, activity level, goal (lose/maintain/gain), pace → calorie and macro plan (Mifflin-St Jeor + PAL) |
 | **Diary** | Breakfast / lunch / dinner / snacks, daily ring, macro bars, edit & delete entries, browse days, streak |
 | **Food search** | ~130 local foods (offline, reference values per 100 g) + Open Food Facts on request |
-| **Barcode** | Camera scan in the APK (native ZXing scanner) and in Chrome (`BarcodeDetector`), or type the number → Open Food Facts |
+| **Barcode** | Camera scan in the APK (native ZXing scanner), in Chrome (`BarcodeDetector`) and in Safari/Firefox (ZXing JS), or type the number → Open Food Facts |
 | **AI tracking** | Photo **or** text → Gemini estimates ingredients, grams, calories & macros. Every item editable, individual items can be deselected |
 | **Custom foods** | With nutrition values per 100 g + optional serving, stored permanently |
 | **Water** | Free input in **ml or liters**, quick values (+250 ml … +1 l), daily progress, goal based on weight |
@@ -56,8 +56,8 @@ as a 2×2 montage (`uebersicht.png`).
   entries, browse days forwards and backwards, daily note.
 - **Streak**: counts consecutive days with at least one entry.
 - Add foods via the local database (~130 foods, offline), Open Food Facts
-  search, **barcode** (camera scan in APK and Chrome, number can be typed
-  anywhere), custom foods and favorites.
+  search, **barcode** (camera scan in the APK, Chrome, Safari and Firefox;
+  the number can be typed anywhere), custom foods and favorites.
 - **AI photo or text**: Gemini estimates ingredients, grams, calories and
   macros; every item can be edited and deselected individually before saving.
   Without an API key, a clearly marked demo mode runs.
@@ -200,9 +200,10 @@ If the app should be free for everyone, the PWA is the direct route: no App Stor
 
 > **Why no native iOS app from GitHub?** Apple signs iOS apps. An IPA from a GitHub release cannot simply be tapped and installed – that would require a Mac, an Apple Developer account and sideloading or TestFlight. The PWA is the only route that works without an Apple account and without the App Store.
 
+**Barcode scanning:** Works directly in Safari, too. On the first scan, iOS asks for camera permission.
+
 **What is different on iPhone:**
 
-- **Barcode:** Safari does not support `BarcodeDetector` by default. Manual entry remains for now; a JS scanner (e.g. ZXing) can be added as a fallback.
 - **Steps:** no native background step counter; the motion sensor only counts while the app is open.
 - **Storage:** iOS may clear web storage under pressure. Regular JSON exports via **Profile → Export data** are the safest backup.
 - **App Store:** The app would also be free for users there, but you pay **$99 per year** plus a Mac with Xcode. The PWA costs neither you nor users anything.
@@ -266,6 +267,7 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.2.2** | Barcode scanner for Safari/Firefox (ZXing JS), camera cleanup, iPhone docs |
 | **1.2.1** | Native barcode scanner in the APK (ZXing), English scan label |
 | **1.1.9** | Protection against stale sensor values; release APK |
 | **1.1.8** | Import resets the native step counter reading |
@@ -347,6 +349,9 @@ public/
   manifest.webmanifest  PWA manifest (icons, shortcuts)
   sw.js                 Service worker (offline, network-first)
   css/app.css           Design system (light/dark, safe areas)
+  vendor/
+    zxing.min.js        ZXing JS for the barcode scanner in Safari/Firefox
+    zxing.LICENSE.txt   Apache-2.0 license text for the ZXing JS library
   js/
     app.js              Bootstrap, router, tabs, install prompt
     store.js            State + localStorage, days, statistics
@@ -365,7 +370,7 @@ scripts/tunnel.mjs      HTTPS tunnel for installation (npm run tunnel)
 ### Technical decisions
 
 - **No build step, no frameworks** – ES modules that run directly in the browser. Changes are immediately visible, and the app remains maintainable for years.
-- **No external dependencies in the app** – no npm packages or CDNs; it keeps working even if libraries disappear. Only the APK shell bundles ZXing for the native barcode scanner.
+- **No external runtime dependencies** – no npm packages or CDNs. The only third-party library (ZXing JS for the Safari scanner) is bundled locally under `public/vendor/` and keeps working even if libraries or CDNs disappear. The APK additionally bundles ZXing natively.
 - **Data in `localStorage`** – a single JSON document, backed up via export/import.
 - **Bottom sheets with a history entry** – the Android back button closes the open sheet first instead of leaving the app.
 
@@ -380,4 +385,4 @@ scripts/tunnel.mjs      HTTPS tunnel for installation (npm run tunnel)
 
 ## Legal
 
-Reimplementation of the *features* of common nutrition apps for learning purposes. The app code is original; the open-source library ZXing is used for the native barcode scanner (Apache-2.0, see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)). No third-party brands or designs were copied. "Kaloriq" is its own name. Nutrition values are approximations and are not a substitute for professional advice.
+Reimplementation of the *features* of common nutrition apps for learning purposes. The app code is original; the open-source library ZXing is used for the barcode scanner – natively in the APK and as a local JavaScript file in the PWA (Apache-2.0, see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)). No third-party brands or designs were copied. "Kaloriq" is its own name. Nutrition values are approximations and are not a substitute for professional advice.

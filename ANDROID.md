@@ -130,7 +130,7 @@ und Lizenztext: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md),
 | `.../MainActivity.java` | registriert die Brücke und leitet `onActivityResult` weiter |
 | `.../AndroidManifest.xml` | deklariert die Scanner-Activity (`exported=false`); `CAMERA` ist bereits für Fotos vorhanden |
 | `app/build.gradle` | `com.journeyapps:zxing-android-embedded:4.3.0` |
-| `public/js/views/add.js` | erkennt die Brücke, zeigt den Scan-Button, verarbeitet Ergebnis/Abbruch/Fehler; in der PWA weiterhin `BarcodeDetector` |
+| `public/js/views/add.js` | erkennt die Brücke, zeigt den Scan-Button, verarbeitet Ergebnis/Abbruch/Fehler; in der PWA `BarcodeDetector` oder ZXing JS |
 
 **Ablauf:** `scan()` öffnet die Kamera-Activity. Nach einem Treffer liefert
 ZXing den Code und das Format zurück; die Web-App trägt ihn ins Barcode-Feld ein
@@ -139,6 +139,12 @@ Die Kamera-Berechtigung fragt die Scanner-Activity beim ersten Scan ab.
 
 **Fehlercodes:** `open_failed`, `no_code`, `read_failed`. Die Web-App übersetzt
 sie und zeigt eine verständliche Meldung an.
+
+In der PWA läuft der Scan ohne native Brücke: Chrome und Edge verwenden
+`BarcodeDetector`, Safari und Firefox laden die lokal mitgelieferte
+ZXing-JS-Bibliothek (`public/vendor/zxing.min.js`). Die Kamera wird direkt im
+Scan-Button geöffnet; bei Abbruch oder Schließen des Sheets wird der Stream
+beendet.
 
 Beim Bauen nicht überschreiben: `MainActivity.java`, `BarcodeScannerBridge.java`,
 `BarcodeScanActivity.java` und `StepCounterBridge.java` liegen im nativen Projekt

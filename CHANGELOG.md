@@ -4,7 +4,7 @@ Alle nennenswerten Änderungen an **Kaloriq**. Die Versionen folgen
 [SemVer](https://semver.org/lang/de/): Patch für Fixes, Minor für neue
 Funktionen, Major für Brüche.
 
-> Die Stände **1.1.6 bis 1.2.1** entstanden am 22.10.2026. Ältere Versionen
+> Die Stände **1.1.6 bis 1.2.2** entstanden am 22.10.2026. Ältere Versionen
 > wurden nicht einzeln dokumentiert; ihre Funktionen sind unter
 > [Basisversion](#basisversion-vor-116) zusammengefasst.
 
@@ -40,6 +40,44 @@ demselben Quellstand gebaut. Jede Änderung durchläuft denselben Ablauf:
 Tage, Gewichte oder Einträge. Vor Import und Zurücksetzen wird automatisch ein
 Snapshot angelegt; zusätzlich existieren automatische Sicherungen (alle 12
 Stunden, maximal drei Stände) und der JSON-Export.
+
+---
+
+## [1.2.2] – 22.10.2026
+
+### Hinzugefügt
+
+- **Barcode-Scanner für Safari und Firefox:** In Browsern ohne
+  `BarcodeDetector` lädt Kaloriq beim ersten Scan die lokal mitgelieferte
+  ZXing-JS-Bibliothek. Der Button **Scannen** öffnet die Kamera direkt im
+  Bottom-Sheet; der erkannte EAN-/UPC-/Code-128-Code wird wie bisher an Open
+  Food Facts übergeben.
+- Chrome und Edge nutzen weiterhin den schnelleren nativen `BarcodeDetector`;
+  die Android-APK weiterhin die native ZXing-Bridge. Die manuelle Eingabe der
+  Nummer bleibt überall als Fallback verfügbar.
+- Deutsche und englische Meldungen für Scanner-Laden, verweigerte
+  Kamera-Berechtigung, fehlende Kamera und bereits verwendete Kamera.
+- Der Scanner wurde lokal mit einer simulierten Kameraquelle und einem gültigen
+  EAN-13 (`4008400403922`) bis zur Open-Food-Facts-Anzeige getestet.
+
+### Geändert
+
+- `@zxing/library` 0.21.3 als `public/vendor/zxing.min.js` mitgeliefert
+  (Apache-2.0). Lizenz und Hinweis liegen unter `public/vendor/`; der
+  Service-Worker-Cache enthält die Datei für den Offline-Start.
+- Der Kamera-Stream wird bei **Abbrechen**, Moduswechsel, manueller Suche und
+  Schließen des Sheets zuverlässig beendet.
+- Service-Worker-Cache auf `kaloriq-v19` erhöht; Android-`versionName` 1.2.2,
+  `versionCode` 10202.
+- README, README.en, INSTALL-IPHONE und ANDROID.md beschreiben den
+  Browser-Scanner. Die veralteten Hinweise zur fehlenden iPhone-Kamera und zur
+  ausschließlich manuellen Eingabe wurden entfernt.
+- Drittanbieter-Hinweise um ZXing JS ergänzt.
+
+### Veröffentlicht
+
+- GitHub Pages mit dem Safari-Scanner und signierte `Kaloriq-1.2.2.apk` als
+  GitHub-Release `v1.2.2`.
 
 ---
 

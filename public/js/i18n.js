@@ -198,6 +198,15 @@ const EN = {
   'Scanner konnte nicht geöffnet werden.': 'Could not open the scanner.',
   'Scan fehlgeschlagen. Bitte erneut versuchen.': 'Scan failed. Please try again.',
   'Scan-Ergebnis konnte nicht gelesen werden.': 'Could not read the scan result.',
+  'Scanner wird geladen …': 'Loading scanner …',
+  'Scanner konnte nicht geladen werden. Bitte Nummer eingeben.': 'Could not load the scanner. Please enter the number.',
+  'Kamerazugriff wurde abgelehnt. Bitte in den Einstellungen erlauben oder Nummer eingeben.':
+    'Camera access was denied. Allow it in Settings or enter the number.',
+  'Keine Kamera gefunden. Bitte Nummer eingeben.': 'No camera found. Please enter the number.',
+  'Die Kamera wird bereits verwendet. Bitte Nummer eingeben.': 'The camera is already in use. Please enter the number.',
+  'Kamera nicht verfügbar. Bitte Nummer eingeben.': 'Camera not available. Please enter the number.',
+  'Barcode in den Rahmen halten…': 'Hold the barcode inside the frame…',
+  'Code erkannt:': 'Code detected:',
   'Kamera-Scan wird von diesem Browser nicht unterstützt – Nummer steht auf der Verpackung.':
     'Camera scanning is not supported in this browser – enter the number from the package.',
   'z. B. 4008400403928': 'e.g. 4008400403928',

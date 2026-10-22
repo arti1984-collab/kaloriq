@@ -1,5 +1,5 @@
 /* Kaloriq Service Worker – App-Shell offline verfuegbar. */
-const VERSION = 'kaloriq-v18';
+const VERSION = 'kaloriq-v19';
 const SHELL = [
   '/',
   '/index.html',
@@ -19,6 +19,7 @@ const SHELL = [
   '/js/views/progress.js',
   '/js/views/fasting.js',
   '/js/views/profile.js',
+  '/vendor/zxing.min.js',
   '/manifest.webmanifest',
   '/icons/icon-180.png',
   '/icons/icon-192.png',

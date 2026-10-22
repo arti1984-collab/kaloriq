@@ -1,0 +1,7 @@
+ZXing JS (@zxing/library 0.21.3)
+https://github.com/zxing-js/library
+
+Copyright (c) ZXing authors and contributors
+
+Licensed under the Apache License, Version 2.0.
+See zxing.LICENSE.txt in this directory for the full license text.

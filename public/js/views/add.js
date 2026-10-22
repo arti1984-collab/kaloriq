@@ -67,6 +67,57 @@ function scanWithNative() {
   });
 }
 
+/* ---------------- Browser-Scanner (Safari/Firefox ohne BarcodeDetector) ---------------- */
+
+const ZXING_URL = new URL('../../vendor/zxing.min.js', import.meta.url).href;
+let zxingLoading = null;
+
+/** Lädt ZXing erst beim ersten Scan und nur einmal. */
+function loadZXing() {
+  if (typeof window !== 'undefined' && window.ZXing) return Promise.resolve(window.ZXing);
+  if (zxingLoading) return zxingLoading;
+
+  zxingLoading = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    const fail = () => {
+      script.remove();
+      const err = new Error('ZXing konnte nicht geladen werden.');
+      err.name = 'ZXingLoadError';
+      reject(err);
+    };
+    script.src = ZXING_URL;
+    script.async = true;
+    script.onload = () => {
+      script.remove();
+      if (window.ZXing) resolve(window.ZXing);
+      else fail();
+    };
+    script.onerror = fail;
+    document.head.appendChild(script);
+  }).catch((err) => {
+    zxingLoading = null;
+    throw err;
+  });
+
+  return zxingLoading;
+}
+
+function cameraErrorMessage(err) {
+  if (err?.name === 'ZXingLoadError') {
+    return tr('Scanner konnte nicht geladen werden. Bitte Nummer eingeben.');
+  }
+  if (err?.name === 'NotAllowedError' || err?.name === 'SecurityError') {
+    return tr('Kamerazugriff wurde abgelehnt. Bitte in den Einstellungen erlauben oder Nummer eingeben.');
+  }
+  if (err?.name === 'NotFoundError' || err?.name === 'DevicesNotFoundError' || err?.name === 'OverconstrainedError') {
+    return tr('Keine Kamera gefunden. Bitte Nummer eingeben.');
+  }
+  if (err?.name === 'NotReadableError' || err?.name === 'TrackStartError') {
+    return tr('Die Kamera wird bereits verwendet. Bitte Nummer eingeben.');
+  }
+  return tr('Kamera nicht verfügbar. Bitte Nummer eingeben.');
+}
+
 // Open Food Facts erlaubt nur wenige Suchanfragen pro Minute → Ergebnisse cachen.
 const remoteCache = new Map();
 let remoteCooldownUntil = 0;
@@ -76,6 +127,13 @@ let remoteCooldownUntil = 0;
    ============================================================ */
 export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) {
   const state = { dateKey, meal, mode: 'search' };
+  let stopActiveScan = null;
+
+  const stopActiveScanIfAny = () => {
+    const stop = stopActiveScan;
+    stopActiveScan = null;
+    try { stop?.(); } catch { /* Scanner war bereits beendet */ }
+  };
 
   const body = document.createElement('div');
   body.innerHTML = `
@@ -91,12 +149,14 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
     subtitle: mealLabel(state.meal),
     body,
     tall: true,
+    onClose: stopActiveScanIfAny,
   });
 
   const panel = body.querySelector('[data-panel]');
   const segs = Array.from(body.querySelectorAll('[data-mode]'));
 
   const setMode = (mode) => {
+    if (mode !== 'barcode') stopActiveScanIfAny();
     state.mode = mode;
     segs.forEach((b) => b.setAttribute('aria-selected', String(b.dataset.mode === mode)));
     if (mode === 'search') renderSearch();
@@ -318,7 +378,8 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
   /* ---------- Barcode ---------- */
   function renderBarcode() {
     const native = hasNativeScanner();
-    const supported = native || 'BarcodeDetector' in window;
+    const canUseCamera = typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
+    const supported = native || canUseCamera;
     panel.innerHTML = `
       <div class="card" style="padding:16px">
         <div class="field" style="margin-bottom:10px">
@@ -337,8 +398,10 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
     const input = panel.querySelector('#barcode');
 
     const doLookup = async (code) => {
+      stopActiveScanIfAny();
       const value = String(code || input.value).trim();
       if (!value) return;
+      if (code) input.value = value;
       out.innerHTML = `<div class="skeleton"></div>`;
       try {
         const food = await lookupBarcode(value);
@@ -354,7 +417,8 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
 
     const scanBtn = panel.querySelector('[data-scan]');
     scanBtn?.addEventListener('click', async () => {
-      // In der PWA bleibt der bisherige Kamera-Scan über BarcodeDetector.
+      if (stopActiveScan) return;
+      // In der PWA: BarcodeDetector wo vorhanden, sonst ZXing (Safari/Firefox).
       if (!native) {
         startScanner(out, doLookup);
         return;
@@ -387,52 +451,102 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
   async function startScanner(out, onCode) {
     out.innerHTML = `
       <div class="card" style="padding:10px;position:relative;overflow:hidden">
-        <video id="scan-video" playsinline muted style="width:100%;border-radius:14px;background:#000;aspect-ratio:4/3;object-fit:cover"></video>
+        <video id="scan-video" playsinline muted autoplay style="width:100%;border-radius:14px;background:#000;aspect-ratio:4/3;object-fit:cover"></video>
         <div style="position:absolute;inset:10px;border-radius:14px;pointer-events:none;border:2px solid rgba(255,255,255,.55)"></div>
         <button class="btn btn-sm btn-block" data-stop style="margin-top:8px">Abbrechen</button>
       </div>
-      <p class="tiny muted center" style="margin-top:8px">Barcode in den Rahmen halten…</p>`;
+      <p class="tiny muted center" data-scan-hint style="margin-top:8px">${esc(tr('Scanner wird geladen …'))}</p>`;
 
     const video = out.querySelector('#scan-video');
+    const hint = out.querySelector('[data-scan-hint]');
     let stream = null;
+    let reader = null;
     let raf = 0;
     let stopped = false;
-    const stop = () => {
+
+    const stop = (clear = true) => {
       stopped = true;
       cancelAnimationFrame(raf);
-      stream?.getTracks().forEach((t) => t.stop());
-      out.innerHTML = '';
+      try { stream?.getTracks().forEach((t) => t.stop()); } catch { /* egal */ }
+      try { reader?.reset(); } catch { /* egal */ }
+      reader = null;
+      if (stopActiveScan === stop) stopActiveScan = null;
+      if (clear && out.isConnected) out.innerHTML = '';
     };
-    out.querySelector('[data-stop]').addEventListener('click', stop);
+    stopActiveScan = () => stop(true);
+    out.querySelector('[data-stop]').addEventListener('click', () => stop(true));
 
     try {
+      if (!navigator.mediaDevices?.getUserMedia) throw new Error('camera_not_supported');
+
       stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
       });
+      if (stopped) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
       video.srcObject = stream;
       await video.play();
+      if (stopped) return;
+      if (hint) hint.textContent = tr('Barcode in den Rahmen halten…');
 
-      const detector = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'] });
-      const tick = async () => {
-        if (stopped) return;
+      let detector = null;
+      if (typeof window.BarcodeDetector === 'function') {
         try {
-          const codes = await detector.detect(video);
-          if (codes?.length) {
-            const raw = codes[0].rawValue;
-            haptic(30);
-            stopped = true;
-            stream.getTracks().forEach((t) => t.stop());
-            out.innerHTML = `<div class="pill">Code erkannt: ${esc(raw)}</div>`;
-            onCode(raw);
-            return;
-          }
-        } catch { /* Frame überspringen */ }
-        raf = requestAnimationFrame(tick);
-      };
-      tick();
+          detector = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'] });
+        } catch { detector = null; }
+      }
+
+      if (detector) {
+        const tick = async () => {
+          if (stopped) return;
+          try {
+            const codes = await detector.detect(video);
+            if (codes?.length) {
+              const raw = String(codes[0].rawValue || '').trim();
+              if (!raw) return;
+              haptic(30);
+              stop(false);
+              out.innerHTML = `<div class="pill">${esc(tr('Code erkannt:'))} ${esc(raw)}</div>`;
+              onCode(raw);
+              return;
+            }
+          } catch { /* Frame überspringen */ }
+          if (!stopped) raf = requestAnimationFrame(tick);
+        };
+        tick();
+        return;
+      }
+
+      const ZXing = await loadZXing();
+      if (stopped) return;
+      const hints = new Map();
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+        ZXing.BarcodeFormat.EAN_13,
+        ZXing.BarcodeFormat.EAN_8,
+        ZXing.BarcodeFormat.UPC_A,
+        ZXing.BarcodeFormat.UPC_E,
+        ZXing.BarcodeFormat.CODE_128,
+        ZXing.BarcodeFormat.CODE_39,
+        ZXing.BarcodeFormat.ITF,
+      ]);
+      reader = new ZXing.BrowserMultiFormatReader(hints, 200);
+      reader.decodeContinuously(video, (result) => {
+        if (stopped || !result) return;
+        const raw = String(result.getText?.() || '').trim();
+        if (!raw) return;
+        haptic(30);
+        stop(false);
+        out.innerHTML = `<div class="pill">${esc(tr('Code erkannt:'))} ${esc(raw)}</div>`;
+        onCode(raw);
+      });
     } catch (err) {
-      out.innerHTML = `<div class="ai-note">Kamera nicht verfügbar: ${esc(err.message)}. Bitte Nummer eingeben.</div>`;
+      if (!stopped) {
+        stop(false);
+        out.innerHTML = `<div class="ai-note">${esc(cameraErrorMessage(err))}</div>`;
+      }
     }
   }
 
