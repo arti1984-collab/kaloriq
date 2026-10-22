@@ -352,7 +352,6 @@ scripts/tunnel.mjs      HTTPS-Tunnel für die Installation (npm run tunnel)
 
 - **Open Food Facts limitiert** Suchanfragen pro Minute. Deshalb: lokale DB zuerst, Online-Suche gedrosselt, Ergebnisse gecacht, 30-Sekunden-Pause nach einem Limit-Fehler.
 - **Kein Account, keine Synchronisierung** zwischen Geräten (bewusst). Sync ließe sich später über einen kleinen Server oder Supabase ergänzen.
-- **Barcode-Scan:** In der APK öffnet sich der native Scanner (ZXing, offline, ohne Google Play-Dienste); in Chrome nutzt die PWA den `BarcodeDetector`. In beiden Fällen bleibt die manuelle Eingabe der Nummer möglich.
 - **Schrittzähler:** In der APK liest ein natives Plugin den Hardware-Schrittzähler (`TYPE_STEP_COUNTER`). Der Sensor zählt kumulativ seit dem Geräteneustart weiter, auch wenn die App geschlossen ist – beim nächsten Öffnen wird die Differenz nachgetragen. Nach einem Tageswechsel ohne App-Kontakt werden die Schritte dem Tag des Öffnens zugerechnet; nach mehr als 20 Stunden Pause wird der Stand neu gesetzt, statt willkürlich zu verteilen. Im Browser (PWA) bleibt es beim Bewegungssensor und Zählen nur bei geöffneter App. Schritte lassen sich außerdem jederzeit manuell korrigieren.
 - **Rezeptdatenbank, Fitnessarmband-Anbindung und Community** sind nicht enthalten.
 
