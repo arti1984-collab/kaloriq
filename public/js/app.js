@@ -11,6 +11,7 @@ import { renderDiary } from './views/diary.js';
 import { renderProgress } from './views/progress.js';
 import { renderFasting } from './views/fasting.js';
 import { renderProfile } from './views/profile.js';
+import { renderRecipes } from './views/recipes.js';
 import { openAiSheet } from './views/add.js';
 
 const TABS = [
@@ -25,6 +26,7 @@ const VIEWS = {
   progress: renderProgress,
   fasting: renderFasting,
   profile: renderProfile,
+  recipes: renderRecipes,
 };
 
 let currentTab = 'diary';

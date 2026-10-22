@@ -574,6 +574,47 @@ input[type="range"]::-moz-range-thumb {
 .row.static { cursor: default; }
 .row.static:active { background: none; }
 
+/* ---------- Recipes ---------- */
+
+.recipe-ing {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-2);
+}
+.recipe-ing .input {
+  min-height: 42px;
+  padding: 9px 11px;
+  font-size: 14.5px;
+}
+.recipe-ing .icon-btn {
+  width: 42px;
+  height: 42px;
+}
+.recipe-ing-macros {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.recipe-ing-macros label {
+  display: grid;
+  gap: 3px;
+  font-size: 10.5px;
+  font-weight: 650;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.recipe-ing-macros .input {
+  min-height: 38px;
+  padding: 6px 8px;
+  font-size: 13.5px;
+  text-align: right;
+  border-radius: 10px;
+}
+
 /* ---------- Tabbar ---------- */
 
 .tabbar {

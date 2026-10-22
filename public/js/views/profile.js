@@ -104,6 +104,13 @@ export function renderProfile(root) {
         <span class="grow"><span class="t">Auf dem Handy installieren</span><span class="s">Als App mit eigenem Icon</span></span>
         <span class="pill">Android</span>
       </button>
+      <button class="row" data-recipes>
+        <span class="grow">
+          <span class="t">Rezepte</span>
+          <span class="s">${state.recipes?.length ? `${state.recipes.length} lokal gespeichert` : 'Noch keine Rezepte'}</span>
+        </span>
+        ${icon('bowl', 'chev')}
+      </button>
       <button class="row" data-export>
         <span class="grow"><span class="t">Daten exportieren</span><span class="s">JSON-Backup</span></span>
         ${icon('download', 'chev')}
@@ -134,6 +141,9 @@ export function renderProfile(root) {
   root.querySelector('[data-stepgoal]').addEventListener('click', () => openStepGoalSheet(root));
   root.querySelector('[data-ai]').addEventListener('click', () => openAiSettings(root));
   root.querySelector('[data-aitest]').addEventListener('click', (e) => testAi(e.currentTarget));
+  root.querySelector('[data-recipes]').addEventListener('click', () => {
+    location.hash = '#/recipes';
+  });
   root.querySelector('[data-export]').addEventListener('click', () => {
     downloadFile(`kaloriq-backup-${todayKey()}.json`, exportJson());
     toast('Backup gespeichert');

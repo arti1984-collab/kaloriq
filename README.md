@@ -6,7 +6,7 @@ Kalorien-, Makro- und Fasten-Tracker mit KI-Foto-Erkennung – als installierbar
 
 Eigenständige Implementierung der Funktionen bekannter Kalorien-Tracker. Keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.** Für den Barcode-Scanner wird ZXing (Apache-2.0) verwendet – nativ in der Android-APK und als lokal mitgelieferte JavaScript-Bibliothek in Safari/Firefox – siehe [Drittanbieter-Hinweise](THIRD_PARTY_NOTICES.md).
 
-**Aktuelle Version: 1.2.3** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.3) · [Changelog](CHANGELOG.md)
+**Aktuelle Version: 1.2.4** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases) · [Changelog](CHANGELOG.md)
 
 ![Kaloriq – Tagebuch, Fortschritt, Fasten und Profil](docs/screenshots/uebersicht.png)
 
@@ -39,6 +39,7 @@ als 2×2-Montage (`uebersicht.png`).
 | **Barcode** | Kamera-Scan in der APK (nativer ZXing-Scanner), in Chrome (`BarcodeDetector`) und in Safari/Firefox (ZXing JS) oder Nummer eintippen → Open Food Facts |
 | **KI-Tracking** | Foto **oder** Text → Gemini schätzt Bestandteile, Gramm, Kalorien & Makros. Jede Position editierbar, einzelne Positionen abwählbar |
 | **Eigene Lebensmittel** | Mit Nährwerten pro 100 g + optionaler Portion, dauerhaft gespeichert |
+| **Rezepte** | Eigene Rezepte mit Zutaten und Nährwerten pro 100 g, Portionen, Tags und Zubereitung; Portion ins Tagebuch, JSON-Import/-Export |
 | **Wasser** | Freie Eingabe in **ml oder Litern**, Schnellwerte (+250 ml … +1 l), Tagesfortschritt, Ziel aus Gewicht |
 | **Schritte** | Schrittzähler über den Gerätesensor (APK: zählt auch bei geschlossener App nach), Tagesziel, manuelle Korrektur, Speicherung pro Tag |
 | **Gewicht** | Eingabe, Verlaufskurve, Zielgewicht, BMI, Prognose bis zum Ziel |
@@ -62,6 +63,17 @@ als 2×2-Montage (`uebersicht.png`).
 - **KI-Foto oder -Text**: Gemini schätzt Bestandteile, Gramm, Kalorien und
   Makros; jede Position ist vor dem Speichern editierbar und einzeln
   abwählbar. Ohne API-Key läuft ein klar markierter Demo-Modus.
+
+### Rezepte
+
+- Eigene Rezepte anlegen, bearbeiten und löschen. Zutaten aus der lokalen
+  Datenbank übernehmen oder Nährwerte manuell pro 100 g eintragen; Portionen,
+  Tags und Zubereitung ergänzen.
+- Kalorien und Makros werden pro Portion und pro 100 g berechnet. Eine Portion
+  lässt sich direkt als **ein** Eintrag ins Tagebuch übernehmen.
+- Rezepte bleiben lokal und werden mit den automatischen Sicherungen
+  gespeichert. Export und Import als `kaloriq-recipes`-JSON zum Sichern oder
+  Teilen; eine Community-Datenbank oder Cloud-Synchronisierung gibt es nicht.
 
 ### Wasser
 
@@ -272,6 +284,7 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 | Version | Schwerpunkt |
 |---|---|
+| **1.2.4** | Lokale Rezepte mit Zutaten, Nährwerten, Portionen, Tagebuch-Übernahme und JSON-Austausch |
 | **1.2.3** | Persistenter Speicher und IndexedDB-Zweitkopie gegen iOS-Speicherbereinigung |
 | **1.2.2** | Barcode-Scanner für Safari/Firefox (ZXing JS), Kamera-Aufräumen, iPhone-Doku |
 | **1.2.1** | Nativer Barcode-Scanner in der APK (ZXing), englische Scan-Beschriftung |
@@ -367,10 +380,11 @@ public/
     store.js            State + localStorage/IndexedDB, Tage, Statistik
     calc.js             BMR/TDEE/Ziele, Makros, Fasten-Pläne
     foods.js            Lokale DB (~130 Lebensmittel) + Open Food Facts
+    recipes.js          Rezeptmodell, Nährwertberechnung, JSON-Import/-Export
     i18n.js             Sprachumschaltung (Wörterbuch, Muster, DOM-Übersetzung)
     ai.js               Gemini-Aufrufe, Bildverkleinerung, Demo-Modus
     ui.js               Sheets (mit Zurück-Taste), Toasts, Charts, Icons
-    views/              onboarding · diary · add (Suche/Barcode/KI) · progress · fasting · profile
+    views/              onboarding · diary · add (Suche/Barcode/KI) · recipes · progress · fasting · profile
 android-app/            Capacitor-Projekt für die APK (siehe ANDROID.md)
 scripts/build-apk.mjs   APK bauen (npm run apk)
 scripts/make-icons.mjs  Erzeugt die PNG-Icons (npm run icons)
@@ -391,7 +405,7 @@ scripts/tunnel.mjs      HTTPS-Tunnel für die Installation (npm run tunnel)
 - **Open Food Facts limitiert** Suchanfragen pro Minute. Deshalb: lokale DB zuerst, Online-Suche gedrosselt, Ergebnisse gecacht, 30-Sekunden-Pause nach einem Limit-Fehler.
 - **Kein Account, keine Synchronisierung** zwischen Geräten (bewusst). Sync ließe sich später über einen kleinen Server oder Supabase ergänzen.
 - **Schrittzähler:** In der APK liest ein natives Plugin den Hardware-Schrittzähler (`TYPE_STEP_COUNTER`). Der Sensor zählt kumulativ seit dem Geräteneustart weiter, auch wenn die App geschlossen ist – beim nächsten Öffnen wird die Differenz nachgetragen. Nach einem Tageswechsel ohne App-Kontakt werden die Schritte dem Tag des Öffnens zugerechnet; nach mehr als 20 Stunden Pause wird der Stand neu gesetzt, statt willkürlich zu verteilen. Im Browser (PWA) bleibt es beim Bewegungssensor und Zählen nur bei geöffneter App; Safari hat keinen HealthKit-Zugriff und pausiert Web-Apps im Hintergrund. Ein echter Hintergrund-Schrittzähler auf dem iPhone würde eine native App mit HealthKit voraussetzen. Schritte lassen sich außerdem jederzeit manuell korrigieren.
-- **Rezeptdatenbank, Fitnessarmband-Anbindung und Community** sind nicht enthalten.
+- **Community-Rezeptdatenbank, Fitnessarmband-Anbindung und Cloud-Sync** sind nicht enthalten. Eigene Rezepte bleiben lokal und lassen sich als JSON teilen.
 
 ## Rechtliches
 

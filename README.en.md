@@ -6,7 +6,7 @@ Calorie, macro and fasting tracker with AI photo recognition – as an installab
 
 An independent implementation of the features of well-known calorie trackers. No third-party brands or assets, no cloud: **all data stays on the device.** The barcode scanner uses ZXing (Apache-2.0) – natively in the Android APK and as a locally bundled JavaScript library in Safari/Firefox – see [third-party notices](THIRD_PARTY_NOTICES.md).
 
-**Current version: 1.2.3** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.3) · [Changelog](CHANGELOG.md)
+**Current version: 1.2.4** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases) · [Changelog](CHANGELOG.md)
 
 ![Kaloriq – diary, progress, fasting and profile](docs/screenshots/uebersicht.png)
 
@@ -39,6 +39,7 @@ as a 2×2 montage (`uebersicht.png`).
 | **Barcode** | Camera scan in the APK (native ZXing scanner), in Chrome (`BarcodeDetector`) and in Safari/Firefox (ZXing JS), or type the number → Open Food Facts |
 | **AI tracking** | Photo **or** text → Gemini estimates ingredients, grams, calories & macros. Every item editable, individual items can be deselected |
 | **Custom foods** | With nutrition values per 100 g + optional serving, stored permanently |
+| **Recipes** | Your own recipes with ingredients and nutrition per 100 g, servings, tags and preparation; add a serving to the diary, JSON import/export |
 | **Water** | Free input in **ml or liters**, quick values (+250 ml … +1 l), daily progress, goal based on weight |
 | **Steps** | Step counter via the device sensor (APK: also counts while the app is closed), daily goal, manual correction, stored per day |
 | **Weight** | Input, history chart, target weight, BMI, forecast to goal |
@@ -61,6 +62,17 @@ as a 2×2 montage (`uebersicht.png`).
 - **AI photo or text**: Gemini estimates ingredients, grams, calories and
   macros; every item can be edited and deselected individually before saving.
   Without an API key, a clearly marked demo mode runs.
+
+### Recipes
+
+- Create, edit and delete your own recipes. Pick ingredients from the local
+  database or enter nutrition per 100 g manually; add servings, tags and
+  preparation steps.
+- Calories and macros are calculated per serving and per 100 g. A serving can
+  be added to the diary as **one** entry.
+- Recipes stay local and are included in the automatic backups. Export and
+  import as `kaloriq-recipes` JSON for backup or sharing; there is no community
+  database or cloud sync.
 
 ### Water
 
@@ -269,6 +281,7 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.2.4** | Local recipes with ingredients, nutrition, servings, diary logging and JSON exchange |
 | **1.2.3** | Persistent storage and IndexedDB second copy against iOS storage cleanup |
 | **1.2.2** | Barcode scanner for Safari/Firefox (ZXing JS), camera cleanup, iPhone docs |
 | **1.2.1** | Native barcode scanner in the APK (ZXing), English scan label |
@@ -364,10 +377,11 @@ public/
     store.js            State + localStorage/IndexedDB, days, statistics
     calc.js             BMR/TDEE/goals, macros, fasting plans
     foods.js            Local DB (~130 foods) + Open Food Facts
+    recipes.js          Recipe model, nutrition math, JSON import/export
     i18n.js             Language switching (dictionary, patterns, DOM translation)
     ai.js               Gemini calls, image resizing, demo mode
     ui.js               Sheets (with back button), toasts, charts, icons
-    views/              onboarding · diary · add (search/barcode/AI) · progress · fasting · profile
+    views/              onboarding · diary · add (search/barcode/AI) · recipes · progress · fasting · profile
 android-app/            Capacitor project for the APK (see ANDROID.md)
 scripts/build-apk.mjs   Build the APK (npm run apk)
 scripts/make-icons.mjs  Generate the PNG icons (npm run icons)
@@ -388,7 +402,7 @@ scripts/tunnel.mjs      HTTPS tunnel for installation (npm run tunnel)
 - **Open Food Facts rate-limits** search requests per minute. Therefore: local DB first, online search throttled, results cached, 30-second pause after a rate-limit error.
 - **No account, no synchronization** between devices (by design). Sync could later be added via a small server or Supabase.
 - **Step counter:** In the APK, a native plugin reads the hardware step counter (`TYPE_STEP_COUNTER`). The sensor counts cumulatively since the device restart, even when the app is closed – the difference is added the next time you open it. After a day change without app contact, the steps are credited to the day the app is opened; after more than 20 hours without contact, the reading is reset instead of being distributed arbitrarily. In the browser (PWA), the motion sensor remains and only counts while the app is open; Safari has no HealthKit access and pauses web apps in the background. A true background step counter on iPhone would require a native app with HealthKit. Steps can also be corrected manually at any time.
-- **Recipe database, fitness tracker integration and community** are not included.
+- **Community recipe database, fitness tracker integration and cloud sync** are not included. Your own recipes stay local and can be shared as JSON.
 
 ## Legal
 

@@ -185,6 +185,7 @@ function defaultState() {
     days: {},
     customFoods: [],
     favorites: [],
+    recipes: [],
     settings: {
       apiKey: '',
       model: 'gemini-3.8-flash',
@@ -218,6 +219,7 @@ function migrate(raw) {
     days: raw.days && typeof raw.days === 'object' ? raw.days : {},
     customFoods: Array.isArray(raw.customFoods) ? raw.customFoods : [],
     favorites: Array.isArray(raw.favorites) ? raw.favorites : [],
+    recipes: Array.isArray(raw.recipes) ? raw.recipes : [],
   };
   for (const [k, v] of Object.entries(state.days)) {
     state.days[k] = { ...emptyDay(k), ...(v || {}) };
@@ -497,6 +499,7 @@ export function addEntries(dateK, meal, items) {
         source: item.source || 'manual',
         emoji: item.emoji || '',
         photo: item.photo || '',
+        recipeId: item.recipeId || '',
         createdAt: Date.now(),
       };
       day.entries.push(entry);

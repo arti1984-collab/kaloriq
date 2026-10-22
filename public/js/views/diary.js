@@ -59,6 +59,7 @@ export function renderDiary(root) {
         <h1>Tagebuch</h1>
         <div class="sub">${streak() > 0 ? `🔥 ${streak()} ${streak() === 1 ? 'Tag' : 'Tage'} Serie · ` : ''}${fmt(target.kcal)} kcal Ziel</div>
       </div>
+      <button class="icon-btn" data-recipes aria-label="Rezepte">${icon('bowl')}</button>
       <button class="icon-btn" data-today aria-label="Zu heute springen">${icon('refresh')}</button>
     </header>
 
@@ -157,6 +158,9 @@ export function renderDiary(root) {
   `;
 
   // Navigation
+  root.querySelector('[data-recipes]')?.addEventListener('click', () => {
+    location.hash = '#/recipes';
+  });
   root.querySelectorAll('[data-today]').forEach((btn) => btn.addEventListener('click', () => {
     selectedDate = todayKey();
     renderDiary(root);
@@ -333,11 +337,15 @@ function entryRow(entry) {
     m.protein || m.carbs || m.fat ? `P ${fmt(m.protein)} · KH ${fmt(m.carbs)} · F ${fmt(m.fat)}` : '',
   ].filter(Boolean).join(' · ');
 
+  const badge = entry.source === 'recipe'
+    ? '<span class="badge-ai">Rezept</span>'
+    : (entry.source === 'ai' ? '<span class="badge-ai">KI</span>' : '');
+
   return `
     <button class="entry" data-entry="${esc(entry.id)}">
       <span class="thumb">${thumb}</span>
       <span class="body">
-        <span class="t">${esc(entry.name)} ${entry.source === 'ai' ? '<span class="badge-ai">KI</span>' : ''}</span>
+        <span class="t">${esc(entry.name)} ${badge}</span>
         <span class="s">${sub}</span>
       </span>
       <span class="k">${fmt(m.kcal)}<small> kcal</small></span>
@@ -429,5 +437,6 @@ function sourceLabel(source) {
     demo: 'Demo-Schätzung',
     manual: 'Manuell',
     custom: 'Eigenes Lebensmittel',
+    recipe: 'Rezept',
   }[source] || 'Manuell';
 }

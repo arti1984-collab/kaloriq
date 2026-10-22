@@ -4,7 +4,7 @@ Alle nennenswerten Änderungen an **Kaloriq**. Die Versionen folgen
 [SemVer](https://semver.org/lang/de/): Patch für Fixes, Minor für neue
 Funktionen, Major für Brüche.
 
-> Die Stände **1.1.6 bis 1.2.3** entstanden am 22.10.2026. Ältere Versionen
+> Die Stände **1.1.6 bis 1.2.4** entstanden am 22.10.2026. Ältere Versionen
 > wurden nicht einzeln dokumentiert; ihre Funktionen sind unter
 > [Basisversion](#basisversion-vor-116) zusammengefasst.
 
@@ -44,6 +44,44 @@ falls `localStorage` fehlt, beschädigt oder älter ist. Vor Import und
 Zurücksetzen wird automatisch ein Snapshot angelegt; zusätzlich existieren
 automatische Sicherungen (alle 12 Stunden, maximal drei Stände, ebenfalls in
 IndexedDB gespiegelt) und der JSON-Export.
+
+---
+
+## [1.2.4] – 22.10.2026
+
+### Hinzugefügt
+
+- **Lokale Rezepte:** Rezepte mit Titel, Portionen, Tags, Zutaten und
+  Zubereitung anlegen, bearbeiten und löschen. Zutaten lassen sich aus der
+  lokalen Datenbank übernehmen oder mit eigenen Nährwerten pro 100 g erfassen.
+- **Nährwertberechnung:** Kalorien, Protein, Kohlenhydrate und Fett werden pro
+  Portion und pro 100 g berechnet. Jede Zutat speichert einen Nährwert-
+  Schnappschuss, damit Rezepte stabil bleiben.
+- **Tagebuch-Übernahme:** Eine Rezeptportion wird als **ein** Eintrag mit
+  Quelle „Rezept“ hinzugefügt; Datum, Mahlzeit und Portionszahl sind wählbar.
+- **JSON-Austausch:** Alle Rezepte als `kaloriq-recipes`-Datei exportieren und
+  wieder importieren. Importierte Rezepte werden über ihre ID zusammengeführt;
+  vorhandene IDs werden aktualisiert.
+- **Zugänge:** Rezept-Button im Tagebuch, eigener Eintrag unter **Profil →
+  App** und die Route `#/recipes`. Deutsch und Englisch vollständig übersetzt.
+
+### Geändert
+
+- `state.recipes` ist Teil des bestehenden lokalen Zustands und damit in
+  localStorage, IndexedDB-Zweitkopie, automatischen Sicherungen und im
+  vollständigen JSON-Backup enthalten. Die Migration ergänzt nur das Feld.
+- Tagebuch-Einträge behalten optional `recipeId`; die Eintragsanzeige markiert
+  Rezepte mit einem Badge und die Detailansicht nennt die Quelle „Rezept“.
+- Service-Worker-Cache auf `kaloriq-v21` erhöht; Android-`versionName` 1.2.4,
+  `versionCode` 10204. `dist\` wurde neu gebaut.
+
+### Getestet
+
+- Rezept anlegen, Zutat aus der lokalen Datenbank übernehmen, Nährwerte
+  bearbeiten, speichern, wieder öffnen und löschen.
+- Portion (auch 0,5 / 1,5 / 2) ins Tagebuch übernehmen, Eintrag anzeigen und
+  wieder entfernen.
+- JSON-Import mit gültigen Rezepten sowie deutsche und englische Oberfläche.
 
 ---
 
