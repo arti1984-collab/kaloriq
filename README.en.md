@@ -6,7 +6,7 @@ Calorie, macro and fasting tracker with AI photo recognition – as an installab
 
 An independent implementation of the features of well-known calorie trackers. No third-party brands or assets, no cloud: **all data stays on the device.** The native barcode scanner in the Android APK uses ZXing (Apache-2.0) – see [third-party notices](THIRD_PARTY_NOTICES.md).
 
-**Current version: 1.2.1** · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.1) · [Changelog](CHANGELOG.md)
+**Current version: 1.2.1** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.1) · [Changelog](CHANGELOG.md)
 
 ![Kaloriq – diary, progress, fasting and profile](docs/screenshots/uebersicht.png)
 
@@ -186,13 +186,17 @@ After that, Kaloriq starts fullscreen with its own icon, without a browser bar.
 
 ## Installing on an iPhone (PWA)
 
-If the app should be free for everyone, the PWA is the direct route: no App Store, no Apple Developer account, no $99 per year. All you need is a **fixed HTTPS address** – e.g. Cloudflare Pages, see [DEPLOY.md](DEPLOY.md).
+If the app should be free for everyone, the PWA is the direct route: no App Store, no Apple Developer account, no $99 per year. The app is available directly via **GitHub Pages**:
 
-1. Open the address in **Safari**.
+**https://arti1984-collab.github.io/kaloriq/**
+
+1. Open this address in **Safari**.
 2. Tap **Share** → **Add to Home Screen** → **Add**.
 3. Kaloriq appears with its own icon and opens fullscreen; data stays on the device.
 
 > **Important:** Always use the same fixed address. A new address means a new, empty storage on iPhone. So don't use changing Quick Tunnel addresses for installation.
+
+> **Why no native iOS app from GitHub?** Apple signs iOS apps. An IPA from a GitHub release cannot simply be tapped and installed – that would require a Mac, an Apple Developer account and sideloading or TestFlight. The PWA is the only route that works without an Apple account and without the App Store.
 
 **What is different on iPhone:**
 

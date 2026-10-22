@@ -6,7 +6,7 @@ Kalorien-, Makro- und Fasten-Tracker mit KI-Foto-Erkennung – als installierbar
 
 Eigenständige Implementierung der Funktionen bekannter Kalorien-Tracker. Keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.** Für den nativen Barcode-Scanner der Android-APK wird ZXing (Apache-2.0) verwendet – siehe [Drittanbieter-Hinweise](THIRD_PARTY_NOTICES.md).
 
-**Aktuelle Version: 1.2.1** · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.1) · [Changelog](CHANGELOG.md)
+**Aktuelle Version: 1.2.1** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.2.1) · [Changelog](CHANGELOG.md)
 
 ![Kaloriq – Tagebuch, Fortschritt, Fasten und Profil](docs/screenshots/uebersicht.png)
 
@@ -186,13 +186,17 @@ Danach startet Kaloriq im Vollbild mit eigenem Icon, ohne Browserleiste.
 
 ## Auf dem iPhone installieren (PWA)
 
-Wenn die App für alle kostenlos sein soll, ist die PWA der direkte Weg: kein App Store, kein Apple-Entwicklerkonto und keine 99 US-Dollar pro Jahr. Voraussetzung ist eine **feste HTTPS-Adresse** – z. B. Cloudflare Pages, siehe [DEPLOY.md](DEPLOY.md).
+Wenn die App für alle kostenlos sein soll, ist die PWA der direkte Weg: kein App Store, kein Apple-Entwicklerkonto und keine 99 US-Dollar pro Jahr. Die App ist direkt über **GitHub Pages** erreichbar:
 
-1. Die Adresse in **Safari** öffnen.
+**https://arti1984-collab.github.io/kaloriq/**
+
+1. Diese Adresse in **Safari** öffnen.
 2. **Teilen** antippen → **Zum Home-Bildschirm** → **Hinzufügen**.
 3. Kaloriq erscheint mit eigenem Icon und startet im Vollbild; die Daten bleiben lokal auf dem Gerät.
 
 > **Wichtig:** Immer dieselbe feste Adresse verwenden. Eine neue Adresse bedeutet auf dem iPhone einen neuen, leeren Speicher. Deshalb nicht die wechselnden Quick-Tunnel-Adressen zum Installieren nutzen.
+
+> **Warum keine native iOS-App von GitHub?** Apple signiert iOS-Apps. Eine IPA aus einem GitHub-Release lässt sich nicht einfach antippen und installieren – dafür bräuchte man einen Mac, ein Apple-Entwicklerkonto und Sideloading bzw. TestFlight. Die PWA ist der einzige Weg, der ohne Apple-Konto und ohne App Store funktioniert.
 
 **Was auf dem iPhone anders ist:**
 

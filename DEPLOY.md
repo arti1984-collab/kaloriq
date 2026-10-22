@@ -10,7 +10,26 @@ erledigt.
 
 ---
 
-## Empfohlen: Cloudflare Pages (kostenlos, kein PC nötig)
+## Automatisch: GitHub Pages (empfohlen)
+
+Die App ist öffentlich erreichbar unter:
+
+**https://arti1984-collab.github.io/kaloriq/**
+
+Bei jedem Push auf `main` baut `.github/workflows/pages.yml` die Seite neu
+(`npm run build:pages` → `dist-pages`) und veröffentlicht sie. Kein manueller
+Upload, keine Kosten.
+
+- **iPhone/iPad:** Adresse in **Safari** öffnen → **Teilen** → **Zum Home-Bildschirm**.
+- **Android:** Adresse in **Chrome** öffnen → **Installieren**.
+
+> GitHub Pages ist kein App Store: Installiert wird die **PWA**. Eine native
+> iOS-App (IPA) lässt sich nicht einfach von GitHub installieren, weil Apple
+> eine Signatur und ein Entwicklerkonto verlangt.
+
+---
+
+## Alternative: Cloudflare Pages (kostenlos, kein PC nötig)
 
 ### Einmalig einrichten
 
