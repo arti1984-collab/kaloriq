@@ -2,7 +2,7 @@
 
 Kalorien-, Makro- und Fasten-Tracker mit KI-Foto-Erkennung – als installierbare Web-App (PWA), optimiert für **Android** (läuft genauso auf dem iPhone).
 
-Eigenständige Implementierung der Funktionen, die Apps wie Yazio bieten. Kein fremder Code, keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.**
+Eigenständige Implementierung der Funktionen bekannter Kalorien-Tracker. Kein fremder Code, keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.**
 
 **Aktuelle Version: 1.1.9** · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.1.9) · [Changelog](CHANGELOG.md)
 
@@ -352,4 +352,4 @@ scripts/tunnel.mjs      HTTPS-Tunnel für die Installation (npm run tunnel)
 
 ## Rechtliches
 
-Nachbau der *Funktionen* gängiger Ernährungs-Apps zu Lernzwecken. Kein Code, keine Marke, keine Gestaltung von Yazio übernommen. „Kaloriq" ist ein eigener Name. Nährwertangaben sind Näherungswerte und ersetzen keine fachliche Beratung.
+Nachbau der *Funktionen* gängiger Ernährungs-Apps zu Lernzwecken. Kein fremder Code, keine fremden Marken und keine fremde Gestaltung übernommen. „Kaloriq" ist ein eigener Name. Nährwertangaben sind Näherungswerte und ersetzen keine fachliche Beratung.
