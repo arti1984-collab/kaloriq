@@ -51,7 +51,7 @@ Kaloriq ist eine installierbare Web-App (PWA). Du brauchst dafür **keinen App S
 ### Gut zu wissen
 
 - **Barcode:** Der Kamera-Scan funktioniert direkt in Safari. Beim ersten Scan fragt iOS nach der Kamera-Berechtigung.
-- **Schritte:** Der Bewegungssensor zählt nur, solange die App geöffnet ist.
+- **Schritte:** Die PWA zählt nur bei geöffneter App – Safari hat keinen Zugriff auf Apple Health und pausiert Web-Apps im Hintergrund. Schritte kannst du jederzeit manuell eintragen.
 - **Speicher:** Kaloriq nutzt persistenten Speicher und eine automatische Zweitkopie in IndexedDB, damit die Daten auch bei knappem Gerätespeicher erhalten bleiben.
 - **Backup:** Unter **Profil → Daten exportieren** kannst du jederzeit eine JSON-Sicherung erstellen.
 - **Kosten:** Die App ist für alle kostenlos. Es gibt keine App-Store-Gebühr und keine Anmeldung.
@@ -101,7 +101,7 @@ Kaloriq ist eine installierbare Web-App (PWA). Du brauchst dafür **keinen App S
 ### Good to know
 
 - **Barcode:** Camera scanning works directly in Safari. On the first scan, iOS asks for camera permission.
-- **Steps:** The motion sensor only counts while the app is open.
+- **Steps:** The PWA only counts while the app is open – Safari has no access to Apple Health and pauses web apps in the background. You can enter steps manually at any time.
 - **Storage:** Kaloriq uses persistent storage and an automatic second copy in IndexedDB so the data survives low device storage.
 - **Backup:** You can create a JSON backup at any time under **Profile → Export data**.
 - **Cost:** The app is free for everyone. There is no App Store fee and no sign-up.

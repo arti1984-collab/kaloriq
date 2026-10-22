@@ -79,7 +79,8 @@ als 2×2-Montage (`uebersicht.png`).
   abgefangen; **veraltete Sensorwerte** (älter als 5 Minuten) werden ignoriert,
   damit keine falschen Schritte entstehen.
 - Tagesziel, manuelle Korrektur und Speicherung pro Tag. In der PWA zählt der
-  Bewegungssensor nur, solange die App geöffnet ist.
+  Bewegungssensor nur bei geöffneter App; Apple Health ist für Web-Apps nicht
+  zugänglich. Schritte lassen sich jederzeit manuell eintragen.
 
 ### Fortschritt & Gewicht
 
@@ -205,7 +206,7 @@ Wenn die App für alle kostenlos sein soll, ist die PWA der direkte Weg: kein Ap
 
 **Was auf dem iPhone anders ist:**
 
-- **Schritte:** kein nativer Hintergrund-Schrittzähler; der Bewegungssensor zählt nur, solange die App geöffnet ist.
+- **Schritte:** Die PWA zählt nur bei geöffneter App, da Safari keinen Zugriff auf Apple Health hat und Web-Apps im Hintergrund pausiert. Schritte lassen sich manuell eintragen; die Android-APK zählt auch im Hintergrund.
 - **Speicher:** Kaloriq fordert persistenten Speicher an und hält zusätzlich eine automatische Zweitkopie in IndexedDB. Ein JSON-Export über **Profil → Daten exportieren** bleibt als freiwillige Zusatzsicherung möglich.
 - **App Store:** Dort wäre die App für Nutzer ebenfalls kostenlos, aber für dich fallen **99 US-Dollar pro Jahr** plus Mac/Xcode an. Die PWA kostet weder dich noch die Nutzer etwas.
 
@@ -389,7 +390,7 @@ scripts/tunnel.mjs      HTTPS-Tunnel für die Installation (npm run tunnel)
 
 - **Open Food Facts limitiert** Suchanfragen pro Minute. Deshalb: lokale DB zuerst, Online-Suche gedrosselt, Ergebnisse gecacht, 30-Sekunden-Pause nach einem Limit-Fehler.
 - **Kein Account, keine Synchronisierung** zwischen Geräten (bewusst). Sync ließe sich später über einen kleinen Server oder Supabase ergänzen.
-- **Schrittzähler:** In der APK liest ein natives Plugin den Hardware-Schrittzähler (`TYPE_STEP_COUNTER`). Der Sensor zählt kumulativ seit dem Geräteneustart weiter, auch wenn die App geschlossen ist – beim nächsten Öffnen wird die Differenz nachgetragen. Nach einem Tageswechsel ohne App-Kontakt werden die Schritte dem Tag des Öffnens zugerechnet; nach mehr als 20 Stunden Pause wird der Stand neu gesetzt, statt willkürlich zu verteilen. Im Browser (PWA) bleibt es beim Bewegungssensor und Zählen nur bei geöffneter App. Schritte lassen sich außerdem jederzeit manuell korrigieren.
+- **Schrittzähler:** In der APK liest ein natives Plugin den Hardware-Schrittzähler (`TYPE_STEP_COUNTER`). Der Sensor zählt kumulativ seit dem Geräteneustart weiter, auch wenn die App geschlossen ist – beim nächsten Öffnen wird die Differenz nachgetragen. Nach einem Tageswechsel ohne App-Kontakt werden die Schritte dem Tag des Öffnens zugerechnet; nach mehr als 20 Stunden Pause wird der Stand neu gesetzt, statt willkürlich zu verteilen. Im Browser (PWA) bleibt es beim Bewegungssensor und Zählen nur bei geöffneter App; Safari hat keinen HealthKit-Zugriff und pausiert Web-Apps im Hintergrund. Ein echter Hintergrund-Schrittzähler auf dem iPhone würde eine native App mit HealthKit voraussetzen. Schritte lassen sich außerdem jederzeit manuell korrigieren.
 - **Rezeptdatenbank, Fitnessarmband-Anbindung und Community** sind nicht enthalten.
 
 ## Rechtliches
