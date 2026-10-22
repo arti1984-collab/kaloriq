@@ -24,9 +24,10 @@ demselben Quellstand gebaut. Jede Änderung durchläuft denselben Ablauf:
    - `public/sw.js` → Cache-Name (`kaloriq-vN`), damit die App-Shell frisch lädt
    - `android-app/android/app/build.gradle` → `versionName` + `versionCode`
    - `dist/` → Upload-Paket wird direkt neu gebaut
-3. **Testen** – Desktop (Chrome/Edge), Android-PWA und die installierte APK:
-   Tagebuch, Wasser, Schritte, Fortschritt, Fasten, Profil, Offline-Start,
-   Daten nach einem Update. Neue JS-Dateien zusätzlich in die `SHELL`-Liste von
+3. **Testen** – Desktop (Chrome/Edge/Safari), Android-PWA und die installierte
+   APK: Tagebuch, Wasser, Schritte, Fortschritt, Fasten, Profil, Offline-Start,
+   Daten nach einem Update; den Browser-Barcode-Scanner zusätzlich in Safari
+   bzw. auf dem iPhone. Neue JS-Dateien zusätzlich in die `SHELL`-Liste von
    `public/sw.js` eintragen, sonst fehlen sie offline.
 4. **APK bauen** – `npm run apk` erzeugt `Kaloriq-<Version>.apk`, signiert mit
    dem lokalen Schlüssel unter `android-app/keystore/`. Der Schlüssel und sein

@@ -256,9 +256,10 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 2. **Daten nie löschen:** `localStorage` (`kaloriq.state.v1`) bleibt erhalten.
    `migrate()` ergänzt nur fehlende Felder; vor Import und Zurücksetzen wird
    automatisch gesichert.
-3. **Testen:** Desktop-Browser (Chrome/Edge) und Android – PWA im Browser
-   **und** die installierte APK. Neue JS-Dateien zusätzlich in die
-   `SHELL`-Liste von `public/sw.js` eintragen, sonst fehlen sie offline.
+3. **Testen:** Desktop-Browser (Chrome/Edge/Safari) und Android – PWA im
+   Browser **und** die installierte APK; den Barcode-Scanner zusätzlich in
+   Safari bzw. auf dem iPhone. Neue JS-Dateien zusätzlich in die `SHELL`-Liste
+   von `public/sw.js` eintragen, sonst fehlen sie offline.
 4. **APK bauen:** `npm run apk` erzeugt eine signierte
    `Kaloriq-<Version>.apk`. Der Signaturschlüssel liegt nur lokal unter
    `android-app/keystore/` und ist **nicht** im Repository.

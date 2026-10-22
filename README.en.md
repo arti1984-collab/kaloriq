@@ -255,8 +255,9 @@ immediately visible, and the APK is built from the same source as the PWA.
 2. **Never delete data:** `localStorage` (`kaloriq.state.v1`) is preserved.
    `migrate()` only adds missing fields; a backup is created automatically
    before import and reset.
-3. **Test:** Desktop browser (Chrome/Edge) and Android – the PWA in the browser
-   **and** the installed APK. Add new JS files to the `SHELL` list in
+3. **Test:** Desktop browsers (Chrome/Edge/Safari) and Android – the PWA in the
+   browser **and** the installed APK; test the barcode scanner additionally in
+   Safari and on iPhone. Add new JS files to the `SHELL` list in
    `public/sw.js`, otherwise they are missing offline.
 4. **Build the APK:** `npm run apk` creates a signed
    `Kaloriq-<version>.apk`. The signing key is stored only locally under
