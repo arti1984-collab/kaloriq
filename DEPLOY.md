@@ -34,7 +34,9 @@ erledigt.
    `icons\`, `sw.js`, `manifest.webmanifest`, `_headers` – nicht den Ordner
    `dist` selbst).
 
-6. Am Handy `https://kaloriq.pages.dev` in Chrome öffnen → **Installieren**.
+6. Am Handy `https://kaloriq.pages.dev` öffnen:
+   - **iPhone/iPad:** Safari → **Teilen** → **Zum Home-Bildschirm**.
+   - **Android:** Chrome → **Installieren**.
 
 ### Updates (ab jetzt immer gleich)
 

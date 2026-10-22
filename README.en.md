@@ -184,6 +184,23 @@ After that, Kaloriq starts fullscreen with its own icon, without a browser bar.
 
 > **Why HTTPS at all?** Service workers (offline cache) and the install prompt only run in a "secure context" – i.e. `localhost` or `https://`. Static hosting also works: run `npm run build:static` and upload the contents of `dist\` to Netlify Drop or Cloudflare Pages, for example (no build, no server required).
 
+## Installing on an iPhone (PWA)
+
+If the app should be free for everyone, the PWA is the direct route: no App Store, no Apple Developer account, no $99 per year. All you need is a **fixed HTTPS address** – e.g. Cloudflare Pages, see [DEPLOY.md](DEPLOY.md).
+
+1. Open the address in **Safari**.
+2. Tap **Share** → **Add to Home Screen** → **Add**.
+3. Kaloriq appears with its own icon and opens fullscreen; data stays on the device.
+
+> **Important:** Always use the same fixed address. A new address means a new, empty storage on iPhone. So don't use changing Quick Tunnel addresses for installation.
+
+**What is different on iPhone:**
+
+- **Barcode:** Safari does not support `BarcodeDetector` by default. Manual entry remains for now; a JS scanner (e.g. ZXing) can be added as a fallback.
+- **Steps:** no native background step counter; the motion sensor only counts while the app is open.
+- **Storage:** iOS may clear web storage under pressure. Regular JSON exports via **Profile → Export data** are the safest backup.
+- **App Store:** The app would also be free for users there, but you pay **$99 per year** plus a Mac with Xcode. The PWA costs neither you nor users anything.
+
 ## Setting up AI (Google Gemini)
 
 1. Create a key: <https://aistudio.google.com/apikey> (the free tier is enough for testing).

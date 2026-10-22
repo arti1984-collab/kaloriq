@@ -184,6 +184,23 @@ Danach startet Kaloriq im Vollbild mit eigenem Icon, ohne Browserleiste.
 
 > **Warum überhaupt HTTPS?** Service Worker (Offline-Cache) und der Install-Prompt laufen nur in einem „sicheren Kontext" – also `localhost` oder `https://`. Statisches Hosting geht auch: `npm run build:static` und den Inhalt von `dist\` z. B. bei Netlify Drop oder Cloudflare Pages hochladen (kein Build, kein Server nötig).
 
+## Auf dem iPhone installieren (PWA)
+
+Wenn die App für alle kostenlos sein soll, ist die PWA der direkte Weg: kein App Store, kein Apple-Entwicklerkonto und keine 99 US-Dollar pro Jahr. Voraussetzung ist eine **feste HTTPS-Adresse** – z. B. Cloudflare Pages, siehe [DEPLOY.md](DEPLOY.md).
+
+1. Die Adresse in **Safari** öffnen.
+2. **Teilen** antippen → **Zum Home-Bildschirm** → **Hinzufügen**.
+3. Kaloriq erscheint mit eigenem Icon und startet im Vollbild; die Daten bleiben lokal auf dem Gerät.
+
+> **Wichtig:** Immer dieselbe feste Adresse verwenden. Eine neue Adresse bedeutet auf dem iPhone einen neuen, leeren Speicher. Deshalb nicht die wechselnden Quick-Tunnel-Adressen zum Installieren nutzen.
+
+**Was auf dem iPhone anders ist:**
+
+- **Barcode:** Safari unterstützt `BarcodeDetector` standardmäßig nicht. Aktuell bleibt die manuelle Eingabe; ein JS-Scanner (z. B. ZXing) kann als Fallback ergänzt werden.
+- **Schritte:** kein nativer Hintergrund-Schrittzähler; der Bewegungssensor zählt nur, solange die App geöffnet ist.
+- **Speicher:** iOS kann Web-Speicher unter Speicherdruck aufräumen. Regelmäßige JSON-Exporte über **Profil → Daten exportieren** sind die sicherste Sicherung.
+- **App Store:** Dort wäre die App für Nutzer ebenfalls kostenlos, aber für dich fallen **99 US-Dollar pro Jahr** plus Mac/Xcode an. Die PWA kostet weder dich noch die Nutzer etwas.
+
 ## KI einrichten (Google Gemini)
 
 1. Key erstellen: <https://aistudio.google.com/apikey> (Free-Tier reicht zum Testen).
