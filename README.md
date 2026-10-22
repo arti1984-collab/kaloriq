@@ -1,5 +1,7 @@
 # Kaloriq
 
+**Sprache:** [Deutsch](README.md) · [English](README.en.md)
+
 Kalorien-, Makro- und Fasten-Tracker mit KI-Foto-Erkennung – als installierbare Web-App (PWA), optimiert für **Android** (läuft genauso auf dem iPhone).
 
 Eigenständige Implementierung der Funktionen bekannter Kalorien-Tracker. Keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.** Für den nativen Barcode-Scanner der Android-APK wird ZXing (Apache-2.0) verwendet – siehe [Drittanbieter-Hinweise](THIRD_PARTY_NOTICES.md).
@@ -143,7 +145,7 @@ Beim ersten Start lädt das Skript `cloudflared` nicht selbst herunter – falls
 
 > Die Adresse ist bei jedem Neustart des Tunnels neu. Nach einem PC-Neustart also `npm run tunnel` erneut ausführen und die App einmal neu installieren. Für eine **feste Adresse** siehe [DEPLOY.md](DEPLOY.md) – dort bleibt die Adresse (und damit dein Speicher) dauerhaft gleich.
 
-### Weg 3 – feste Adresse, Updates ohne Datenverlust (empfohlen)
+### Weg 2 – feste Adresse, Updates ohne Datenverlust (empfohlen)
 
 ```bash
 npm run build:static     # erzeugt dist\ mit allen Dateien fürs Hosting
@@ -155,7 +157,7 @@ Den Inhalt von `dist\` einmal bei **Cloudflare Pages** (Upload assets) oder
 
 Details: [DEPLOY.md](DEPLOY.md)
 
-### Weg 4 – eigene APK (komplett offline)
+### Weg 3 – eigene APK (komplett offline)
 
 ```powershell
 npm run apk
@@ -169,7 +171,7 @@ Updates später: `npm run bump` + `npm run apk`, neue APK drüber installieren �
 **Daten bleiben erhalten** (gleicher Paketname + Signaturschlüssel).
 Details: [ANDROID.md](ANDROID.md)
 
-### Weg 2 – nur im WLAN, ohne Installation
+### Weg 4 – nur im WLAN, ohne Installation
 
 `http://192.168.x.x:4173` am Handy öffnen. Die App funktioniert vollständig, aber:
 - kein Installations-Menüpunkt,
@@ -315,6 +317,7 @@ THIRD_PARTY_NOTICES.md  Drittanbieter-Hinweise (ZXing, Apache-2.0)
 LICENSES/               Apache-2.0-Lizenztext
 ANDROID.md              APK-Bau, Signatur, nativer Scanner und Schrittzähler
 DEPLOY.md               Feste Web-Adresse (Cloudflare Pages / Netlify)
+README.en.md            Englische Fassung dieser Seite
 docs/screenshots/       Screenshots für README und GitHub
 public/
   index.html            App-Shell
