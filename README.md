@@ -57,6 +57,9 @@ als 2×2-Montage (`uebersicht.png`).
 | **Trackingsstil** | Genau / Grob / Überblick – passend zu Alltag und Drucklevel |
 | **Wochenrückblick** | Tage, kleine Erfolge, Check-ins und Wasser – ohne Kaloriendruck |
 | **CSV & Feedback** | CSV-Export, In-App-Feedback, Backup-Erinnerung und Update-Hinweis |
+| **Health Connect** | Schritte und Gewicht aus Android Health importieren (APK) |
+| **Android-Widget** | Kalorien, Wasser und Schritte auf dem Home-Bildschirm, inkl. Schnellaktionen |
+| **System-Erinnerung** | Tägliche Benachrichtigung, optional und standardmäßig aus (APK) |
 | **Handportionen** | Klein/Mittel/Groß statt Gramm – mit grober Gramm-Orientierung, ohne Waage |
 | **Schnell eintragen** | Leicht/Normal/Reichhaltig pro Mahlzeit – grobe Schätzung ohne Grammangaben |
 | **Sprache** | Deutsch / English – Umschaltung unter **Profil → Sprache**, alle Screens sofort übersetzt |
@@ -123,6 +126,9 @@ als 2×2-Montage (`uebersicht.png`).
 - Tagesziel, manuelle Korrektur und Speicherung pro Tag. In der PWA zählt der
   Bewegungssensor nur bei geöffneter App; Apple Health ist für Web-Apps nicht
   zugänglich. Schritte lassen sich jederzeit manuell eintragen.
+- **Health Connect (APK):** Importiert auf Wunsch die heutigen Schritte und das
+  zuletzt eingetragene Gewicht aus Android Health. Kaloriq liest nur; es werden
+  keine Gesundheitsdaten zurückgeschrieben.
 
 ### Fortschritt & Gewicht
 
@@ -188,6 +194,12 @@ als 2×2-Montage (`uebersicht.png`).
 - **Feedback & Hilfe** direkt im Profil: Problem oder Idee über GitHub melden,
   inklusive Version, Gerät und Sprache. Dazu ein Update-Hinweis, wenn eine neue
   App-Version bereitsteht.
+- **Android-Widget (APK):** Zeigt Kalorien, Wasser und Schritte auf dem
+  Home-Bildschirm. Die Buttons „+ Wasser“ und „Schnell“ öffnen die App direkt
+  im passenden Flow.
+- **System-Erinnerung (APK):** Optional und standardmäßig aus. Eine tägliche
+  Android-Benachrichtigung zur gewählten Uhrzeit; die In-App-Erinnerung bleibt
+  der Fallback in der PWA.
 - Gemini-Key lokal oder über den Server-Proxy; Modellliste direkt aus der
   Google-API laden.
 
@@ -353,6 +365,7 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 | Version | Schwerpunkt |
 |---|---|
+| **1.4.0** | Health Connect, Android-Widget und System-Erinnerungen (APK) |
 | **1.3.0** | Schnellzugriff, Trackingsstil, Wochenrückblick, CSV/Feedback und Vertrauens-UX |
 | **1.2.14** | Lokale Lebensmittel-Datenbank auf 212 Einträge erweitert |
 | **1.2.13** | Handportionen und „Schnell eintragen“ (Rough Log) |
@@ -468,6 +481,9 @@ public/
     checkin.js          Hunger-/Sättigungs-Check pro Mahlzeit
     wins.js             Kleine Nicht-Zahl-Erfolge im Tagebuch
     csv.js              CSV-Export für Einträge und Tageswerte
+    health.js           Health-Connect-Brücke (Android)
+    widget.js           Android-Widget-Daten und -Aktionen
+    reminders.js        System-Erinnerungen (Android) / In-App-Fallback
     views/              onboarding · diary · add (Suche/Barcode/KI) · recipes · progress · fasting · profile
 android-app/            Capacitor-Projekt für die APK (siehe ANDROID.md)
 scripts/build-apk.mjs   APK bauen (npm run apk)
@@ -490,7 +506,11 @@ scripts/tunnel.mjs      HTTPS-Tunnel für die Installation (npm run tunnel)
 - **Kein Account, keine Synchronisierung** zwischen Geräten (bewusst). Sync ließe sich später über einen kleinen Server oder Supabase ergänzen.
 - **Schrittzähler:** In der APK liest ein natives Plugin den Hardware-Schrittzähler (`TYPE_STEP_COUNTER`). Der Sensor zählt kumulativ seit dem Geräteneustart weiter, auch wenn die App geschlossen ist – beim nächsten Öffnen wird die Differenz nachgetragen. Nach einem Tageswechsel ohne App-Kontakt werden die Schritte dem Tag des Öffnens zugerechnet; nach mehr als 20 Stunden Pause wird der Stand neu gesetzt, statt willkürlich zu verteilen. Im Browser (PWA) bleibt es beim Bewegungssensor und Zählen nur bei geöffneter App; Safari hat keinen HealthKit-Zugriff und pausiert Web-Apps im Hintergrund. Ein echter Hintergrund-Schrittzähler auf dem iPhone würde eine native App mit HealthKit voraussetzen. Schritte lassen sich außerdem jederzeit manuell korrigieren.
 - **Community-Rezeptdatenbank, Fitnessarmband-Anbindung und Cloud-Sync** sind nicht enthalten. Eigene Rezepte bleiben lokal und lassen sich als JSON teilen.
-- **Native Erweiterungen:** Health Connect/Apple Health, ein echtes Android-Widget und System-Push-Erinnerungen sind bewusst nicht enthalten – sie brauchen native Folgearbeit. PWA-Schnellaktionen für Schnell-Eintrag und Wasser sind vorhanden; die sanfte Erinnerung erscheint beim Öffnen der App.
+- **Native Erweiterungen:** Health Connect, ein echtes Android-Widget und
+  System-Erinnerungen sind in der APK enthalten. **Apple Health** bleibt außen
+  vor: Es ist aus der PWA und aus einer Android-App nicht erreichbar und würde
+  eine native iOS-App mit HealthKit voraussetzen. Die **Play-Store-Präsenz**
+  ist weiterhin nicht enthalten.
 
 ## Rechtliches
 

@@ -766,6 +766,34 @@ const EN = {
   'Heute nicht': 'Not today',
   'Heute nicht – alles gut.': 'Not today – that’s okay.',
   'Eintragen': 'Log',
+
+  // Health Connect
+  'Health Connect': 'Health Connect',
+  'Schritte und Gewicht aus Android Health importieren': 'Import steps and weight from Android Health',
+  'Health Connect liest heute Schritte und das zuletzt eingetragene Gewicht aus Android Health. Kaloriq schreibt keine Daten zurück.':
+    'Health Connect reads today’s steps and the latest weight from Android Health. Kaloriq does not write any data back.',
+  'Status': 'Status',
+  'Berechtigungen: Schritte lesen, Gewicht lesen.': 'Permissions: read steps, read weight.',
+  'Berechtigung erteilen': 'Grant permission',
+  'Heute importieren': 'Import today',
+  'Apple Health ist in der Android-App und in der PWA technisch nicht erreichbar. Dafür wäre eine native iOS-App mit HealthKit nötig.':
+    'Apple Health cannot be reached from the Android app or the PWA. That would require a native iOS app with HealthKit.',
+  'Berechtigung erteilt': 'Permission granted',
+  'Noch nicht verbunden': 'Not connected yet',
+  'Health Connect verbunden': 'Health Connect connected',
+  'Berechtigung nicht erteilt': 'Permission not granted',
+  'Keine Health-Connect-Daten gefunden': 'No Health Connect data found',
+  'Health Connect importieren?': 'Import Health Connect data?',
+  'Health-Connect-Daten importiert': 'Health Connect data imported',
+  'Import fehlgeschlagen': 'Import failed',
+  'System-Erinnerung': 'System reminder',
+  'Erscheint als System-Benachrichtigung – auch bei geschlossener App. Standardmäßig aus.':
+    'Appears as a system notification – even when the app is closed. Off by default.',
+  'Benachrichtigungen nicht erlaubt – Erinnerung aus': 'Notifications not allowed – reminder off',
+  'Erinnerung konnte nicht geplant werden': 'Reminder could not be scheduled',
+  'Health Connect ist auf diesem Gerät nicht verfügbar.': 'Health Connect is not available on this device.',
+  'Health Connect konnte nicht gelesen werden.': 'Health Connect could not be read.',
+  'Zeitüberschreitung bei Health Connect.': 'Health Connect timed out.',
 };
 
 /* ---------------- Lebensmittel (Datenbanknamen) ---------------- */
@@ -1140,6 +1168,9 @@ const RULES = [
   [/^Letzte: (.+) · (\d+) (Stand|Stände)$/, (m) => `Last: ${m[1]} · ${m[2]} ${m[2] === '1' ? 'snapshot' : 'snapshots'}`],
   [/^Beim Öffnen ab (\d{2}:\d{2}) · kein Push$/, 'On open from $1 · no push'],
   [/^Erinnerung ab (\d{2}:\d{2})$/, 'Reminder from $1'],
+  [/^System-Erinnerung ab (\d{2}:\d{2})$/, 'System reminder from $1'],
+  [/^(.+) werden in Kaloriq übernommen\. Vorhandene Tageswerte werden überschrieben\.$/,
+    '$1 will be imported into Kaloriq. Existing daily values will be overwritten.'],
 ];
 
 /* ---------------- Übersetzen ---------------- */

@@ -1,16 +1,18 @@
 /* ============================================================
    Kaloriq – Profil & Einstellungen
    ============================================================ */
-import { store, exportJson, importJson, todayKey, streak, streakInfo, listBackups, backupNow, restoreBackup, activePause, applyTrackingStyle } from '../store.js';
+import { store, exportJson, importJson, todayKey, streak, streakInfo, listBackups, backupNow, restoreBackup, activePause, applyTrackingStyle, setSteps, setWeight } from '../store.js';
 import { ACTIVITY, GOALS, MACRO_PRESETS, computeTargets, projection, round1, bmi, bmiCategory, flexStatus } from '../calc.js';
 import {
   esc, fmt, icon, toast, openSheet, confirmDialog, downloadFile, haptic, copyText,
 } from '../ui.js';
 import { estimate, detectProxy, proxyStatus, listModels, pickModel } from '../ai.js';
 import { APP_VERSION } from '../version.js';
-import { getLang, setLang, locale } from '../i18n.js';
+import { getLang, setLang, locale, tr } from '../i18n.js';
 import { openPauseSheet, pauseStateLabel } from '../pause.js';
 import { exportEntriesCsv, exportDaysCsv } from '../csv.js';
+import { healthAvailable, healthHasPermissions, requestHealthPermissions, readHealthToday } from '../health.js';
+import { scheduleSystemReminder, systemRemindersAvailable } from '../reminders.js';
 
 export function renderProfile(root) {
   const state = store.get();
@@ -27,6 +29,8 @@ export function renderProfile(root) {
   const trackingStyle = state.settings.trackingStyle || 'precise';
   const reminderOn = Boolean(state.settings.reminderEnabled);
   const reminderTime = state.settings.reminderTime || '18:00';
+  const healthOn = healthAvailable();
+  const systemReminder = systemRemindersAvailable();
   const styleText = trackingStyle === 'rough'
     ? 'Grob · Handportionen und Schnell-Eintrag'
     : trackingStyle === 'overview'
@@ -113,6 +117,13 @@ export function renderProfile(root) {
         <span class="v">${trackingStyle === 'rough' ? 'Grob' : trackingStyle === 'overview' ? 'Überblick' : 'Genau'}</span>
         ${icon('chev', 'chev')}
       </button>
+      ${healthOn ? `<button class="row" data-health>
+        <span class="grow">
+          <span class="t">Health Connect</span>
+          <span class="s">Schritte und Gewicht aus Android Health importieren</span>
+        </span>
+        ${icon('chev', 'chev')}
+      </button>` : ''}
       <button class="row" data-gentle role="switch" aria-checked="${gentle}" aria-label="Sanfter Modus">
         <span class="grow">
           <span class="t">Sanfter Modus</span>
@@ -177,7 +188,11 @@ export function renderProfile(root) {
       <button class="row" data-reminder>
         <span class="grow">
           <span class="t">Sanfte Erinnerung</span>
-          <span class="s">${reminderOn ? `Beim Öffnen ab ${reminderTime} · kein Push` : 'Aus · keine Erinnerungen'}</span>
+          <span class="s">${reminderOn
+            ? systemReminder
+              ? `System-Erinnerung ab ${reminderTime}`
+              : `Beim Öffnen ab ${reminderTime} · kein Push`
+            : 'Aus · keine Erinnerungen'}</span>
         </span>
         ${icon('chev', 'chev')}
       </button>
@@ -263,6 +278,7 @@ export function renderProfile(root) {
     haptic();
   });
   root.querySelector('[data-style]').addEventListener('click', () => openTrackingStyleSheet(root));
+  root.querySelector('[data-health]')?.addEventListener('click', () => openHealthSheet(root));
   root.querySelector('[data-flex]').addEventListener('click', () => {
     const on = (Number(store.get().settings.flexBand) || 0) > 0;
     store.saveSettings({ flexBand: on ? 0 : 10 });
@@ -581,14 +597,85 @@ function openFlexBandSheet(root) {
   });
 }
 
+/* ---------------- Health Connect ---------------- */
+
+function openHealthSheet(root) {
+  const body = document.createElement('div');
+  body.innerHTML = `
+    <p class="small muted" style="margin-bottom:14px">Health Connect liest heute Schritte und das zuletzt eingetragene Gewicht aus Android Health. Kaloriq schreibt keine Daten zurück.</p>
+    <div class="card" style="padding:14px;margin-bottom:14px">
+      <div class="hstack" style="justify-content:space-between">
+        <span class="small" style="font-weight:620">Status</span>
+        <span class="pill neutral" data-health-status>–</span>
+      </div>
+      <p class="tiny muted" style="margin-top:6px">Berechtigungen: Schritte lesen, Gewicht lesen.</p>
+    </div>
+    <div class="vstack">
+      <button class="btn btn-block" data-health-permission>Berechtigung erteilen</button>
+      <button class="btn btn-primary btn-block" data-health-import>Heute importieren</button>
+    </div>
+    <p class="tiny muted" style="margin-top:14px">Apple Health ist in der Android-App und in der PWA technisch nicht erreichbar. Dafür wäre eine native iOS-App mit HealthKit nötig.</p>`;
+  const sheet = openSheet({ title: 'Health Connect', body });
+
+  const status = body.querySelector('[data-health-status]');
+  const paint = () => {
+    const ok = healthHasPermissions();
+    status.textContent = ok ? 'Berechtigung erteilt' : 'Noch nicht verbunden';
+    status.className = `pill ${ok ? '' : 'neutral'}`;
+  };
+  paint();
+
+  body.querySelector('[data-health-permission]')?.addEventListener('click', async () => {
+    try {
+      const granted = await requestHealthPermissions();
+      toast(granted ? 'Health Connect verbunden' : 'Berechtigung nicht erteilt', granted ? 'ok' : 'err');
+      paint();
+    } catch (err) {
+      toast(err.message || 'Berechtigung fehlgeschlagen', 'err');
+    }
+  });
+
+  body.querySelector('[data-health-import]')?.addEventListener('click', async () => {
+    try {
+      const data = await readHealthToday();
+      const steps = Math.max(0, Math.round(Number(data.steps) || 0));
+      const weight = Number(data.weight);
+      const hasWeight = Number.isFinite(weight) && weight > 0;
+      if (!steps && !hasWeight) {
+        toast('Keine Health-Connect-Daten gefunden', 'err');
+        return;
+      }
+      const parts = [];
+      if (steps) parts.push(`${fmt(steps)} ${tr('Schritte')}`);
+      if (hasWeight) parts.push(`${fmt(weight, 1)} kg ${tr('Gewicht')}`);
+      const ok = await confirmDialog({
+        title: 'Health Connect importieren?',
+        message: `${parts.join(' und ')} werden in Kaloriq übernommen. Vorhandene Tageswerte werden überschrieben.`,
+        confirmLabel: 'Importieren',
+      });
+      if (!ok) return;
+      if (steps) setSteps(todayKey(), steps);
+      if (hasWeight) setWeight(todayKey(), weight);
+      sheet.close();
+      toast('Health-Connect-Daten importiert');
+      renderProfile(root);
+    } catch (err) {
+      toast(err.message || 'Import fehlgeschlagen', 'err');
+    }
+  });
+}
+
 /* ---------------- Sanfte Erinnerung ---------------- */
 
 function openReminderSheet(root) {
   const s = store.get().settings;
+  const system = systemRemindersAvailable();
   let enabled = Boolean(s.reminderEnabled);
   const body = document.createElement('div');
   body.innerHTML = `
-    <p class="small muted" style="margin-bottom:14px">Eine ruhige Erinnerung beim nächsten Öffnen – nicht per Push, nicht als Drohung. Standardmäßig aus.</p>
+    <p class="small muted" style="margin-bottom:14px">${system
+      ? 'Erscheint als System-Benachrichtigung – auch bei geschlossener App. Standardmäßig aus.'
+      : 'Eine ruhige Erinnerung beim nächsten Öffnen – nicht per Push, nicht als Drohung. Standardmäßig aus.'}</p>
     <button class="row" data-reminder-toggle role="switch" aria-checked="${enabled}" aria-label="Erinnerung aktivieren">
       <span class="grow"><span class="t">Erinnerung aktivieren</span><span class="s">${enabled ? 'Aktiv' : 'Aus'}</span></span>
       <span class="switch" aria-hidden="true" aria-checked="${enabled}" style="pointer-events:none"></span>
@@ -615,6 +702,7 @@ function openReminderSheet(root) {
   sheet.foot?.querySelector('[data-save]')?.addEventListener('click', () => {
     const time = body.querySelector('#reminder-time').value || '18:00';
     store.saveSettings({ reminderEnabled: enabled, reminderTime: time });
+    scheduleSystemReminder(enabled, time);
     toast(enabled ? `Erinnerung ab ${time}` : 'Erinnerung deaktiviert');
     sheet.close();
     renderProfile(root);

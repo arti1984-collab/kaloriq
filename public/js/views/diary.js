@@ -12,6 +12,7 @@ import { openAddSheet, openQuickLogSheet } from './add.js';
 import { openPauseSheet, pauseStateLabel } from '../pause.js';
 import { openCheckinSheet, checkinFor, checkinSummary } from '../checkin.js';
 import { winsCard, bindWins } from '../wins.js';
+import { systemRemindersAvailable } from '../reminders.js';
 import { stepsMode, isCounting, pendingSteps, startSteps, stopSteps } from '../steps.js';
 
 let selectedDate = todayKey();
@@ -67,6 +68,7 @@ export function renderDiary(root) {
   const now = new Date();
   const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
   const reminderDue = Boolean(state.settings.reminderEnabled)
+    && !systemRemindersAvailable()
     && day.entries.length === 0
     && state.settings.reminderDismissedAt !== todayKey()
     && hhmm >= (state.settings.reminderTime || '18:00');

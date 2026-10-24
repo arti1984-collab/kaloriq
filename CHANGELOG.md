@@ -47,6 +47,55 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.4.0] – 25.10.2026
+
+### Hinzugefügt
+
+- **Health Connect (APK):** Liest auf Wunsch die heutigen Schritte und das
+  zuletzt eingetragene Gewicht aus Android Health und übernimmt sie nach
+  Bestätigung in Kaloriq. Es werden **keine** Gesundheitsdaten geschrieben.
+  Die Berechtigungen laufen über den offiziellen Health-Connect-Dialog.
+- **Android-Widget (APK):** Zeigt Kalorien, Wasser und Schritte auf dem
+  Home-Bildschirm. „+ Wasser“ und „Schnell“ öffnen die App direkt im passenden
+  Flow; die Werte werden bei Änderungen aus der App aktualisiert.
+- **System-Erinnerung (APK):** Tägliche Android-Benachrichtigung zur gewählten
+  Uhrzeit über AlarmManager, standardmäßig aus. Sie wird nach einem
+  Geräteneustart wiederhergestellt; in der PWA bleibt die In-App-Erinnerung
+  der Fallback.
+- **Apple-Health-Hinweis:** In der Health-Connect-Ansicht und in der Doku steht
+  klar, dass Apple Health aus PWA/Android nicht erreichbar ist und eine native
+  iOS-App mit HealthKit voraussetzen würde.
+
+### Geändert
+
+- **Android minSdk auf 26** (Android 8.0) angehoben – Voraussetzung der
+  Health-Connect-Bibliothek.
+- Neue native Brücken: `HealthConnectBridge.kt`, `WidgetBridge.java`,
+  `ReminderBridge.java`, `ReminderScheduler.java`, `ReminderReceiver.java`,
+  `BootReceiver.java`, `KaloriqWidgetProvider.java`.
+- Berechtigungen ergänzt: `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED`,
+  `health.READ_STEPS`, `health.READ_WEIGHT`.
+- Health-Connect-Abhängigkeit und Kotlin/Koroutinen in den Android-Build
+  aufgenommen. Die Web-App bleibt weiterhin ohne npm-Abhängigkeiten.
+
+### Getestet
+
+- Kotlin/Java kompilieren, Release-APK wird signiert gebaut; Manifest enthält
+  Widget-Empfänger, Erinnerungs-Empfänger sowie Health- und
+  Benachrichtigungsrechte.
+- APK-Signatur und Version geprüft; Web-UI ohne native Brücken (PWA) lädt
+  fehlerfrei und nutzt die In-App-Erinnerung.
+- **Hinweis:** Das tatsächliche Health-Connect-Lesen, die Widget-Aktualisierung
+  und die Benachrichtigung müssen auf einem echten Android-Gerät getestet
+  werden; im Build-Umfeld ist kein Gerät angeschlossen.
+
+### Veröffentlicht
+
+- Service-Worker-Cache `kaloriq-v33`, Android `versionName 1.4.0` /
+  `versionCode 10400`; signierte APK als GitHub-Release `v1.4.0`.
+
+---
+
 ## [1.3.0] – 25.10.2026
 
 ### Hinzugefügt

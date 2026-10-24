@@ -16,6 +16,8 @@ import { renderFasting } from './views/fasting.js';
 import { renderProfile } from './views/profile.js';
 import { renderRecipes } from './views/recipes.js';
 import { openAiSheet, openQuickLogSheet, openAddSheet } from './views/add.js';
+import { initWidget } from './widget.js';
+import { initReminders } from './reminders.js';
 
 const TABS = [
   { id: 'diary', label: 'Tagebuch', icon: 'book' },
@@ -201,6 +203,8 @@ async function boot() {
   detectProxy();
   render();
   resumeSteps();
+  initWidget();
+  initReminders();
 
   // Persistenten Speicher anfordern (iOS ab 15.2) und bei Bedarf nach dem
   // ersten Tippen erneut versuchen, falls der Browser eine Geste verlangt.

@@ -4,4 +4,15 @@
     <string name="title_activity_main">Kaloriq</string>
     <string name="package_name">de.kaloriq.app</string>
     <string name="custom_url_scheme">de.kaloriq.app</string>
+    <string name="widget_hint">Heute</string>
+    <string name="widget_kcal_label">Kalorien</string>
+    <string name="widget_water_label">Wasser</string>
+    <string name="widget_steps_label">Schritte</string>
+    <string name="widget_water_button">+ Wasser</string>
+    <string name="widget_quick_button">Schnell</string>
+    <string name="reminder_channel">Sanfte Erinnerung</string>
+    <string name="reminder_channel_desc">Ruhige Check-in-Hinweise von Kaloriq</string>
+    <string name="reminder_title">Kurzer Check-in?</string>
+    <string name="reminder_text">Trag ein, was du möchtest – oder lass es. Kein Druck.</string>
+    <string name="reminder_action">Schnell eintragen</string>
 </resources>

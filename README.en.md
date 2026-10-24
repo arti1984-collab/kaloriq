@@ -57,6 +57,9 @@ as a 2×2 montage (`uebersicht.png`).
 | **Tracking style** | Precise / rough / overview – matching your day and pressure level |
 | **Weekly review** | Days, small wins, check-ins and water – without calorie judgement |
 | **CSV & feedback** | CSV export, in-app feedback, backup reminder and update notice |
+| **Health Connect** | Import steps and weight from Android Health (APK) |
+| **Android widget** | Calories, water and steps on the home screen, including quick actions |
+| **System reminder** | Daily notification, optional and off by default (APK) |
 | **Hand portions** | Small/medium/large instead of grams – with a rough gram guide, no scale |
 | **Quick log** | Light/regular/hearty per meal – rough estimate without grams |
 | **Language** | German / English – switch under **Profile → Language**, all screens translated instantly |
@@ -120,6 +123,9 @@ as a 2×2 montage (`uebersicht.png`).
 - Daily goal, manual correction and storage per day. In the PWA, the motion
   sensor only counts while the app is open; web apps cannot access Apple Health.
   Steps can be entered manually at any time.
+- **Health Connect (APK):** Optionally imports today’s steps and the latest
+  weight from Android Health. Kaloriq only reads; no health data is written
+  back.
 
 ### Progress & weight
 
@@ -183,6 +189,11 @@ as a 2×2 montage (`uebersicht.png`).
 - **Feedback & help** directly in the profile: report a problem or idea via
   GitHub, including version, device and language. Plus an update notice when a
   new app version is ready.
+- **Android widget (APK):** Shows calories, water and steps on the home screen.
+  The “+ Water” and “Quick” buttons open the app in the matching flow.
+- **System reminder (APK):** Optional and off by default. A daily Android
+  notification at your chosen time; the in-app reminder remains the fallback in
+  the PWA.
 - Gemini key stored locally or used via the server proxy; load the model list
   directly from the Google API.
 
@@ -346,6 +357,7 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.4.0** | Health Connect, Android widget and system reminders (APK) |
 | **1.3.0** | Quick access, tracking style, weekly review, CSV/feedback and trust UX |
 | **1.2.14** | Local food database expanded to 212 entries |
 | **1.2.13** | Hand portions and quick log (rough log) |
@@ -461,6 +473,9 @@ public/
     checkin.js          Hunger/satiety check per meal
     wins.js             Small non-number wins in the diary
     csv.js              CSV export for entries and daily values
+    health.js           Health Connect bridge (Android)
+    widget.js           Android widget data and actions
+    reminders.js        System reminders (Android) / in-app fallback
     views/              onboarding · diary · add (search/barcode/AI) · recipes · progress · fasting · profile
 android-app/            Capacitor project for the APK (see ANDROID.md)
 scripts/build-apk.mjs   Build the APK (npm run apk)
@@ -483,7 +498,10 @@ scripts/tunnel.mjs      HTTPS tunnel for installation (npm run tunnel)
 - **No account, no synchronization** between devices (by design). Sync could later be added via a small server or Supabase.
 - **Step counter:** In the APK, a native plugin reads the hardware step counter (`TYPE_STEP_COUNTER`). The sensor counts cumulatively since the device restart, even when the app is closed – the difference is added the next time you open it. After a day change without app contact, the steps are credited to the day the app is opened; after more than 20 hours without contact, the reading is reset instead of being distributed arbitrarily. In the browser (PWA), the motion sensor remains and only counts while the app is open; Safari has no HealthKit access and pauses web apps in the background. A true background step counter on iPhone would require a native app with HealthKit. Steps can also be corrected manually at any time.
 - **Community recipe database, fitness tracker integration and cloud sync** are not included. Your own recipes stay local and can be shared as JSON.
-- **Native extensions:** Health Connect/Apple Health, a real Android widget and system push reminders are deliberately not included – they need native follow-up work. PWA shortcuts for quick log and water are available; the gentle reminder appears when you open the app.
+- **Native extensions:** Health Connect, a real Android widget and system
+  reminders are included in the APK. **Apple Health** remains out of scope: it
+  cannot be reached from the PWA or an Android app and would require a native
+  iOS app with HealthKit. **Play Store presence** is still not included.
 
 ## Legal
 

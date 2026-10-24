@@ -34,6 +34,10 @@ Voraussetzungen (einmalig installiert):
 | Android SDK | Platform 35/36, Build-Tools 35/36 | `%LOCALAPPDATA%\Android\Sdk` |
 | Gradle | 8.14.3 (Wrapper) | `android-app/android/gradle` |
 
+> **Android-Mindestversion:** Android 8.0 (API 26). Health Connect benötigt
+> zusätzlich die Health-Connect-App (oder Android 14+ mit integriertem Health
+> Connect).
+
 Nachinstallieren ließe sich das mit:
 
 ```powershell
@@ -89,6 +93,9 @@ Updates mit demselben Schlüssel). Ein Backup liegt im Projekt-ZIP.
 | Key-Speicherung | auf dem Gerät (Profil → KI-Tracking) |
 | Barcode-Scan | ✅ nativer ZXing-Scanner (Kamera, offline) – zusätzlich bleibt die Nummer eintippbar |
 | Schrittzähler | ✅ Gerätesensor (`TYPE_STEP_COUNTER`) – trägt Schritte aus der Zeit mit geschlossener App beim nächsten Öffnen nach |
+| Health Connect | ✅ Schritte & Gewicht lesen (Android 8.0+, Health-Connect-App) – keine Schreibzugriffe |
+| Widget | ✅ Home-Screen-Widget mit Kalorien, Wasser, Schritten und Schnellaktionen |
+| Erinnerungen | ✅ tägliche System-Benachrichtigung (optional, standardmäßig aus) |
 | Kamera/Fotos | ✅ über den Android-Dateiauswahl-Dialog |
 | Installation | ✅ eigenes Icon, Vollbild, kein Browser |
 | Updates | ✅ APK drüber installieren, Daten bleiben |
@@ -105,8 +112,8 @@ android-app/
   keystore/               Signaturschlüssel (geheim halten!)
   www/                    Web-Stand (generiert, nicht bearbeiten)
   android/                natives Android-Projekt (Hülle; Java-Brücken unter app/src/main/java)
-    app/build.gradle      versionName/versionCode (wird von npm run bump gesetzt) + ZXing-Abhängigkeit
-    app/src/main/java/    MainActivity, Scanner- und Schrittzähler-Brücken
+    app/build.gradle      versionName/versionCode (wird von npm run bump gesetzt) + ZXing/Health-Connect
+    app/src/main/java/    MainActivity, Scanner-, Schritt-, Health-, Widget- und Erinnerungs-Brücken
     app/src/main/res/     Icons + Splash (aus public/icons erzeugt)
 ```
 
