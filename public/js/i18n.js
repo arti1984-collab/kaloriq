@@ -641,6 +641,19 @@ const EN = {
   'Aus · keine Check-ins in den Mahlzeiten': 'Off · no check-ins in meals',
   'Hunger-Check aktiviert': 'Hunger check enabled',
   'Hunger-Check deaktiviert': 'Hunger check disabled',
+
+  // Kleine Erfolge
+  'Kleine Erfolge': 'Small wins',
+  'Nicht alles muss eine Zahl sein.': 'Not everything has to be a number.',
+  'Wasser getrunken': 'Drank water',
+  'Spaziergang gemacht': 'Went for a walk',
+  'Bewusst gegessen': 'Ate mindfully',
+  'Mir Zeit genommen': 'Took time for myself',
+  'Das zählt auch – ohne Zahl.': 'That counts too – without a number.',
+  'Aktiv · Nicht-Zahl-Erfolge im Tagebuch': 'On · non-number wins in the diary',
+  'Aus · keine Erfolgs-Karte im Tagebuch': 'Off · no wins card in the diary',
+  'Kleine Erfolge aktiviert': 'Small wins enabled',
+  'Kleine Erfolge deaktiviert': 'Small wins disabled',
 };
 
 /* ---------------- Lebensmittel (Datenbanknamen) ---------------- */

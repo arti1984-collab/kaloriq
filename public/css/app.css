@@ -467,6 +467,37 @@ svg { display: block; }
 }
 .scale button:active { transform: scale(.97); }
 
+/* ---------- Kleine Erfolge ---------- */
+
+.wins-card { padding: 16px; }
+.wins-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.win-chip {
+  min-height: 36px;
+  padding: 0 13px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card-2);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+}
+.win-chip[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--line));
+  color: var(--accent-strong);
+}
+.win-chip[aria-pressed="true"]::before {
+  content: "✓";
+  margin-right: 5px;
+  font-weight: 750;
+}
+.win-chip:active { transform: scale(.97); }
+
 /* ---------- Buttons ---------- */
 
 .btn {

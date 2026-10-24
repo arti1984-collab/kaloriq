@@ -9,7 +9,7 @@ Perfektion verlangen.**
 
 > Stand: 24.10.2026 · Umgesetzt: **Minimalmodus** und **Flexbereich** (1.2.6),
 > **Gnaden-Tage** (1.2.9), **Pausenmodus** (1.2.10),
-> **Hunger-Sättigungs-Check** (1.2.11).
+> **Hunger-Sättigungs-Check** (1.2.11), **Kleine Erfolge** (1.2.12).
 
 ---
 
@@ -37,7 +37,7 @@ Perfektion verlangen.**
 |---|---|---|---|---|
 | **Hunger-Sättigungs-Check** | Weg von „Ziel erreichen“, hin zu Körpersignalen | Hoch | Vor/nach einer Mahlzeit kurz 1–10 abfragen (Hunger/Sättigung). Komplett optional, nichts erzwingend. Würde Kaloriq sehr einzigartig machen. | **Umgesetzt (1.2.11)** |
 | **„Nur heute drüber“ / Pausenmodus** | Mentale Auszeiten | Hoch | „Tracking pausieren“ für ein paar Tage. Daten bleiben erhalten, Streak wird eingefroren, kein Druck, keine Erinnerungen. | **Umgesetzt (1.2.10)** |
-| **Fokus auf Nicht-Zahl-Erfolge** | Verlegt Erfolg weg von kcal | Hoch | Kleine Liste wie „Wasser getrunken“, „Spaziergang gemacht“, „bewusst gegessen“. Kein Gamification-Bingo, sondern sanftes Feedback. | Idee |
+| **Fokus auf Nicht-Zahl-Erfolge** | Verlegt Erfolg weg von kcal | Hoch | Kleine Liste wie „Wasser getrunken“, „Spaziergang gemacht“, „bewusst gegessen“. Kein Gamification-Bingo, sondern sanftes Feedback. | **Umgesetzt (1.2.12)** |
 
 ---
 

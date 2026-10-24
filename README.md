@@ -52,6 +52,7 @@ als 2×2-Montage (`uebersicht.png`).
 | **Gnaden-Tage** | 0–3 leere Tage pro Monat brechen die Serie nicht – automatisch, lokal, ohne Punkte |
 | **Pausenmodus** | „Nur heute drüber“ oder 3/7/14 Tage/offen – Serie eingefroren, kein Kaloriendruck |
 | **Hunger & Sättigung** | Optionaler 1–10-Check-in pro Mahlzeit, vor und nach dem Essen – ohne Pflicht, ohne Bewertung |
+| **Kleine Erfolge** | Wasser, Spaziergang, bewusst gegessen, Zeit für mich – Nicht-Zahl-Erfolge zum Antippen, ohne Punkte |
 | **Sprache** | Deutsch / English – Umschaltung unter **Profil → Sprache**, alle Screens sofort übersetzt |
 | **APK** | Eigene Android-App, komplett offline (`npm run apk`) – siehe [ANDROID.md](ANDROID.md) |
 
@@ -143,6 +144,10 @@ als 2×2-Montage (`uebersicht.png`).
   eine gewählte Zahl lässt sich durch erneutes Antippen entfernen. Die
   Funktion ist unter **Profil → Wohlbefinden** ein- und ausblendbar und
   speichert nur lokal.
+- **Kleine Erfolge:** Vier Nicht-Zahl-Erfolge pro Tag zum Antippen – Wasser
+  getrunken, Spaziergang gemacht, bewusst gegessen, mir Zeit genommen. Kein
+  Punktesystem, keine Serien, keine Bewertung; ausgewählte Erfolge bekommen
+  nur einen ruhigen Haken. Über **Profil → Wohlbefinden** ausblendbar.
 
 ### Profil, Sprache & Daten
 
@@ -317,6 +322,7 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 | Version | Schwerpunkt |
 |---|---|
+| **1.2.12** | Kleine Nicht-Zahl-Erfolge im Tagebuch (ohne Punkte oder Serien) |
 | **1.2.11** | Hunger-Sättigungs-Check pro Mahlzeit (optional, 1–10) |
 | **1.2.10** | Pausenmodus: „Nur heute drüber“ oder mehrere Tage mit eingefrorener Serie |
 | **1.2.9** | Gnaden-Tage: 0–3 leere Tage pro Monat brechen die Serie nicht |
@@ -426,6 +432,7 @@ public/
     ui.js               Sheets (mit Zurück-Taste), Toasts, Charts, Icons
     pause.js            Pausenmodus (nur heute, mehrere Tage, offenes Ende)
     checkin.js          Hunger-/Sättigungs-Check pro Mahlzeit
+    wins.js             Kleine Nicht-Zahl-Erfolge im Tagebuch
     views/              onboarding · diary · add (Suche/Barcode/KI) · recipes · progress · fasting · profile
 android-app/            Capacitor-Projekt für die APK (siehe ANDROID.md)
 scripts/build-apk.mjs   APK bauen (npm run apk)

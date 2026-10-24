@@ -216,6 +216,8 @@ function defaultState() {
       graceDaysPerMonth: 2,
       // Optionaler Hunger-/Sättigungs-Check pro Mahlzeit.
       hungerCheck: true,
+      // Kleine Nicht-Zahl-Erfolge im Tagebuch anzeigen.
+      nonScaleWins: true,
       // Letzter Stand des Geräte-Schrittsensors (kumulativ seit Neustart).
       // { date: 'YYYY-MM-DD', value: number, ts: number } oder null.
       stepCounter: null,
@@ -224,7 +226,7 @@ function defaultState() {
 }
 
 export function emptyDay(key) {
-  return { date: key, entries: [], water: 0, steps: 0, weight: null, fast: null, note: '', checkins: {} };
+  return { date: key, entries: [], water: 0, steps: 0, weight: null, fast: null, note: '', checkins: {}, wins: {} };
 }
 
 function migrate(raw) {
@@ -267,6 +269,9 @@ function migrate(raw) {
     if (!Array.isArray(state.days[k].entries)) state.days[k].entries = [];
     if (!state.days[k].checkins || typeof state.days[k].checkins !== 'object') {
       state.days[k].checkins = {};
+    }
+    if (!state.days[k].wins || typeof state.days[k].wins !== 'object') {
+      state.days[k].wins = {};
     }
   }
   return state;
@@ -621,6 +626,16 @@ export function clearCheckin(dateK, mealId) {
       delete day.checkins[mealId];
     }
   }, 'checkin');
+}
+
+/** Kleinen Nicht-Zahl-Erfolg für einen Tag umschalten. */
+export function toggleWin(dateK, id) {
+  store.set((s) => {
+    const day = s.days[dateK] || (s.days[dateK] = emptyDay(dateK));
+    if (!day.wins || typeof day.wins !== 'object') day.wins = {};
+    if (day.wins[id]) delete day.wins[id];
+    else day.wins[id] = true;
+  }, 'wins');
 }
 
 /**

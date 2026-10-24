@@ -22,6 +22,7 @@ export function renderProfile(root) {
   const paused = Boolean(pause);
   const minimal = Boolean(state.settings.minimalMode);
   const hungerCheck = state.settings.hungerCheck !== false;
+  const winsOn = state.settings.nonScaleWins !== false;
   const flexBand = Math.max(0, Number(state.settings.flexBand) || 0);
   const flexOn = flexBand > 0;
   const flexRange = flexStatus(t.kcal, t.kcal, flexBand);
@@ -148,6 +149,13 @@ export function renderProfile(root) {
         </span>
         <span class="switch" aria-hidden="true" aria-checked="${hungerCheck}" style="pointer-events:none"></span>
       </button>
+      <button class="row" data-wins-toggle role="switch" aria-checked="${winsOn}" aria-label="Kleine Erfolge">
+        <span class="grow">
+          <span class="t">Kleine Erfolge</span>
+          <span class="s">${winsOn ? 'Aktiv · Nicht-Zahl-Erfolge im Tagebuch' : 'Aus · keine Erfolgs-Karte im Tagebuch'}</span>
+        </span>
+        <span class="switch" aria-hidden="true" aria-checked="${winsOn}" style="pointer-events:none"></span>
+      </button>
     </section>
 
     <div class="section-title">KI-Tracking</div>
@@ -240,6 +248,12 @@ export function renderProfile(root) {
     const next = store.get().settings.hungerCheck === false;
     store.saveSettings({ hungerCheck: next });
     toast(next ? 'Hunger-Check aktiviert' : 'Hunger-Check deaktiviert');
+    haptic();
+  });
+  root.querySelector('[data-wins-toggle]').addEventListener('click', () => {
+    const next = store.get().settings.nonScaleWins === false;
+    store.saveSettings({ nonScaleWins: next });
+    toast(next ? 'Kleine Erfolge aktiviert' : 'Kleine Erfolge deaktiviert');
     haptic();
   });
   root.querySelector('[data-ai]').addEventListener('click', () => openAiSettings(root));

@@ -47,6 +47,38 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.2.12] – 24.10.2026
+
+### Hinzugefügt
+
+- **Kleine Erfolge / Fokus auf Nicht-Zahl-Erfolge:** Eine sanfte Karte im
+  Tagebuch mit vier Erfolgen zum Antippen – **Wasser getrunken**,
+  **Spaziergang gemacht**, **Bewusst gegessen** und **Mir Zeit genommen**.
+- Kein Punktesystem, keine Serien, keine Belohnungen: ausgewählte Erfolge
+  bekommen nur einen ruhigen Haken und den Satz „Das zählt auch – ohne Zahl.“
+- Unter **Profil → Wohlbefinden → Kleine Erfolge** lässt sich die Karte
+  ein- oder ausblenden. Standard: an.
+
+### Geändert
+
+- Tagesdaten haben ein zusätzliches Feld `wins`. `migrate()` ergänzt es bei
+  bestehenden Tagen; Einträge, Check-ins und andere Daten bleiben unverändert.
+  Die Erfolge werden mit Export, Import und Sicherungen gespeichert.
+
+### Getestet
+
+- Erfolge an- und abwählen, Persistenz nach Reload, Haken und sanfter Hinweis.
+- Karte über den Profil-Schalter ausblenden; Tagebuch zeigt sie danach nicht
+  mehr an.
+- Deutsch/Englisch, bestehende Tage ohne `wins`, keine Konsolenfehler.
+
+### Veröffentlicht
+
+- Service-Worker-Cache `kaloriq-v29`, Android `versionName 1.2.12` /
+  `versionCode 10212`; signierte APK als GitHub-Release `v1.2.12`.
+
+---
+
 ## [1.2.11] – 24.10.2026
 
 ### Hinzugefügt

@@ -52,6 +52,7 @@ as a 2×2 montage (`uebersicht.png`).
 | **Grace days** | 0–3 blank days per month don’t break the streak – automatic, local, no points |
 | **Pause mode** | “Just today off” or 3/7/14 days/open – streak frozen, no calorie pressure |
 | **Hunger & satiety** | Optional 1–10 check-in per meal, before and after eating – no obligation, no judgement |
+| **Small wins** | Water, walk, mindful eating, time for myself – non-number wins to tap, without points |
 | **Language** | German / English – switch under **Profile → Language**, all screens translated instantly |
 | **APK** | Standalone Android app, fully offline (`npm run apk`) – see [ANDROID.md](ANDROID.md) |
 
@@ -140,6 +141,10 @@ as a 2×2 montage (`uebersicht.png`).
   (hunger before eating, satiety afterwards). One rating is enough; tap a
   selected number again to remove it. The feature can be shown or hidden under
   **Profile → Wellbeing** and is stored locally only.
+- **Small wins:** Four non-number wins per day to tap – drank water, went for a
+  walk, ate mindfully, took time for myself. No points, no streaks, no
+  judgement; a selected win just gets a calm check mark. Can be hidden under
+  **Profile → Wellbeing**.
 
 ### Profile, language & data
 
@@ -312,6 +317,7 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.2.12** | Small non-number wins in the diary (no points or streaks) |
 | **1.2.11** | Hunger/satiety check per meal (optional, 1–10) |
 | **1.2.10** | Pause mode: “just today off” or several days with a frozen streak |
 | **1.2.9** | Grace days: 0–3 blank days per month don’t break the streak |
@@ -421,6 +427,7 @@ public/
     ui.js               Sheets (with back button), toasts, charts, icons
     pause.js            Pause mode (today, several days, open end)
     checkin.js          Hunger/satiety check per meal
+    wins.js             Small non-number wins in the diary
     views/              onboarding · diary · add (search/barcode/AI) · recipes · progress · fasting · profile
 android-app/            Capacitor project for the APK (see ANDROID.md)
 scripts/build-apk.mjs   Build the APK (npm run apk)

@@ -11,6 +11,7 @@ import { flexStatus } from '../calc.js';
 import { openAddSheet } from './add.js';
 import { openPauseSheet, pauseStateLabel } from '../pause.js';
 import { openCheckinSheet, checkinFor, checkinSummary } from '../checkin.js';
+import { winsCard, bindWins } from '../wins.js';
 import { stepsMode, isCounting, pendingSteps, startSteps, stopSteps } from '../steps.js';
 
 let selectedDate = todayKey();
@@ -61,6 +62,7 @@ export function renderDiary(root) {
   const paused = Boolean(pause);
   const minimal = Boolean(state.settings.minimalMode);
   const showCheckin = state.settings.hungerCheck !== false;
+  const showWins = state.settings.nonScaleWins !== false;
   const bandPct = Math.max(0, Number(state.settings.flexBand) || 0);
   const flex = flexStatus(t.kcal, target.kcal, bandPct);
   const flexOn = flex.enabled;
@@ -237,6 +239,7 @@ export function renderDiary(root) {
 
     ${paused ? pauseCard() : minimal ? minimalCard() : gentle ? gentleSummary() : normalSummary()}
     ${gentle && !paused && !minimal ? gentleWeek() : ''}
+    ${showWins ? winsCard(day) : ''}
 
     <section class="card">
       <div class="hstack" style="align-items:flex-start">
@@ -396,6 +399,7 @@ export function renderDiary(root) {
   root.querySelectorAll('[data-checkin]').forEach((btn) => btn.addEventListener('click', () => {
     openCheckinSheet(key, btn.dataset.checkin);
   }));
+  if (showWins) bindWins(root, key);
 
   root.querySelectorAll('[data-entry]').forEach((btn) => btn.addEventListener('click', () => {
     const entry = day.entries.find((e) => e.id === btn.dataset.entry);
