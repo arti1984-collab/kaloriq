@@ -84,6 +84,12 @@ IndexedDB gespiegelt) und der JSON-Export.
 - Kombination mit Sanftem Modus und Pause; Sprachumschaltung de/en;
   vorhandene Daten und Einstellungen bleiben bei allen Umschaltungen erhalten.
 
+### Veröffentlicht
+
+- Service-Worker-Cache `kaloriq-v23`, Android `versionName 1.2.6` /
+  `versionCode 10206`. Signierte APK gebaut (`de.kaloriq.app`, gleicher
+  Signaturschlüssel) und als GitHub-Release `v1.2.6` veröffentlicht.
+
 ---
 
 ## [1.2.5] – 22.10.2026
