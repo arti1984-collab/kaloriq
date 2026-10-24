@@ -50,6 +50,7 @@ als 2×2-Montage (`uebersicht.png`).
 | **Daten** | JSON-Export/-Import, automatische Sicherungen, IndexedDB-Zweitkopie, Zurücksetzen |
 | **Wohlbefinden** | Sanfter Modus mit Pause, **Minimalmodus** (ohne Ring, Ziel und Makros) und **Flexbereich** ±5–15 % – weniger Perfektionsdruck, keine roten Zahlen |
 | **Gnaden-Tage** | 0–3 leere Tage pro Monat brechen die Serie nicht – automatisch, lokal, ohne Punkte |
+| **Pausenmodus** | „Nur heute drüber“ oder 3/7/14 Tage/offen – Serie eingefroren, kein Kaloriendruck |
 | **Sprache** | Deutsch / English – Umschaltung unter **Profil → Sprache**, alle Screens sofort übersetzt |
 | **APK** | Eigene Android-App, komplett offline (`npm run apk`) – siehe [ANDROID.md](ANDROID.md) |
 
@@ -132,6 +133,10 @@ als 2×2-Montage (`uebersicht.png`).
   Sie werden automatisch verbraucht, aber nur wenn sie eine Lücke zwischen
   zwei Einträgen überbrücken. Standard sind 2; die Einstellung zeigt genutzte
   und verbleibende Gnaden-Tage für den aktuellen Monat.
+- **Pausenmodus:** „Nur heute drüber“, 3 Tage, 1 Woche, 2 Wochen oder ein
+  offenes Ende. Kalorienziel, Ring, Makros und Wochenbilanz sind währenddessen
+  ausgeblendet, die Serie ist eingefroren. Einträge bleiben freiwillig; die
+  Pause lässt sich jederzeit verlängern, verkürzen oder beenden.
 
 ### Profil, Sprache & Daten
 
@@ -306,6 +311,7 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 | Version | Schwerpunkt |
 |---|---|
+| **1.2.10** | Pausenmodus: „Nur heute drüber“ oder mehrere Tage mit eingefrorener Serie |
 | **1.2.9** | Gnaden-Tage: 0–3 leere Tage pro Monat brechen die Serie nicht |
 | **1.2.8** | Live-Schritte über `TYPE_STEP_DETECTOR`, Zählung bleibt kumulativ |
 | **1.2.7** | Schrittzähler reagiert schneller (500 ms, Sofortwert nach Resume) |
@@ -411,6 +417,7 @@ public/
     i18n.js             Sprachumschaltung (Wörterbuch, Muster, DOM-Übersetzung)
     ai.js               Gemini-Aufrufe, Bildverkleinerung, Demo-Modus
     ui.js               Sheets (mit Zurück-Taste), Toasts, Charts, Icons
+    pause.js            Pausenmodus (nur heute, mehrere Tage, offenes Ende)
     views/              onboarding · diary · add (Suche/Barcode/KI) · recipes · progress · fasting · profile
 android-app/            Capacitor-Projekt für die APK (siehe ANDROID.md)
 scripts/build-apk.mjs   APK bauen (npm run apk)

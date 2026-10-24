@@ -586,6 +586,42 @@ const EN = {
   'Empfohlen · ein Wochenende flexibel': 'Recommended · one flexible weekend',
   'Großzügiger Spielraum': 'Generous leeway',
   'Gnaden-Tage sind ausgeschaltet.': 'Grace days are turned off.',
+
+  // Pausenmodus
+  'Pausenmodus': 'Pause mode',
+  'Nur heute drüber oder ein paar Tage': 'Just today off, or a few days',
+  'Nur heute drüber oder ein paar Tage ohne Druck': 'Just today off, or a few days without pressure',
+  'Pause': 'Pause',
+  'Aktiv': 'On',
+  'Deine Pause läuft': 'Your pause runs',
+  'Kalorienziel und Wochenbilanz sind ausgeblendet, deine Serie ist eingefroren. Trage nur ein, wenn du möchtest – nichts wird bewertet.':
+    'Calorie target and weekly balance are hidden, your streak is frozen. Log only if you want to – nothing is judged.',
+  'Kalorienziel und Wochenbilanz sind ausgeblendet, deine Serie ist eingefroren.':
+    'Calorie target and weekly balance are hidden, your streak is frozen.',
+  'Anpassen': 'Adjust',
+  'Pause aktiv': 'Pause active',
+  'offen': 'open',
+  'Manchmal ist einfach „heute drüber“ okay. In der Pause wird dein Kalorienziel ausgeblendet und die Serie eingefroren. Du kannst weiter eintragen – nichts wird bewertet.':
+    'Sometimes simply “over today” is okay. During a pause your calorie target is hidden and your streak is frozen. You can keep logging – nothing is judged.',
+  'Nur heute': 'Just today',
+  'Nur heute drüber': 'Just today off',
+  'Ein Tag ohne Bewertung': 'One day without judgement',
+  'Kurze Auszeit': 'Short break',
+  '1 Woche': '1 week',
+  'Eine Woche ohne Druck': 'A week without pressure',
+  '2 Wochen': '2 weeks',
+  'Längere Pause': 'Longer break',
+  'Bis ich es beende': 'Until I end it',
+  'Offenes Ende': 'Open end',
+  'Eine bestehende Pause lässt sich verlängern oder verkürzen. Vergangene Pausentage bleiben eingefroren.':
+    'An existing pause can be extended or shortened. Past pause days stay frozen.',
+  'Pause angepasst': 'Pause adjusted',
+  'Pause starten': 'Start pause',
+  'Pause gestartet · ohne Enddatum': 'Pause started · no end date',
+  'Pause gestartet': 'Pause started',
+  'Bitte eine Dauer auswählen': 'Please choose a duration',
+  'Serie eingefroren': 'streak frozen',
+  'ohne Enddatum': 'no end date',
 };
 
 /* ---------------- Lebensmittel (Datenbanknamen) ---------------- */
@@ -864,6 +900,8 @@ const RULES = [
   [/^(\d+) Gnaden-Tage pro Monat$/, '$1 grace days per month'],
   [/^(\d+) (Tag|Tage)$/, (m) => `${m[1]} ${m[1] === '1' ? 'day' : 'days'}`],
   [/^(\d+) pro Monat$/, '$1 per month'],
+  [/^bis (.+) · noch (\d+) (Tag|Tage)$/,
+    (m) => `until ${m[1]} · ${m[2]} ${m[2] === '1' ? 'day' : 'days'}`],
 ];
 
 /* ---------------- Übersetzen ---------------- */

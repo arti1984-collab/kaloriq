@@ -50,6 +50,7 @@ as a 2×2 montage (`uebersicht.png`).
 | **Data** | JSON export/import, automatic backups, IndexedDB second copy, reset |
 | **Wellbeing** | Gentle mode with pause, **minimal mode** (no ring, target or macros) and **flex range** ±5–15 % – less perfection pressure, no red numbers |
 | **Grace days** | 0–3 blank days per month don’t break the streak – automatic, local, no points |
+| **Pause mode** | “Just today off” or 3/7/14 days/open – streak frozen, no calorie pressure |
 | **Language** | German / English – switch under **Profile → Language**, all screens translated instantly |
 | **APK** | Standalone Android app, fully offline (`npm run apk`) – see [ANDROID.md](ANDROID.md) |
 
@@ -130,6 +131,10 @@ as a 2×2 montage (`uebersicht.png`).
   They are used automatically, but only when they bridge a gap between two
   logged days. Default is 2; the setting shows used and remaining grace days
   for the current month.
+- **Pause mode:** “Just today off”, 3 days, 1 week, 2 weeks or an open end.
+  Calorie target, ring, macros and weekly balance are hidden during the pause,
+  the streak is frozen. Logging stays optional; the pause can be extended,
+  shortened or ended at any time.
 
 ### Profile, language & data
 
@@ -302,6 +307,7 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.2.10** | Pause mode: “just today off” or several days with a frozen streak |
 | **1.2.9** | Grace days: 0–3 blank days per month don’t break the streak |
 | **1.2.8** | Live steps via `TYPE_STEP_DETECTOR`, counting stays cumulative |
 | **1.2.7** | Step counter responds faster (500 ms, immediate value after resume) |
@@ -407,6 +413,7 @@ public/
     i18n.js             Language switching (dictionary, patterns, DOM translation)
     ai.js               Gemini calls, image resizing, demo mode
     ui.js               Sheets (with back button), toasts, charts, icons
+    pause.js            Pause mode (today, several days, open end)
     views/              onboarding · diary · add (search/barcode/AI) · recipes · progress · fasting · profile
 android-app/            Capacitor project for the APK (see ANDROID.md)
 scripts/build-apk.mjs   Build the APK (npm run apk)

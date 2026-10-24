@@ -1,7 +1,7 @@
 /* ============================================================
    Kaloriq – Profil & Einstellungen
    ============================================================ */
-import { store, exportJson, importJson, todayKey, streak, streakInfo, listBackups, backupNow, restoreBackup } from '../store.js';
+import { store, exportJson, importJson, todayKey, streak, streakInfo, listBackups, backupNow, restoreBackup, activePause } from '../store.js';
 import { ACTIVITY, GOALS, MACRO_PRESETS, computeTargets, projection, round1, bmi, bmiCategory, flexStatus } from '../calc.js';
 import {
   esc, fmt, icon, toast, openSheet, confirmDialog, downloadFile, haptic,
@@ -9,6 +9,7 @@ import {
 import { estimate, detectProxy, proxyStatus, listModels, pickModel } from '../ai.js';
 import { APP_VERSION } from '../version.js';
 import { getLang, setLang, locale } from '../i18n.js';
+import { openPauseSheet, pauseStateLabel } from '../pause.js';
 
 export function renderProfile(root) {
   const state = store.get();
@@ -17,7 +18,8 @@ export function renderProfile(root) {
   const proj = projection(p);
   const aiConfigured = Boolean(state.settings.apiKey) || proxyStatus();
   const gentle = Boolean(state.settings.gentleMode);
-  const paused = gentle && Boolean(state.settings.gentlePaused);
+  const pause = activePause();
+  const paused = Boolean(pause);
   const minimal = Boolean(state.settings.minimalMode);
   const flexBand = Math.max(0, Number(state.settings.flexBand) || 0);
   const flexOn = flexBand > 0;
@@ -98,13 +100,6 @@ export function renderProfile(root) {
         </span>
         <span class="switch" aria-hidden="true" aria-checked="${gentle}" style="pointer-events:none"></span>
       </button>
-      ${gentle ? `<button class="row" data-gentle-pause>
-        <span class="grow">
-          <span class="t">${paused ? 'Pause beenden' : 'Tracking pausieren'}</span>
-          <span class="s">${paused ? 'Kalorienziel wieder einblenden' : 'Tagesziel im Tagebuch ausblenden, Daten behalten'}</span>
-        </span>
-        ${icon(paused ? 'play' : 'pause', 'chev')}
-      </button>` : ''}
       <button class="row" data-flex role="switch" aria-checked="${flexOn}" aria-label="Flexbereich">
         <span class="grow">
           <span class="t">Flexbereich</span>
@@ -136,6 +131,14 @@ export function renderProfile(root) {
         </span>
         <span class="v">${grace.limit ? `${grace.graceRemaining} übrig` : '–'}</span>
         ${icon('chev', 'chev')}
+      </button>
+      <button class="row" data-pause>
+        <span class="grow">
+          <span class="t">Pausenmodus</span>
+          <span class="s">${pause ? `<span>Aktiv</span> · <span>${pauseStateLabel(pause)}</span>` : 'Nur heute drüber oder ein paar Tage ohne Druck'}</span>
+        </span>
+        <span class="v">${pause ? 'Pause' : ''}</span>
+        ${icon('pause', 'chev')}
       </button>
     </section>
 
@@ -206,14 +209,8 @@ export function renderProfile(root) {
   root.querySelector('[data-stepgoal]').addEventListener('click', () => openStepGoalSheet(root));
   root.querySelector('[data-gentle]').addEventListener('click', () => {
     const next = !store.get().settings.gentleMode;
-    store.saveSettings({ gentleMode: next, ...(next ? {} : { gentlePaused: false }) });
+    store.saveSettings({ gentleMode: next });
     toast(next ? 'Sanfter Modus aktiviert' : 'Sanfter Modus deaktiviert');
-    haptic();
-  });
-  root.querySelector('[data-gentle-pause]')?.addEventListener('click', () => {
-    const next = !store.get().settings.gentlePaused;
-    store.saveSettings({ gentlePaused: next });
-    toast(next ? 'Pause aktiviert' : 'Pause beendet');
     haptic();
   });
   root.querySelector('[data-flex]').addEventListener('click', () => {
@@ -230,6 +227,7 @@ export function renderProfile(root) {
     haptic();
   });
   root.querySelector('[data-grace]').addEventListener('click', () => openGraceSheet(root));
+  root.querySelector('[data-pause]').addEventListener('click', () => openPauseSheet());
   root.querySelector('[data-ai]').addEventListener('click', () => openAiSettings(root));
   root.querySelector('[data-aitest]').addEventListener('click', (e) => testAi(e.currentTarget));
   root.querySelector('[data-recipes]').addEventListener('click', () => {

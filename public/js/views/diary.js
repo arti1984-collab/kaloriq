@@ -4,11 +4,12 @@
 import {
   store, getDay, todayKey, addDays, dayLabel, shortDate,
   totals, mealTotals, MEALS, entryMacros, removeEntry, updateEntry,
-  setWater, setSteps, streak, weekSummary,
+  setWater, setSteps, streak, weekSummary, activePause, endPause,
 } from '../store.js';
 import { esc, fmt, icon, ring, macroRow, toast, openSheet, confirmDialog, haptic } from '../ui.js';
 import { flexStatus } from '../calc.js';
 import { openAddSheet } from './add.js';
+import { openPauseSheet, pauseStateLabel } from '../pause.js';
 import { stepsMode, isCounting, pendingSteps, startSteps, stopSteps } from '../steps.js';
 
 let selectedDate = todayKey();
@@ -55,7 +56,8 @@ export function renderDiary(root) {
           : 'Tippe auf ▶, um mitzuzählen – solange die App geöffnet ist.';
 
   const gentle = Boolean(state.settings.gentleMode);
-  const paused = gentle && Boolean(state.settings.gentlePaused);
+  const pause = activePause();
+  const paused = Boolean(pause);
   const minimal = Boolean(state.settings.minimalMode);
   const bandPct = Math.max(0, Number(state.settings.flexBand) || 0);
   const flex = flexStatus(t.kcal, target.kcal, bandPct);
@@ -89,13 +91,13 @@ export function renderDiary(root) {
       : gentleFlex.state === 'below'
         ? 'Heute liegt unter dem Richtwert. Auch das ist okay – kein Grund, alles aufzuholen.'
         : 'Du bist im Rahmen. Kein Grund, heute etwas nachzuholen.';
-  const headerSub = minimal
-    ? 'Minimal · ohne Zahlen'
-    : gentle
-      ? paused
-        ? 'Pause · ohne Kaloriendruck'
-        : `<span>${week.loggedDays}/7</span> <span>Tage mit Eintrag</span> · <span>Sanfter Modus</span>`
-      : `${streak() > 0 ? `🔥 ${streak()} ${streak() === 1 ? 'Tag' : 'Tage'} Serie · ` : ''}${fmt(target.kcal)} kcal ${flexOn ? 'Richtwert' : 'Ziel'}`;
+  const headerSub = paused
+    ? `<span>Pause</span> · <span>${pauseStateLabel(pause)}</span>`
+    : minimal
+      ? 'Minimal · ohne Zahlen'
+      : gentle
+        ? `<span>${week.loggedDays}/7</span> <span>Tage mit Eintrag</span> · <span>Sanfter Modus</span>`
+        : `${streak() > 0 ? `🔥 ${streak()} ${streak() === 1 ? 'Tag' : 'Tage'} Serie · ` : ''}${fmt(target.kcal)} kcal ${flexOn ? 'Richtwert' : 'Ziel'}`;
 
   const normalSummary = () => {
     const statusLabel = flexOn
@@ -141,6 +143,7 @@ export function renderDiary(root) {
           </div>
         </div>
       </div>
+      <button class="btn btn-sm btn-ghost" data-pause-open style="margin-top:10px">${icon('pause')} Nur heute drüber</button>
     </section>`;
   };
 
@@ -205,8 +208,11 @@ export function renderDiary(root) {
     <section class="card gentle-card gentle-pause">
       <div class="gentle-kicker">Pause</div>
       <h2 style="margin:8px 0 6px">Kein Kaloriendruck</h2>
-      <p class="small muted" style="max-width:320px;margin:0 auto">Dein Kalorienziel ist im Tagebuch ausgeblendet. Du kannst trotzdem eintragen, was du möchtest – nichts wird bewertet.</p>
-      <button class="btn btn-primary" data-gentle-resume style="margin-top:14px">Pause beenden</button>
+      <p class="small muted" style="max-width:340px;margin:0 auto"><span>Deine Pause läuft</span> <b>${pauseStateLabel(pause)}</b>. <span>Kalorienziel und Wochenbilanz sind ausgeblendet, deine Serie ist eingefroren. Trage nur ein, wenn du möchtest – nichts wird bewertet.</span></p>
+      <div class="hstack" style="gap:8px;justify-content:center;margin-top:14px">
+        <button class="btn btn-primary" data-pause-end>Pause beenden</button>
+        <button class="btn btn-ghost" data-pause-open>Anpassen</button>
+      </div>
     </section>`;
 
   root.innerHTML = `
@@ -367,14 +373,11 @@ export function renderDiary(root) {
   });
   root.querySelector('[data-steps-edit]').addEventListener('click', () => openStepsSheet(key, root));
 
-  // Sanfter Modus: Pause starten/beenden, alle Daten bleiben erhalten.
-  root.querySelector('[data-gentle-pause]')?.addEventListener('click', () => {
-    store.saveSettings({ gentlePaused: true });
-    toast('Pause aktiviert');
-    haptic();
-  });
-  root.querySelector('[data-gentle-resume]')?.addEventListener('click', () => {
-    store.saveSettings({ gentlePaused: false });
+  // Pausenmodus: öffnen, anpassen, beenden. Alle Daten bleiben erhalten.
+  root.querySelector('[data-gentle-pause]')?.addEventListener('click', () => openPauseSheet());
+  root.querySelector('[data-pause-open]')?.addEventListener('click', () => openPauseSheet());
+  root.querySelector('[data-pause-end]')?.addEventListener('click', () => {
+    endPause();
     toast('Pause beendet');
     haptic();
   });

@@ -47,6 +47,43 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.2.10] – 24.10.2026
+
+### Hinzugefügt
+
+- **Pausenmodus:** „Nur heute drüber“, 3 Tage, 1 Woche, 2 Wochen oder ein
+  offenes Ende. Erreichbar unter **Profil → Wohlbefinden → Pausenmodus**
+  sowie direkt im Tagebuch („Nur heute drüber“ bzw. „Pause machen“).
+- Während der Pause sind Kalorienziel, Tagesring, Makros und Wochenbilanz
+  ausgeblendet. Die Serie ist eingefroren, Einträge bleiben freiwillig und
+  werden nicht bewertet.
+- Pausenzeiträume werden lokal in `settings.pauses` gespeichert. Vergangene
+  Pausentage bleiben auch nach dem Beenden eingefroren; Gnaden-Tage werden
+  während einer Pause nicht verbraucht.
+- Eine laufende Pause lässt sich verlängern oder verkürzen; ein offenes Ende
+  ist ebenfalls möglich.
+
+### Geändert
+
+- Die bisherige Gentle-Pause (`gentlePaused`) wird beim Laden einmalig in
+  einen offenen Pausenzeitraum übernommen. Die Pause ist jetzt unabhängig
+  vom Sanften Modus und in Tagebuch, Fortschritt und Profil verfügbar.
+
+### Getestet
+
+- Pause für heute, 3/7/14 Tage und offenes Ende; Verlängern, Verkürzen und
+  Beenden. Serie bleibt über pausierte Lücken erhalten, ohne Gnaden-Tage zu
+  verbrauchen; Einträge während der Pause zählen normal weiter.
+- Tagebuch- und Fortschrittskarte, Profil-Zeile und Sheet in Deutsch und
+  Englisch; Migration der alten Gentle-Pause; keine Konsolenfehler.
+
+### Veröffentlicht
+
+- Service-Worker-Cache `kaloriq-v27`, Android `versionName 1.2.10` /
+  `versionCode 10210`; signierte APK als GitHub-Release `v1.2.10`.
+
+---
+
 ## [1.2.9] – 24.10.2026
 
 ### Hinzugefügt

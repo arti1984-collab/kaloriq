@@ -1,10 +1,11 @@
 /* ============================================================
    Kaloriq – Fortschritt (Gewicht, Woche, Makros)
    ============================================================ */
-import { store, todayKey, setWeight, weightSeries, weekSummary, streak, series } from '../store.js';
+import { store, todayKey, setWeight, weightSeries, weekSummary, streak, series, activePause, endPause } from '../store.js';
 import { bmi, bmiCategory, projection, round1, flexStatus } from '../calc.js';
 import { esc, fmt, icon, toast, openSheet, lineChart, weekBars, macroRow, haptic } from '../ui.js';
 import { locale } from '../i18n.js';
+import { openPauseSheet, pauseStateLabel } from '../pause.js';
 
 export function renderProgress(root) {
   const state = store.get();
@@ -19,7 +20,8 @@ export function renderProgress(root) {
   const weekTotal = week.days.reduce((a, d) => a + d.totals.kcal, 0);
   const weekTarget = t.kcal * Math.max(1, week.loggedDays);
   const gentle = Boolean(state.settings.gentleMode);
-  const paused = gentle && Boolean(state.settings.gentlePaused);
+  const pause = activePause();
+  const paused = Boolean(pause);
   const minimal = Boolean(state.settings.minimalMode);
   const bandPct = Math.max(0, Number(state.settings.flexBand) || 0);
   const flexOn = bandPct > 0;
@@ -33,13 +35,13 @@ export function renderProgress(root) {
       : weekFlex.state === 'below'
         ? 'darunter'
         : 'im Rahmen';
-  const headerSub = minimal
-    ? 'Minimal · ohne Zahlen'
-    : gentle
-      ? paused
-        ? '<span>Pause</span> · <span>Sanfter Modus</span>'
-        : `<span>${week.loggedDays}/7</span> <span>Tage mit Eintrag</span> · <span>Sanfter Modus</span>`
-      : `${streak() > 0 ? `🔥 ${streak()} ${streak() === 1 ? 'Tag' : 'Tage'} Serie · ` : ''}${week.loggedDays}/7 Tage getrackt`;
+  const headerSub = paused
+    ? `<span>Pause</span> · <span>${pauseStateLabel(pause)}</span>`
+    : minimal
+      ? 'Minimal · ohne Zahlen'
+      : gentle
+        ? `<span>${week.loggedDays}/7</span> <span>Tage mit Eintrag</span> · <span>Sanfter Modus</span>`
+        : `${streak() > 0 ? `🔥 ${streak()} ${streak() === 1 ? 'Tag' : 'Tage'} Serie · ` : ''}${week.loggedDays}/7 Tage getrackt`;
 
   root.innerHTML = `
     <header class="topbar">
@@ -49,16 +51,17 @@ export function renderProgress(root) {
       </div>
     </header>
 
-    ${minimal ? `<section class="card minimal-card">
+    ${paused ? `<section class="card gentle-card gentle-pause">
+      <div class="gentle-kicker">Pause</div>
+      <p class="small muted" style="margin:8px 0 0"><span>Deine Pause läuft</span> <b>${pauseStateLabel(pause)}</b>. <span>Kalorienziel und Wochenbilanz sind ausgeblendet, deine Serie ist eingefroren.</span></p>
+      <div class="hstack" style="gap:8px;justify-content:center;margin-top:12px">
+        <button class="btn btn-sm btn-primary" data-pause-end>Pause beenden</button>
+        <button class="btn btn-sm btn-ghost" data-pause-open>Anpassen</button>
+      </div>
+    </section>` : minimal ? `<section class="card minimal-card">
       <div class="gentle-kicker">Minimalmodus</div>
       <p class="gentle-note">Kalorienziel, Wochenbilanz und Makros sind ausgeblendet. Gewicht und Verlauf bleiben sichtbar.</p>
       <button class="btn btn-sm btn-ghost" data-minimal-off style="margin-top:10px">${icon('chart')} Zahlen einblenden</button>
-    </section>` : ''}
-
-    ${gentle && paused && !minimal ? `<section class="card gentle-card gentle-pause">
-      <div class="gentle-kicker">Pause</div>
-      <p class="small muted" style="margin:8px 0 0">Dein Kalorienziel ist im Tagebuch ausgeblendet. Deine Daten bleiben erhalten.</p>
-      <button class="btn btn-sm btn-primary" data-gentle-resume style="margin-top:12px">Pause beenden</button>
     </section>` : ''}
 
     <section class="card">
@@ -82,7 +85,7 @@ export function renderProgress(root) {
       <button class="btn btn-block" data-weight style="margin-top:14px">${icon('scale')} Gewicht eintragen</button>
     </section>
 
-    ${minimal ? '' : `<div class="stat-grid" style="margin-top:12px">
+    ${minimal || paused ? '' : `<div class="stat-grid" style="margin-top:12px">
       <div class="stat">
         <div class="lbl">Grundumsatz</div>
         <div class="val">${fmt(t.bmr)}<small> kcal</small></div>
@@ -142,11 +145,12 @@ export function renderProgress(root) {
   `;
 
   root.querySelector('[data-weight]').addEventListener('click', openWeightSheet);
-  root.querySelector('[data-gentle-resume]')?.addEventListener('click', () => {
-    store.saveSettings({ gentlePaused: false });
+  root.querySelector('[data-pause-end]')?.addEventListener('click', () => {
+    endPause();
     toast('Pause beendet');
     haptic();
   });
+  root.querySelector('[data-pause-open]')?.addEventListener('click', () => openPauseSheet());
   root.querySelector('[data-minimal-off]')?.addEventListener('click', () => {
     store.saveSettings({ minimalMode: false });
     toast('Zahlen wieder eingeblendet');

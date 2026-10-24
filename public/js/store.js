@@ -120,6 +120,9 @@ export function dateKey(date = new Date()) {
 
 export const todayKey = () => dateKey(new Date());
 
+/** Offenes Pausenende („bis ich es beende“). */
+export const PAUSE_OPEN_END = '9999-12-31';
+
 export function addDays(key, n) {
   const [y, m, d] = key.split('-').map(Number);
   const date = new Date(y, m - 1, d);
@@ -198,7 +201,11 @@ function defaultState() {
       stepsEnabled: false,
       // Sanfter Modus: Wochenrahmen statt Tagesdruck, keine roten Zahlen.
       gentleMode: false,
-      gentlePaused: false,
+      // Pausenmodus: Liste von Zeiträumen, in denen die Serie eingefroren
+      // und der Kaloriendruck ausgeblendet ist.
+      // [{ from: 'YYYY-MM-DD', to: 'YYYY-MM-DD' | PAUSE_OPEN_END }]
+      pauses: [],
+      pauseMigrated: false,
       // Flexbereich: ±X % um das Kalorienziel gelten als „im Rahmen“.
       // 0 = aus, klassische Anzeige mit harter Zielgrenze.
       flexBand: 10,
@@ -232,6 +239,27 @@ function migrate(raw) {
     favorites: Array.isArray(raw.favorites) ? raw.favorites : [],
     recipes: Array.isArray(raw.recipes) ? raw.recipes : [],
   };
+
+  // Pausen-Historie normalisieren. Die frühere Gentle-Pause (boolean) wird
+  // einmalig in einen offenen Pausenzeitraum übernommen.
+  const settings = state.settings;
+  const dateRe = /^\d{4}-\d{2}-\d{2}$/;
+  if (!Array.isArray(settings.pauses)) settings.pauses = [];
+  settings.pauses = settings.pauses
+    .filter((p) => p
+      && dateRe.test(p.from || '')
+      && (p.to === PAUSE_OPEN_END || dateRe.test(p.to || ''))
+      && p.from <= p.to)
+    .map((p) => ({ from: p.from, to: p.to }))
+    .sort((a, b) => a.from.localeCompare(b.from));
+  if (settings.gentlePaused && !settings.pauseMigrated) {
+    const today = todayKey();
+    if (!settings.pauses.some((p) => p.from <= today && today <= p.to)) {
+      settings.pauses.push({ from: today, to: PAUSE_OPEN_END });
+    }
+  }
+  delete settings.gentlePaused;
+  settings.pauseMigrated = true;
   for (const [k, v] of Object.entries(state.days)) {
     state.days[k] = { ...emptyDay(k), ...(v || {}) };
     if (!Array.isArray(state.days[k].entries)) state.days[k].entries = [];
@@ -628,6 +656,79 @@ export function weekSummary() {
   };
 }
 
+/* ---------- Pausenmodus ---------- */
+
+/** Aktiver Pausenzeitraum oder null. */
+export function activePause() {
+  const today = todayKey();
+  return (state.settings.pauses || []).find((p) => p && p.from <= today && today <= p.to) || null;
+}
+
+/** Liegt ein bestimmter Tag in einem Pausenzeitraum? */
+export function isPaused(key = todayKey()) {
+  return (state.settings.pauses || []).some((p) => p && p.from <= key && key <= p.to);
+}
+
+/**
+ * Pause starten oder verlängern.
+ * `days = null` bedeutet „bis ich es beende“ (offenes Ende).
+ */
+export function startPause(days = 1) {
+  const from = todayKey();
+  const to = days == null ? PAUSE_OPEN_END : addDays(from, Math.max(1, Math.round(days)) - 1);
+  const pauses = (state.settings.pauses || []).slice();
+  const current = pauses.find((p) => p && p.from <= from && from <= p.to);
+
+  if (current) {
+    // Bestehende Pause anpassen: vergangene Pausentage bleiben erhalten,
+    // das Ende kann verlängert oder verkürzt werden.
+    current.to = to;
+  } else {
+    pauses.push({ from, to });
+  }
+
+  // Nur Zeiträume behalten, die für die Serie noch relevant sind (800 Tage).
+  const cutoff = addDays(from, -800);
+  state.settings.pauses = pauses
+    .filter((p) => p && p.to >= cutoff)
+    .sort((a, b) => a.from.localeCompare(b.from))
+    .slice(-24);
+  state.settings.pauseMigrated = true;
+  state.updatedAt = Date.now();
+  persist();
+  emit('settings');
+  return activePause();
+}
+
+/** Pause sofort beenden. Bereits vergangene Pausentage bleiben eingefroren. */
+export function endPause() {
+  const today = todayKey();
+  const pauses = (state.settings.pauses || []).slice();
+  let changed = false;
+  for (const p of pauses) {
+    if (p && p.from <= today && today <= p.to) {
+      p.to = addDays(today, -1);
+      changed = true;
+    }
+  }
+  if (!changed) return false;
+  state.settings.pauses = pauses.filter((p) => p && p.from <= p.to);
+  state.updatedAt = Date.now();
+  persist();
+  emit('settings');
+  return true;
+}
+
+/** Verbleibende Pausentage inklusive heute; null bei offenem Ende. */
+export function pauseRemainingDays(p = activePause()) {
+  if (!p) return 0;
+  if (p.to === PAUSE_OPEN_END) return null;
+  const day = 86400000;
+  const end = new Date(`${p.to}T00:00:00`).getTime();
+  const now = new Date(`${todayKey()}T00:00:00`).getTime();
+  return Math.max(1, Math.round((end - now) / day) + 1);
+}
+
 /** Erlaubte Gnaden-Tage pro Kalendermonat (0–5). */
 export function graceDaysPerMonth() {
   return clamp(Math.round(Number(state.settings.graceDaysPerMonth) || 0), 0, 5);
@@ -676,6 +777,14 @@ export function streakInfo() {
       continue;
     }
 
+    // Pausentage ohne Eintrag werden übersprungen: Sie zählen nicht und
+    // brechen die Serie nicht. Wer während der Pause etwas einträgt, zählt
+    // normal weiter – das ist ein Bonus, keine Pflicht.
+    if (isPaused(key)) {
+      key = addDays(key, -1);
+      continue;
+    }
+
     if (limit <= 0) break;
     const month = key.slice(0, 7);
     const projected = (used[month] || 0)
@@ -688,12 +797,15 @@ export function streakInfo() {
   const month = todayKey().slice(0, 7);
   const graceUsed = Object.values(used).reduce((a, n) => a + n, 0);
   const graceUsedThisMonth = used[month] || 0;
+  const pause = activePause();
   return {
     count,
     limit,
     graceUsed,
     graceUsedThisMonth,
     graceRemaining: Math.max(0, limit - graceUsedThisMonth),
+    paused: Boolean(pause),
+    pauseUntil: pause?.to || null,
   };
 }
 
