@@ -1,5 +1,5 @@
 /* Kaloriq Service Worker – App-Shell offline verfuegbar. */
-const VERSION = 'kaloriq-v27';
+const VERSION = 'kaloriq-v28';
 const SHELL = [
   '/',
   '/index.html',
@@ -15,6 +15,7 @@ const SHELL = [
   '/js/steps.js',
   '/js/recipes.js',
   '/js/pause.js',
+  '/js/checkin.js',
   '/js/views/onboarding.js',
   '/js/views/diary.js',
   '/js/views/add.js',

@@ -51,6 +51,7 @@ als 2×2-Montage (`uebersicht.png`).
 | **Wohlbefinden** | Sanfter Modus mit Pause, **Minimalmodus** (ohne Ring, Ziel und Makros) und **Flexbereich** ±5–15 % – weniger Perfektionsdruck, keine roten Zahlen |
 | **Gnaden-Tage** | 0–3 leere Tage pro Monat brechen die Serie nicht – automatisch, lokal, ohne Punkte |
 | **Pausenmodus** | „Nur heute drüber“ oder 3/7/14 Tage/offen – Serie eingefroren, kein Kaloriendruck |
+| **Hunger & Sättigung** | Optionaler 1–10-Check-in pro Mahlzeit, vor und nach dem Essen – ohne Pflicht, ohne Bewertung |
 | **Sprache** | Deutsch / English – Umschaltung unter **Profil → Sprache**, alle Screens sofort übersetzt |
 | **APK** | Eigene Android-App, komplett offline (`npm run apk`) – siehe [ANDROID.md](ANDROID.md) |
 
@@ -137,6 +138,11 @@ als 2×2-Montage (`uebersicht.png`).
   offenes Ende. Kalorienziel, Ring, Makros und Wochenbilanz sind währenddessen
   ausgeblendet, die Serie ist eingefroren. Einträge bleiben freiwillig; die
   Pause lässt sich jederzeit verlängern, verkürzen oder beenden.
+- **Hunger & Sättigung:** Optionaler Check-in pro Mahlzeit mit zwei
+  1–10-Skalen (Hunger vor dem Essen, Sättigung danach). Eine Angabe reicht;
+  eine gewählte Zahl lässt sich durch erneutes Antippen entfernen. Die
+  Funktion ist unter **Profil → Wohlbefinden** ein- und ausblendbar und
+  speichert nur lokal.
 
 ### Profil, Sprache & Daten
 
@@ -311,6 +317,7 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 | Version | Schwerpunkt |
 |---|---|
+| **1.2.11** | Hunger-Sättigungs-Check pro Mahlzeit (optional, 1–10) |
 | **1.2.10** | Pausenmodus: „Nur heute drüber“ oder mehrere Tage mit eingefrorener Serie |
 | **1.2.9** | Gnaden-Tage: 0–3 leere Tage pro Monat brechen die Serie nicht |
 | **1.2.8** | Live-Schritte über `TYPE_STEP_DETECTOR`, Zählung bleibt kumulativ |
@@ -418,6 +425,7 @@ public/
     ai.js               Gemini-Aufrufe, Bildverkleinerung, Demo-Modus
     ui.js               Sheets (mit Zurück-Taste), Toasts, Charts, Icons
     pause.js            Pausenmodus (nur heute, mehrere Tage, offenes Ende)
+    checkin.js          Hunger-/Sättigungs-Check pro Mahlzeit
     views/              onboarding · diary · add (Suche/Barcode/KI) · recipes · progress · fasting · profile
 android-app/            Capacitor-Projekt für die APK (siehe ANDROID.md)
 scripts/build-apk.mjs   APK bauen (npm run apk)

@@ -622,6 +622,25 @@ const EN = {
   'Bitte eine Dauer auswählen': 'Please choose a duration',
   'Serie eingefroren': 'streak frozen',
   'ohne Enddatum': 'no end date',
+
+  // Hunger & Sättigung
+  'Hunger & Sättigung': 'Hunger & satiety',
+  'Hunger vor dem Essen': 'Hunger before eating',
+  'Sättigung nach dem Essen': 'Satiety after eating',
+  '1 = kaum Hunger · 10 = sehr hungrig': '1 = barely hungry · 10 = very hungry',
+  '1 = noch hungrig · 10 = übervoll': '1 = still hungry · 10 = overly full',
+  'Optional: Wie hungrig warst du vor dem Essen, wie satt danach? Beides ist freiwillig – du kannst auch nur eine Angabe machen.':
+    'Optional: how hungry were you before eating, how full afterwards? Both are optional – you can also give just one rating.',
+  'Kein Ziel, keine Bewertung. Tippe eine gewählte Zahl erneut an, um sie zu entfernen.':
+    'No goal, no judgement. Tap a selected number again to remove it.',
+  'Check-in entfernt': 'Check-in removed',
+  'Körpergefühl gespeichert': 'Check-in saved',
+  'ändern': 'change',
+  'erfassen': 'log',
+  'Aktiv · optionaler Check-in pro Mahlzeit': 'On · optional check-in per meal',
+  'Aus · keine Check-ins in den Mahlzeiten': 'Off · no check-ins in meals',
+  'Hunger-Check aktiviert': 'Hunger check enabled',
+  'Hunger-Check deaktiviert': 'Hunger check disabled',
 };
 
 /* ---------------- Lebensmittel (Datenbanknamen) ---------------- */
@@ -902,6 +921,10 @@ const RULES = [
   [/^(\d+) pro Monat$/, '$1 per month'],
   [/^bis (.+) · noch (\d+) (Tag|Tage)$/,
     (m) => `until ${m[1]} · ${m[2]} ${m[2] === '1' ? 'day' : 'days'}`],
+  [/^Hunger (\d+)\/10 · Sättigung (\d+)\/10$/, 'Hunger $1/10 · Satiety $2/10'],
+  [/^Hunger (\d+)\/10$/, 'Hunger $1/10'],
+  [/^Sättigung (\d+)\/10$/, 'Satiety $1/10'],
+  [/^Sättigung (\d+)$/, 'Satiety $1'],
 ];
 
 /* ---------------- Übersetzen ---------------- */

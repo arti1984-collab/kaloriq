@@ -214,6 +214,8 @@ function defaultState() {
       // Gnaden-Tage: So viele leere Tage pro Kalendermonat brechen die
       // Serie nicht (0 = aus).
       graceDaysPerMonth: 2,
+      // Optionaler Hunger-/Sättigungs-Check pro Mahlzeit.
+      hungerCheck: true,
       // Letzter Stand des Geräte-Schrittsensors (kumulativ seit Neustart).
       // { date: 'YYYY-MM-DD', value: number, ts: number } oder null.
       stepCounter: null,
@@ -222,7 +224,7 @@ function defaultState() {
 }
 
 export function emptyDay(key) {
-  return { date: key, entries: [], water: 0, steps: 0, weight: null, fast: null, note: '' };
+  return { date: key, entries: [], water: 0, steps: 0, weight: null, fast: null, note: '', checkins: {} };
 }
 
 function migrate(raw) {
@@ -263,6 +265,9 @@ function migrate(raw) {
   for (const [k, v] of Object.entries(state.days)) {
     state.days[k] = { ...emptyDay(k), ...(v || {}) };
     if (!Array.isArray(state.days[k].entries)) state.days[k].entries = [];
+    if (!state.days[k].checkins || typeof state.days[k].checkins !== 'object') {
+      state.days[k].checkins = {};
+    }
   }
   return state;
 }
@@ -583,6 +588,39 @@ export function addSteps(dateK, n) {
     const day = s.days[dateK] || (s.days[dateK] = emptyDay(dateK));
     day.steps = clamp(Math.round((day.steps || 0) + (Number(n) || 0)), 0, 200000);
   }, 'steps');
+}
+
+/**
+ * Optionalen Hunger-/Sättigungs-Check für eine Mahlzeit speichern.
+ * Werte sind 1–10; `null` entfernt die jeweilige Angabe.
+ */
+export function setCheckin(dateK, mealId, patch = {}) {
+  store.set((s) => {
+    const day = s.days[dateK] || (s.days[dateK] = emptyDay(dateK));
+    if (!day.checkins || typeof day.checkins !== 'object') day.checkins = {};
+    const previous = day.checkins[mealId] || {};
+    const norm = (v) => {
+      const n = Number(v);
+      return Number.isFinite(n) && n >= 1 ? clamp(Math.round(n), 1, 10) : null;
+    };
+    const before = Object.prototype.hasOwnProperty.call(patch, 'before') ? norm(patch.before) : norm(previous.before);
+    const after = Object.prototype.hasOwnProperty.call(patch, 'after') ? norm(patch.after) : norm(previous.after);
+    if (!before && !after) {
+      delete day.checkins[mealId];
+      return;
+    }
+    day.checkins[mealId] = { before, after, at: Date.now() };
+  }, 'checkin');
+}
+
+/** Hunger-/Sättigungs-Check einer Mahlzeit löschen. */
+export function clearCheckin(dateK, mealId) {
+  store.set((s) => {
+    const day = s.days[dateK];
+    if (day?.checkins && Object.prototype.hasOwnProperty.call(day.checkins, mealId)) {
+      delete day.checkins[mealId];
+    }
+  }, 'checkin');
 }
 
 /**

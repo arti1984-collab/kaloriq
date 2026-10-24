@@ -51,6 +51,7 @@ as a 2×2 montage (`uebersicht.png`).
 | **Wellbeing** | Gentle mode with pause, **minimal mode** (no ring, target or macros) and **flex range** ±5–15 % – less perfection pressure, no red numbers |
 | **Grace days** | 0–3 blank days per month don’t break the streak – automatic, local, no points |
 | **Pause mode** | “Just today off” or 3/7/14 days/open – streak frozen, no calorie pressure |
+| **Hunger & satiety** | Optional 1–10 check-in per meal, before and after eating – no obligation, no judgement |
 | **Language** | German / English – switch under **Profile → Language**, all screens translated instantly |
 | **APK** | Standalone Android app, fully offline (`npm run apk`) – see [ANDROID.md](ANDROID.md) |
 
@@ -135,6 +136,10 @@ as a 2×2 montage (`uebersicht.png`).
   Calorie target, ring, macros and weekly balance are hidden during the pause,
   the streak is frozen. Logging stays optional; the pause can be extended,
   shortened or ended at any time.
+- **Hunger & satiety:** Optional check-in per meal with two 1–10 scales
+  (hunger before eating, satiety afterwards). One rating is enough; tap a
+  selected number again to remove it. The feature can be shown or hidden under
+  **Profile → Wellbeing** and is stored locally only.
 
 ### Profile, language & data
 
@@ -307,6 +312,7 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.2.11** | Hunger/satiety check per meal (optional, 1–10) |
 | **1.2.10** | Pause mode: “just today off” or several days with a frozen streak |
 | **1.2.9** | Grace days: 0–3 blank days per month don’t break the streak |
 | **1.2.8** | Live steps via `TYPE_STEP_DETECTOR`, counting stays cumulative |
@@ -414,6 +420,7 @@ public/
     ai.js               Gemini calls, image resizing, demo mode
     ui.js               Sheets (with back button), toasts, charts, icons
     pause.js            Pause mode (today, several days, open end)
+    checkin.js          Hunger/satiety check per meal
     views/              onboarding · diary · add (search/barcode/AI) · recipes · progress · fasting · profile
 android-app/            Capacitor project for the APK (see ANDROID.md)
 scripts/build-apk.mjs   Build the APK (npm run apk)

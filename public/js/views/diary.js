@@ -10,6 +10,7 @@ import { esc, fmt, icon, ring, macroRow, toast, openSheet, confirmDialog, haptic
 import { flexStatus } from '../calc.js';
 import { openAddSheet } from './add.js';
 import { openPauseSheet, pauseStateLabel } from '../pause.js';
+import { openCheckinSheet, checkinFor, checkinSummary } from '../checkin.js';
 import { stepsMode, isCounting, pendingSteps, startSteps, stopSteps } from '../steps.js';
 
 let selectedDate = todayKey();
@@ -59,6 +60,7 @@ export function renderDiary(root) {
   const pause = activePause();
   const paused = Boolean(pause);
   const minimal = Boolean(state.settings.minimalMode);
+  const showCheckin = state.settings.hungerCheck !== false;
   const bandPct = Math.max(0, Number(state.settings.flexBand) || 0);
   const flex = flexStatus(t.kcal, target.kcal, bandPct);
   const flexOn = flex.enabled;
@@ -285,7 +287,7 @@ export function renderDiary(root) {
     </section>
 
     <div class="section-title">Mahlzeiten</div>
-    ${MEALS.map((meal) => mealCard(day, meal)).join('')}
+    ${MEALS.map((meal) => mealCard(day, meal, showCheckin)).join('')}
 
     <p class="tiny muted center" style="margin:18px 0 8px">
       ${t.fiber > 0 ? `${fmt(t.fiber)} g Ballaststoffe · ` : ''}${day.entries.length} Einträge
@@ -391,6 +393,9 @@ export function renderDiary(root) {
   root.querySelectorAll('[data-add-meal]').forEach((btn) => btn.addEventListener('click', () => {
     openAddSheet({ dateKey: key, meal: btn.dataset.addMeal });
   }));
+  root.querySelectorAll('[data-checkin]').forEach((btn) => btn.addEventListener('click', () => {
+    openCheckinSheet(key, btn.dataset.checkin);
+  }));
 
   root.querySelectorAll('[data-entry]').forEach((btn) => btn.addEventListener('click', () => {
     const entry = day.entries.find((e) => e.id === btn.dataset.entry);
@@ -458,9 +463,11 @@ function openStepsSheet(key, root) {
   });
 }
 
-function mealCard(day, meal) {
+function mealCard(day, meal, showCheckin = true) {
   const entries = day.entries.filter((e) => e.meal === meal.id);
   const mt = mealTotals(day, meal.id);
+  const checkin = showCheckin ? checkinFor(day, meal.id) : null;
+  const checkinText = showCheckin ? checkinSummary(day, meal.id) : '';
   return `
     <section class="card meal">
       <div class="meal-head">
@@ -472,6 +479,10 @@ function mealCard(day, meal) {
       ${entries.length
         ? entries.map((e) => entryRow(e)).join('')
         : `<div class="empty-line">Noch nichts eingetragen</div>`}
+      ${showCheckin ? `<button class="checkin-line${checkin ? ' has' : ''}" data-checkin="${meal.id}">
+        <span>${checkinText}</span>
+        <span class="action">${checkin ? 'ändern' : 'erfassen'}</span>
+      </button>` : ''}
     </section>`;
 }
 

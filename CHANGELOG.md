@@ -47,6 +47,42 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.2.11] – 24.10.2026
+
+### Hinzugefügt
+
+- **Hunger-Sättigungs-Check:** Pro Mahlzeit lässt sich optional ein
+  Check-in mit zwei 1–10-Skalen erfassen – **Hunger vor dem Essen** und
+  **Sättigung nach dem Essen**. Beide Angaben sind freiwillig; eine reicht
+  auch.
+- Der Check-in erscheint als dezente Zeile an jeder Mahlzeit im Tagebuch
+  („Hunger & Sättigung“) und lässt sich dort öffnen, ändern oder löschen.
+  Eine gewählte Zahl wird durch erneutes Antippen wieder entfernt.
+- Unter **Profil → Wohlbefinden → Hunger & Sättigung** lässt sich die
+  Funktion komplett ein- oder ausblenden. Standard: an.
+
+### Geändert
+
+- Die Tagesdaten haben ein zusätzliches Feld `checkins` pro Mahlzeit.
+  `migrate()` ergänzt es bei bestehenden Tagen; vorhandene Einträge bleiben
+  unverändert. Check-ins werden mit Export, Import und Sicherungen gespeichert.
+
+### Getestet
+
+- Check-in mit beiden Werten, nur einem Wert, Toggle zum Entfernen und
+  Löschen; Anzeige in der Mahlzeitenzeile.
+- Ausblenden über den Profil-Schalter; Tagebuch zeigt danach keine
+  Check-in-Zeilen.
+- Deutsch/Englisch, Sheet-Untertitel, 1–10-Skalen und bestehende Tage ohne
+  `checkins`; keine Konsolenfehler.
+
+### Veröffentlicht
+
+- Service-Worker-Cache `kaloriq-v28`, Android `versionName 1.2.11` /
+  `versionCode 10211`; signierte APK als GitHub-Release `v1.2.11`.
+
+---
+
 ## [1.2.10] – 24.10.2026
 
 ### Hinzugefügt

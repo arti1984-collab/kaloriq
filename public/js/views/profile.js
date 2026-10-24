@@ -21,6 +21,7 @@ export function renderProfile(root) {
   const pause = activePause();
   const paused = Boolean(pause);
   const minimal = Boolean(state.settings.minimalMode);
+  const hungerCheck = state.settings.hungerCheck !== false;
   const flexBand = Math.max(0, Number(state.settings.flexBand) || 0);
   const flexOn = flexBand > 0;
   const flexRange = flexStatus(t.kcal, t.kcal, flexBand);
@@ -140,6 +141,13 @@ export function renderProfile(root) {
         <span class="v">${pause ? 'Pause' : ''}</span>
         ${icon('pause', 'chev')}
       </button>
+      <button class="row" data-hunger role="switch" aria-checked="${hungerCheck}" aria-label="Hunger &amp; Sättigung">
+        <span class="grow">
+          <span class="t">Hunger &amp; Sättigung</span>
+          <span class="s">${hungerCheck ? 'Aktiv · optionaler Check-in pro Mahlzeit' : 'Aus · keine Check-ins in den Mahlzeiten'}</span>
+        </span>
+        <span class="switch" aria-hidden="true" aria-checked="${hungerCheck}" style="pointer-events:none"></span>
+      </button>
     </section>
 
     <div class="section-title">KI-Tracking</div>
@@ -228,6 +236,12 @@ export function renderProfile(root) {
   });
   root.querySelector('[data-grace]').addEventListener('click', () => openGraceSheet(root));
   root.querySelector('[data-pause]').addEventListener('click', () => openPauseSheet());
+  root.querySelector('[data-hunger]').addEventListener('click', () => {
+    const next = store.get().settings.hungerCheck === false;
+    store.saveSettings({ hungerCheck: next });
+    toast(next ? 'Hunger-Check aktiviert' : 'Hunger-Check deaktiviert');
+    haptic();
+  });
   root.querySelector('[data-ai]').addEventListener('click', () => openAiSettings(root));
   root.querySelector('[data-aitest]').addEventListener('click', (e) => testAi(e.currentTarget));
   root.querySelector('[data-recipes]').addEventListener('click', () => {
