@@ -297,6 +297,12 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
   /* ---------- Menge / Detail ---------- */
   function renderQuantity(food) {
     const defaultGrams = food.portion?.grams || 100;
+    const baseGrams = defaultGrams;
+    const handGrams = {
+      small: Math.max(10, Math.round(baseGrams * 0.7)),
+      medium: Math.max(10, Math.round(baseGrams)),
+      large: Math.max(10, Math.round(baseGrams * 1.5)),
+    };
     panel.innerHTML = `
       <button class="btn btn-ghost btn-sm" data-back style="margin:-6px 0 10px -8px">${icon('left')} Zurück</button>
       <div class="card" style="padding:16px">
@@ -308,13 +314,27 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
           </div>
         </div>
         <div class="divider"></div>
-        <div class="field" style="margin-bottom:10px">
-          <label for="qty">Menge (g)</label>
-          <input class="input" id="qty" type="number" inputmode="decimal" step="1" value="${defaultGrams}">
+        <div class="seg" style="margin-bottom:12px" data-unit-switch>
+          <button type="button" data-unit="g" aria-selected="true">Gramm</button>
+          <button type="button" data-unit="hand" aria-selected="false">Handportion</button>
         </div>
-        <div class="chips" style="margin-bottom:14px">
-          ${[50, 100, 150, 200, 250].map((g) => `<button class="chip" data-q="${g}">${g} g</button>`).join('')}
-          ${food.portion ? `<button class="chip on" data-q="${food.portion.grams}">${esc(food.portion.label)} (${fmt(food.portion.grams)} g)</button>` : ''}
+        <div data-qty-g>
+          <div class="field" style="margin-bottom:10px">
+            <label for="qty">Menge (g)</label>
+            <input class="input" id="qty" type="number" inputmode="decimal" step="1" value="${defaultGrams}">
+          </div>
+          <div class="chips" style="margin-bottom:14px">
+            ${[50, 100, 150, 200, 250].map((g) => `<button class="chip" data-q="${g}">${g} g</button>`).join('')}
+            ${food.portion ? `<button class="chip on" data-q="${food.portion.grams}">${esc(food.portion.label)} (${fmt(food.portion.grams)} g)</button>` : ''}
+          </div>
+        </div>
+        <div data-qty-hand hidden>
+          <div class="chips" style="margin-bottom:10px">
+            <button class="chip" data-hand="small" aria-pressed="false">Klein · ca. ${fmt(handGrams.small)} g</button>
+            <button class="chip" data-hand="medium" aria-pressed="true">Mittel · ca. ${fmt(handGrams.medium)} g</button>
+            <button class="chip" data-hand="large" aria-pressed="false">Groß · ca. ${fmt(handGrams.large)} g</button>
+          </div>
+          <p class="tiny muted" style="margin-bottom:14px">Orientierung: eine Handportion, keine Waage.</p>
         </div>
         <div class="stat-grid" id="qty-stats"></div>
       </div>
@@ -343,6 +363,40 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
       input.value = b.dataset.q;
       paint();
     }));
+
+    // Handportionen: grobe Portionsgrößen statt Gramm.
+    let unit = 'g';
+    let hand = 'medium';
+    const applyUnit = (next) => {
+      unit = next;
+      panel.querySelectorAll('[data-unit]').forEach((b) => {
+        b.setAttribute('aria-selected', String(b.dataset.unit === unit));
+      });
+      panel.querySelectorAll('[data-qty-g]').forEach((el) => { el.hidden = unit !== 'g'; });
+      const handBox = panel.querySelector('[data-qty-hand]');
+      if (handBox) handBox.hidden = unit !== 'hand';
+      if (unit === 'hand') {
+        input.value = String(handGrams[hand]);
+        paint();
+      }
+    };
+    panel.querySelectorAll('[data-unit]').forEach((b) => b.addEventListener('click', () => {
+      applyUnit(b.dataset.unit);
+      haptic();
+    }));
+    panel.querySelectorAll('[data-hand]').forEach((b) => b.addEventListener('click', () => {
+      hand = b.dataset.hand;
+      panel.querySelectorAll('[data-hand]').forEach((x) => {
+        x.setAttribute('aria-pressed', String(x === b));
+      });
+      if (unit !== 'hand') applyUnit('hand');
+      else {
+        input.value = String(handGrams[hand]);
+        paint();
+      }
+      haptic();
+    }));
+
     panel.querySelectorAll('[data-meal]').forEach((b) => b.addEventListener('click', () => {
       state.meal = b.dataset.meal;
       panel.querySelectorAll('[data-meal]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
@@ -625,6 +679,106 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
   }
 
   setMode('search');
+}
+
+/* ============================================================
+   Schnell eintragen (Rough Log)
+   ============================================================ */
+export function openQuickLogSheet({ dateKey = todayKey(), meal = 'lunch' } = {}) {
+  const targets = store.get().targets;
+  const options = [
+    { id: 'light', label: 'Leicht', sub: 'Kleine Portion', factor: 0.2 },
+    { id: 'normal', label: 'Normal', sub: 'Normale Portion', factor: 0.3 },
+    { id: 'hearty', label: 'Reichhaltig', sub: 'Große Portion', factor: 0.4 },
+  ];
+  const state = { meal, size: 'normal' };
+  const current = () => options.find((o) => o.id === state.size) || options[1];
+  const estimate = (factor) => {
+    const goal = targets.kcal || 1800;
+    const kcal = Math.max(1, Math.round(goal * factor));
+    const ratio = kcal / goal;
+    const macro = (value) => Math.round((Number(value) || 0) * ratio * 10) / 10;
+    return {
+      kcal,
+      protein: macro(targets.protein),
+      carbs: macro(targets.carbs),
+      fat: macro(targets.fat),
+      fiber: macro(targets.fiber),
+    };
+  };
+
+  const body = document.createElement('div');
+  body.innerHTML = `
+    <p class="small muted" style="margin-bottom:14px">Grobe Schätzung ohne Grammangaben. Die Werte richten sich nach deinem Tagesziel – du kannst den Eintrag später jederzeit bearbeiten.</p>
+    <div class="field">
+      <label for="ql-name">Was war es? <span class="muted">(optional)</span></label>
+      <input class="input" id="ql-name" placeholder="z. B. Kantine, Pizza, Salat" autocomplete="off">
+    </div>
+    <div class="section-title" style="margin-top:4px">Portion</div>
+    ${options.map((o) => {
+      const e = estimate(o.factor);
+      return `<button class="choice" data-size="${o.id}" aria-pressed="${o.id === state.size}">
+        <span class="ico">${o.id === 'light' ? '◔' : o.id === 'hearty' ? '●' : '◑'}</span>
+        <span class="grow"><span class="t">${o.label}</span><span class="s">${o.sub} · ca. ${fmt(e.kcal)} kcal</span></span>
+        <span class="dot"></span>
+      </button>`;
+    }).join('')}
+    <div class="hstack" id="ql-macros" style="gap:8px;margin-top:12px;flex-wrap:wrap"></div>
+    <div class="section-title">Mahlzeit</div>
+    <div class="chips">
+      ${MEALS.map((m) => `<button class="chip" data-meal="${m.id}" aria-pressed="${m.id === state.meal}">${m.icon} ${m.label}</button>`).join('')}
+    </div>
+  `;
+
+  const sheet = openSheet({
+    title: 'Schnell eintragen',
+    subtitle: mealLabel(state.meal),
+    body,
+    footer: '<button class="btn btn-primary btn-block" data-add>Schnell eintragen</button>',
+    tall: true,
+  });
+
+  const macros = body.querySelector('#ql-macros');
+  const paint = () => {
+    const e = estimate(current().factor);
+    macros.innerHTML = `
+      <span class="pill">P ${fmt(e.protein, 1)} g</span>
+      <span class="pill neutral">KH ${fmt(e.carbs, 1)} g</span>
+      <span class="pill neutral">F ${fmt(e.fat, 1)} g</span>`;
+    const add = sheet.foot?.querySelector('[data-add]');
+    if (add) add.textContent = `Eintragen · ca. ${fmt(e.kcal)} kcal`;
+  };
+  paint();
+
+  body.querySelectorAll('[data-size]').forEach((b) => b.addEventListener('click', () => {
+    state.size = b.dataset.size;
+    body.querySelectorAll('[data-size]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    paint();
+    haptic();
+  }));
+  body.querySelectorAll('[data-meal]').forEach((b) => b.addEventListener('click', () => {
+    state.meal = b.dataset.meal;
+    body.querySelectorAll('[data-meal]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    const sub = sheet.el.querySelector('.sheet-head .small');
+    if (sub) sub.textContent = mealLabel(state.meal);
+  }));
+
+  sheet.foot?.querySelector('[data-add]')?.addEventListener('click', () => {
+    const option = current();
+    const e = estimate(option.factor);
+    const nameInput = body.querySelector('#ql-name');
+    const name = nameInput.value.trim().slice(0, 80) || `${tr('Schnell')} · ${tr(option.label)}`;
+    addEntries(dateKey, state.meal, [{
+      name,
+      grams: 100,
+      per100: { kcal: e.kcal, protein: e.protein, carbs: e.carbs, fat: e.fat, fiber: e.fiber },
+      source: 'rough',
+      emoji: '≈',
+    }]);
+    haptic(15);
+    toast('Schnell-Eintrag hinzugefügt');
+    sheet.close();
+  });
 }
 
 /* ============================================================

@@ -47,6 +47,42 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.2.13] – 24.10.2026
+
+### Hinzugefügt
+
+- **Handportionen-Modus:** In der Mengenauswahl lässt sich zwischen
+  **Gramm** und **Handportion** umschalten. Klein/Mittel/Groß schätzen die
+  Menge anhand der hinterlegten Portion (oder 100 g) – ganz ohne Waage.
+  Die Grammzahl und die Nährwerte werden dabei weiterhin angezeigt.
+- **„Schnell eintragen“ (Rough Log):** Pro Mahlzeit ein Knopf für eine grobe
+  Schätzung: **Leicht**, **Normal** oder **Reichhaltig**. Die Kalorien und
+  Makros richten sich nach dem Tagesziel (20/30/40 %), ein Name ist optional.
+- Schnell-Einträge werden als **„grobe Schätzung“** markiert und können
+  später wie jeder andere Eintrag bearbeitet oder gelöscht werden.
+
+### Geändert
+
+- Einträge mit `source: 'rough'` zeigen in der Tagebuchzeile „grobe
+  Schätzung“ statt einer Grammangabe; die Quelle heißt „Schnell“.
+
+### Getestet
+
+- Handportionen: Umschalten, Klein/Mittel/Groß (bei 50-g-Portion →
+  35/50/75 g), aktualisierte Nährwerte und Speichern.
+- Schnell-Eintrag: Leicht/Normal/Reichhaltig (360/540/720 kcal bei
+  1.800 kcal Tagesziel), Makros, optionaler Name, Mahlzeitwechsel und
+  Anzeige im Tagebuch.
+- Deutsch/Englisch inkl. dynamischer Labels und grober Schätzung; keine
+  Konsolenfehler.
+
+### Veröffentlicht
+
+- Service-Worker-Cache `kaloriq-v30`, Android `versionName 1.2.13` /
+  `versionCode 10213`; signierte APK als GitHub-Release `v1.2.13`.
+
+---
+
 ## [1.2.12] – 24.10.2026
 
 ### Hinzugefügt

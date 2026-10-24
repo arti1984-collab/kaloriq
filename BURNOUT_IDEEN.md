@@ -9,7 +9,8 @@ Perfektion verlangen.**
 
 > Stand: 24.10.2026 · Umgesetzt: **Minimalmodus** und **Flexbereich** (1.2.6),
 > **Gnaden-Tage** (1.2.9), **Pausenmodus** (1.2.10),
-> **Hunger-Sättigungs-Check** (1.2.11), **Kleine Erfolge** (1.2.12).
+> **Hunger-Sättigungs-Check** (1.2.11), **Kleine Erfolge** (1.2.12),
+> **Handportionen** und **Rough Log** (1.2.13).
 
 ---
 
@@ -26,8 +27,8 @@ Perfektion verlangen.**
 
 | Idee | Nutzen | Aufwand | Bemerkung | Status |
 |---|---|---|---|---|
-| **Handportionen-Modus** | Weniger manuelles Suchen/Abwiegen | Mittel | Statt Gramm nur „klein/mittel/groß“ auswählen (z. B. Faust, Handfläche, Daumen). Praktisch für Restaurant, Kantine oder Faul-Tage. | Idee |
-| **„Rough Log“** | Minimale Reibung | Mittel | Ein Knopf „Schnell eintragen“ pro Mahlzeit: nur Kategorie + grobe Schätzung („leicht“, „normal“, „reichhaltig“) – keine exakten Grammangaben. | Idee |
+| **Handportionen-Modus** | Weniger manuelles Suchen/Abwiegen | Mittel | Statt Gramm nur „klein/mittel/groß“ auswählen (z. B. Faust, Handfläche, Daumen). Praktisch für Restaurant, Kantine oder Faul-Tage. | **Umgesetzt (1.2.13)** |
+| **„Rough Log“** | Minimale Reibung | Mittel | Ein Knopf „Schnell eintragen“ pro Mahlzeit: nur Kategorie + grobe Schätzung („leicht“, „normal“, „reichhaltig“) – keine exakten Grammangaben. | **Umgesetzt (1.2.13)** |
 | **Grace-Days** | Entspanntes Tracking | Mittel | Erlaubt z. B. 1–2 „Gnaden-Tage“ pro Monat, die den Streak **nicht** brechen. Komplett lokal in `store.js`. | **Umgesetzt (1.2.9)** |
 | **Minimalmodus („Mindful Mode“)** | Für Phasen, wo Zahlen triggern | Mittel | Schalter unter **Profil → Wohlbefinden**. Versteckt Tagesring, Kalorienziel, Makros und Wochenbilanz. Zeigt Mahlzeiten, Wasser, Schritte, Gewicht und Verlauf. | **Umgesetzt (1.2.6)** |
 

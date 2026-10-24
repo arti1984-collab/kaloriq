@@ -8,7 +8,7 @@ import {
 } from '../store.js';
 import { esc, fmt, icon, ring, macroRow, toast, openSheet, confirmDialog, haptic } from '../ui.js';
 import { flexStatus } from '../calc.js';
-import { openAddSheet } from './add.js';
+import { openAddSheet, openQuickLogSheet } from './add.js';
 import { openPauseSheet, pauseStateLabel } from '../pause.js';
 import { openCheckinSheet, checkinFor, checkinSummary } from '../checkin.js';
 import { winsCard, bindWins } from '../wins.js';
@@ -396,6 +396,9 @@ export function renderDiary(root) {
   root.querySelectorAll('[data-add-meal]').forEach((btn) => btn.addEventListener('click', () => {
     openAddSheet({ dateKey: key, meal: btn.dataset.addMeal });
   }));
+  root.querySelectorAll('[data-quick-meal]').forEach((btn) => btn.addEventListener('click', () => {
+    openQuickLogSheet({ dateKey: key, meal: btn.dataset.quickMeal });
+  }));
   root.querySelectorAll('[data-checkin]').forEach((btn) => btn.addEventListener('click', () => {
     openCheckinSheet(key, btn.dataset.checkin);
   }));
@@ -478,6 +481,7 @@ function mealCard(day, meal, showCheckin = true) {
         <span class="meal-ico">${meal.icon}</span>
         <span class="meal-name">${meal.label}</span>
         <span class="meal-kcal">${entries.length ? fmt(mt.kcal) + ' kcal' : ''}</span>
+        <button class="quick-mini" data-quick-meal="${meal.id}" aria-label="${meal.label} schnell eintragen" title="Schnell eintragen">≈ <span>Schnell</span></button>
         <button class="add-mini" data-add-meal="${meal.id}" aria-label="${meal.label} hinzufügen">+</button>
       </div>
       ${entries.length
@@ -496,7 +500,7 @@ function entryRow(entry) {
     ? `<img src="${esc(entry.photo)}" alt="">`
     : (entry.emoji || '🍽️');
   const sub = [
-    `${fmt(entry.grams, entry.grams % 1 ? 1 : 0)} g`,
+    entry.source === 'rough' ? 'grobe Schätzung' : `${fmt(entry.grams, entry.grams % 1 ? 1 : 0)} g`,
     entry.brand ? esc(entry.brand) : '',
     m.protein || m.carbs || m.fat ? `P ${fmt(m.protein)} · KH ${fmt(m.carbs)} · F ${fmt(m.fat)}` : '',
   ].filter(Boolean).join(' · ');
@@ -520,60 +524,77 @@ function entryRow(entry) {
 
 export function openEntrySheet(entry, key) {
   const m0 = entryMacros(entry);
+  const rough = entry.source === 'rough';
   const body = document.createElement('div');
-  body.innerHTML = `
-    <div class="field">
-      <label for="entry-grams">Menge (g)</label>
-      <input class="input" id="entry-grams" type="number" inputmode="decimal" step="1" value="${entry.grams}">
-    </div>
-    <div class="chips" style="margin:-4px 0 16px">
-      ${[50, 100, 150, 200, 250].map((g) => `<button class="chip" data-g="${g}">${g} g</button>`).join('')}
-    </div>
-    <div class="stat-grid" id="entry-stats"></div>
-    <div class="divider"></div>
-    <div class="vstack tiny muted">
-      <div class="row static" style="padding:0;border:0"><span class="grow">Pro 100 g</span><span class="v">${fmt(entry.per100.kcal, 1)} kcal · P ${fmt(entry.per100.protein, 1)} · KH ${fmt(entry.per100.carbs, 1)} · F ${fmt(entry.per100.fat, 1)}</span></div>
-      <div class="row static" style="padding:0;border:0"><span class="grow">Quelle</span><span class="v">${sourceLabel(entry.source)}</span></div>
-    </div>
-  `;
+  body.innerHTML = rough
+    ? `
+      <div class="ai-note"><span>≈</span><span>Grobe Schätzung – keine exakte Grammangabe. Lösche den Eintrag und lege ihn bei Bedarf mit einer anderen Portionsgröße neu an.</span></div>
+      <div class="stat-grid">
+        <div class="stat"><div class="lbl">Kalorien</div><div class="val">${fmt(m0.kcal)}</div></div>
+        <div class="stat"><div class="lbl">Protein</div><div class="val">${fmt(m0.protein)}<small> g</small></div></div>
+        <div class="stat"><div class="lbl">Kohlenhydrate</div><div class="val">${fmt(m0.carbs)}<small> g</small></div></div>
+        <div class="stat"><div class="lbl">Fett</div><div class="val">${fmt(m0.fat)}<small> g</small></div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="vstack tiny muted">
+        <div class="row static" style="padding:0;border:0"><span class="grow">Quelle</span><span class="v">${sourceLabel(entry.source)}</span></div>
+      </div>`
+    : `
+      <div class="field">
+        <label for="entry-grams">Menge (g)</label>
+        <input class="input" id="entry-grams" type="number" inputmode="decimal" step="1" value="${entry.grams}">
+      </div>
+      <div class="chips" style="margin:-4px 0 16px">
+        ${[50, 100, 150, 200, 250].map((g) => `<button class="chip" data-g="${g}">${g} g</button>`).join('')}
+      </div>
+      <div class="stat-grid" id="entry-stats"></div>
+      <div class="divider"></div>
+      <div class="vstack tiny muted">
+        <div class="row static" style="padding:0;border:0"><span class="grow">Pro 100 g</span><span class="v">${fmt(entry.per100.kcal, 1)} kcal · P ${fmt(entry.per100.protein, 1)} · KH ${fmt(entry.per100.carbs, 1)} · F ${fmt(entry.per100.fat, 1)}</span></div>
+        <div class="row static" style="padding:0;border:0"><span class="grow">Quelle</span><span class="v">${sourceLabel(entry.source)}</span></div>
+      </div>`;
 
   const sheet = openSheet({
     title: entry.name,
     subtitle: entry.brand || (entry.meal ? MEALS.find((x) => x.id === entry.meal)?.label : ''),
     body,
-    footer: `
+    footer: rough
+      ? '<button class="btn btn-danger btn-block" data-del>Eintrag löschen</button>'
+      : `
       <button class="btn btn-danger btn-icon-only" data-del aria-label="Löschen">${icon('trash')}</button>
       <button class="btn btn-primary grow" data-save>Speichern</button>
     `,
     tall: false,
   });
 
-  const input = sheet.body.querySelector('#entry-grams');
-  const stats = sheet.body.querySelector('#entry-stats');
+  if (!rough) {
+    const input = sheet.body.querySelector('#entry-grams');
+    const stats = sheet.body.querySelector('#entry-stats');
 
-  const paint = () => {
-    const grams = Math.max(0, Number(String(input.value).replace(',', '.')) || 0);
-    const e = { ...entry, grams };
-    const m = entryMacros(e);
-    stats.innerHTML = `
-      <div class="stat"><div class="lbl">Kalorien</div><div class="val">${fmt(m.kcal)}</div></div>
-      <div class="stat"><div class="lbl">Protein</div><div class="val">${fmt(m.protein)}<small> g</small></div></div>
-      <div class="stat"><div class="lbl">Kohlenhydrate</div><div class="val">${fmt(m.carbs)}<small> g</small></div></div>
-      <div class="stat"><div class="lbl">Fett</div><div class="val">${fmt(m.fat)}<small> g</small></div></div>`;
-  };
-  paint();
-  input.addEventListener('input', paint);
-  sheet.body.querySelectorAll('[data-g]').forEach((b) => b.addEventListener('click', () => {
-    input.value = b.dataset.g;
+    const paint = () => {
+      const grams = Math.max(0, Number(String(input.value).replace(',', '.')) || 0);
+      const e = { ...entry, grams };
+      const m = entryMacros(e);
+      stats.innerHTML = `
+        <div class="stat"><div class="lbl">Kalorien</div><div class="val">${fmt(m.kcal)}</div></div>
+        <div class="stat"><div class="lbl">Protein</div><div class="val">${fmt(m.protein)}<small> g</small></div></div>
+        <div class="stat"><div class="lbl">Kohlenhydrate</div><div class="val">${fmt(m.carbs)}<small> g</small></div></div>
+        <div class="stat"><div class="lbl">Fett</div><div class="val">${fmt(m.fat)}<small> g</small></div></div>`;
+    };
     paint();
-  }));
+    input.addEventListener('input', paint);
+    sheet.body.querySelectorAll('[data-g]').forEach((b) => b.addEventListener('click', () => {
+      input.value = b.dataset.g;
+      paint();
+    }));
 
-  sheet.foot?.querySelector('[data-save]')?.addEventListener('click', () => {
-    const grams = Math.max(1, Number(String(input.value).replace(',', '.')) || 0);
-    updateEntry(key, entry.id, { grams });
-    sheet.close();
-    toast('Eintrag aktualisiert');
-  });
+    sheet.foot?.querySelector('[data-save]')?.addEventListener('click', () => {
+      const grams = Math.max(1, Number(String(input.value).replace(',', '.')) || 0);
+      updateEntry(key, entry.id, { grams });
+      sheet.close();
+      toast('Eintrag aktualisiert');
+    });
+  }
 
   sheet.foot?.querySelector('[data-del]')?.addEventListener('click', async () => {
     sheet.close();
@@ -602,5 +623,6 @@ function sourceLabel(source) {
     manual: 'Manuell',
     custom: 'Eigenes Lebensmittel',
     recipe: 'Rezept',
+    rough: 'Schnell',
   }[source] || 'Manuell';
 }

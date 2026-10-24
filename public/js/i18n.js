@@ -654,6 +654,32 @@ const EN = {
   'Aus · keine Erfolgs-Karte im Tagebuch': 'Off · no wins card in the diary',
   'Kleine Erfolge aktiviert': 'Small wins enabled',
   'Kleine Erfolge deaktiviert': 'Small wins disabled',
+
+  // Handportionen
+  'Handportion': 'Hand portion',
+  'Klein': 'Small',
+  'Mittel': 'Medium',
+  'Groß': 'Large',
+  'Orientierung: eine Handportion, keine Waage.': 'A guide: one hand portion, no scale.',
+
+  // Schnell eintragen (Rough Log)
+  'Schnell eintragen': 'Quick log',
+  'Schnell': 'Quick',
+  'grobe Schätzung': 'rough estimate',
+  'Schnell-Eintrag hinzugefügt': 'Quick entry added',
+  'Was war es?': 'What was it?',
+  'z. B. Kantine, Pizza, Salat': 'e.g. canteen, pizza, salad',
+  'Leicht': 'Light',
+  'Normal': 'Normal',
+  'Reichhaltig': 'Hearty',
+  'Kleine Portion': 'Small portion',
+  'Normale Portion': 'Regular portion',
+  'Große Portion': 'Large portion',
+  'Grobe Schätzung ohne Grammangaben. Die Werte richten sich nach deinem Tagesziel – du kannst den Eintrag später jederzeit bearbeiten.':
+    'Rough estimate without grams. The values are based on your daily target – you can edit the entry later at any time.',
+  'Grobe Schätzung – keine exakte Grammangabe. Lösche den Eintrag und lege ihn bei Bedarf mit einer anderen Portionsgröße neu an.':
+    'Rough estimate – no exact grams. Delete the entry and re-add it with a different portion size if needed.',
+  'Eintrag löschen': 'Delete entry',
 };
 
 /* ---------------- Lebensmittel (Datenbanknamen) ---------------- */
@@ -882,6 +908,7 @@ const RULES = [
   [/^([\d.,]+) P · ([\d.,]+) KH · ([\d.,]+) F pro 100 g · ([\d.,]+) kcal$/,
     '$1 P · $2 C · $3 F per 100 g · $4 kcal'],
   [/^([\d.,]+) kcal · P ([\d.,]+) · KH ([\d.,]+) · F ([\d.,]+)$/, '$1 kcal · P $2 · C $3 · F $4'],
+  [/^grobe Schätzung · P ([\d.,]+) · KH ([\d.,]+) · F ([\d.,]+)$/, 'rough estimate · P $1 · C $2 · F $3'],
   [/^(.+) · P ([\d.,]+) · KH ([\d.,]+) · F ([\d.,]+)$/, '$1 · P $2 · C $3 · F $4'],
   [/^Zu (Frühstück|Mittagessen|Abendessen|Snacks) hinzufügen$/, (m) => `Add to ${EN[m[1]].toLowerCase()}`],
   [/^(\d+) (Einträge|Eintrag) hinzugefügt$/, (m) => `${m[1]} ${m[1] === '1' ? 'entry' : 'entries'} added`],
@@ -938,6 +965,10 @@ const RULES = [
   [/^Hunger (\d+)\/10$/, 'Hunger $1/10'],
   [/^Sättigung (\d+)\/10$/, 'Satiety $1/10'],
   [/^Sättigung (\d+)$/, 'Satiety $1'],
+  [/^(Klein|Mittel|Groß) · ca\. ([\d.,]+) g$/, (m) => `${tr(m[1])} · approx. ${m[2]} g`],
+  [/^Eintragen · ca\. ([\d.,]+) kcal$/, 'Add · approx. $1 kcal'],
+  [/^(Kleine|Normale|Große) Portion · ca\. ([\d.,]+) kcal$/, (m) => `${tr(`${m[1]} Portion`)} · approx. ${m[2]} kcal`],
+  [/^(.+) schnell eintragen$/, (m) => `Quick log for ${tr(m[1])}`],
 ];
 
 /* ---------------- Übersetzen ---------------- */

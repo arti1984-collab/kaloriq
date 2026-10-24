@@ -53,6 +53,8 @@ as a 2×2 montage (`uebersicht.png`).
 | **Pause mode** | “Just today off” or 3/7/14 days/open – streak frozen, no calorie pressure |
 | **Hunger & satiety** | Optional 1–10 check-in per meal, before and after eating – no obligation, no judgement |
 | **Small wins** | Water, walk, mindful eating, time for myself – non-number wins to tap, without points |
+| **Hand portions** | Small/medium/large instead of grams – with a rough gram guide, no scale |
+| **Quick log** | Light/regular/hearty per meal – rough estimate without grams |
 | **Language** | German / English – switch under **Profile → Language**, all screens translated instantly |
 | **APK** | Standalone Android app, fully offline (`npm run apk`) – see [ANDROID.md](ANDROID.md) |
 
@@ -69,6 +71,12 @@ as a 2×2 montage (`uebersicht.png`).
 - **AI photo or text**: Gemini estimates ingredients, grams, calories and
   macros; every item can be edited and deselected individually before saving.
   Without an API key, a clearly marked demo mode runs.
+- **Hand portions:** In the quantity view, switch between grams and hand
+  portions. Small/medium/large estimate the amount from the stored portion or
+  100 g – no scale, with a visible gram guide.
+- **Quick log:** Per meal, a rough estimate as light, regular or hearty
+  (20/30/40 % of the daily target) – optionally with a name. The entry is
+  marked as a “rough estimate” and can be edited later.
 
 ### Recipes
 
@@ -317,6 +325,7 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.2.13** | Hand portions and quick log (rough log) |
 | **1.2.12** | Small non-number wins in the diary (no points or streaks) |
 | **1.2.11** | Hunger/satiety check per meal (optional, 1–10) |
 | **1.2.10** | Pause mode: “just today off” or several days with a frozen streak |

@@ -53,6 +53,8 @@ als 2×2-Montage (`uebersicht.png`).
 | **Pausenmodus** | „Nur heute drüber“ oder 3/7/14 Tage/offen – Serie eingefroren, kein Kaloriendruck |
 | **Hunger & Sättigung** | Optionaler 1–10-Check-in pro Mahlzeit, vor und nach dem Essen – ohne Pflicht, ohne Bewertung |
 | **Kleine Erfolge** | Wasser, Spaziergang, bewusst gegessen, Zeit für mich – Nicht-Zahl-Erfolge zum Antippen, ohne Punkte |
+| **Handportionen** | Klein/Mittel/Groß statt Gramm – mit grober Gramm-Orientierung, ohne Waage |
+| **Schnell eintragen** | Leicht/Normal/Reichhaltig pro Mahlzeit – grobe Schätzung ohne Grammangaben |
 | **Sprache** | Deutsch / English – Umschaltung unter **Profil → Sprache**, alle Screens sofort übersetzt |
 | **APK** | Eigene Android-App, komplett offline (`npm run apk`) – siehe [ANDROID.md](ANDROID.md) |
 
@@ -70,6 +72,12 @@ als 2×2-Montage (`uebersicht.png`).
 - **KI-Foto oder -Text**: Gemini schätzt Bestandteile, Gramm, Kalorien und
   Makros; jede Position ist vor dem Speichern editierbar und einzeln
   abwählbar. Ohne API-Key läuft ein klar markierter Demo-Modus.
+- **Handportionen:** In der Mengenauswahl zwischen Gramm und Handportion
+  umschalten. Klein/Mittel/Groß schätzen die Menge anhand der Portion oder
+  100 g – ohne Waage, mit sichtbarer Gramm-Orientierung.
+- **Schnell eintragen:** Pro Mahlzeit eine grobe Schätzung als Leicht,
+  Normal oder Reichhaltig (20/30/40 % des Tagesziels) – optional mit Name.
+  Der Eintrag ist als „grobe Schätzung“ markiert und später editierbar.
 
 ### Rezepte
 
@@ -322,6 +330,7 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 | Version | Schwerpunkt |
 |---|---|
+| **1.2.13** | Handportionen und „Schnell eintragen“ (Rough Log) |
 | **1.2.12** | Kleine Nicht-Zahl-Erfolge im Tagebuch (ohne Punkte oder Serien) |
 | **1.2.11** | Hunger-Sättigungs-Check pro Mahlzeit (optional, 1–10) |
 | **1.2.10** | Pausenmodus: „Nur heute drüber“ oder mehrere Tage mit eingefrorener Serie |
