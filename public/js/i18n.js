@@ -680,6 +680,92 @@ const EN = {
   'Grobe Schätzung – keine exakte Grammangabe. Lösche den Eintrag und lege ihn bei Bedarf mit einer anderen Portionsgröße neu an.':
     'Rough estimate – no exact grams. Delete the entry and re-add it with a different portion size if needed.',
   'Eintrag löschen': 'Delete entry',
+
+  // Schnellzugriff / Tagesaktionen
+  'Favoriten': 'Favorites',
+  'Zuletzt': 'Recent',
+  'Zu Favoriten hinzugefügt': 'Added to favorites',
+  'Aus Favoriten entfernt': 'Removed from favorites',
+  'Gestern war nichts eingetragen': 'Nothing logged yesterday',
+  'Duplizieren': 'Duplicate',
+  'Eintrag dupliziert': 'Entry duplicated',
+  'Mahlzeit geändert': 'Meal changed',
+  'Eintrag gelöscht': 'Entry deleted',
+  'Rückgängig': 'Undo',
+  'Eintrag wiederhergestellt': 'Entry restored',
+
+  // Trackingsstil
+  'Trackingsstil': 'Tracking style',
+  'Genau': 'Precise',
+  'Grob': 'Rough',
+  'Überblick': 'Overview',
+  'Genau · Gramm, Makros und Ziele': 'Precise · grams, macros and goals',
+  'Grob · Handportionen und Schnell-Eintrag': 'Rough · hand portions and quick log',
+  'Überblick · ohne Zahlen, Fokus auf Erfolge': 'Overview · no numbers, focus on wins',
+  'Gramm, Makros und Tagesziele – volle Kontrolle.': 'Grams, macros and daily goals – full control.',
+  'Handportionen und Schnell-Eintrag – weniger Wiegen.': 'Hand portions and quick log – less weighing.',
+  'Zahlen ausblenden, Fokus auf Erfolge, Wasser und Schritte.': 'Hide numbers, focus on wins, water and steps.',
+  'Wähle, wie viel Genauigkeit sich für dich gerade richtig anfühlt. Du kannst den Stil jederzeit ändern – nichts wird gesperrt.':
+    'Choose how much precision feels right for you right now. You can change the style at any time – nothing is locked.',
+  'Trackingsstil: Genau': 'Tracking style: Precise',
+  'Trackingsstil: Grob': 'Tracking style: Rough',
+  'Trackingsstil: Überblick': 'Tracking style: Overview',
+  'Genau: Gramm und Makros · Grob: Handportionen und Schnell-Eintrag · Überblick: ohne Zahlen, Fokus auf Erfolge. Alles bleibt später änderbar.':
+    'Precise: grams and macros · Rough: hand portions and quick log · Overview: no numbers, focus on wins. Everything can be changed later.',
+
+  // Wochenrückblick
+  'Wochenrückblick': 'Weekly review',
+  'Was diese Woche schon da war – ohne Druck.': 'What was already there this week – without pressure.',
+  'Tage getrackt': 'Days tracked',
+  'Check-ins': 'Check-ins',
+  'Wasser-Tage': 'Water days',
+
+  // Sicherung, Fehler, Updates
+  'Letzte Sicherung ist älter als 14 Tage': 'Last backup is older than 14 days',
+  'Jetzt sichern': 'Back up now',
+  'Sicherung angelegt': 'Backup created',
+  'Neue Version verfügbar': 'New version available',
+  'Neu laden': 'Reload',
+  'Etwas ist schiefgelaufen': 'Something went wrong',
+  'Die App konnte nicht vollständig starten. Deine gespeicherten Daten bleiben auf dem Gerät. Lade die Seite neu oder sichere sie vorher als JSON.':
+    'The app could not start completely. Your saved data stays on the device. Reload the page or save it as JSON first.',
+  'Daten als JSON sichern': 'Save data as JSON',
+
+  // Feedback
+  'Feedback & Hilfe': 'Feedback & help',
+  'Problem melden oder Idee vorschlagen': 'Report a problem or suggest an idea',
+  'Direkt, ehrlich, ohne Konto: Melde ein Problem oder schlage eine Verbesserung vor. Die technischen Angaben helfen beim Einordnen – persönliche Daten werden nicht übertragen.':
+    'Direct, honest, no account: report a problem or suggest an improvement. The technical details help us understand it – no personal data is transferred.',
+  'Problem melden': 'Report a problem',
+  'Idee vorschlagen': 'Suggest an idea',
+  'Diagnose kopieren': 'Copy diagnostics',
+  'Diagnose kopiert': 'Diagnostics copied',
+  'Kopieren nicht möglich': 'Copy not possible',
+
+  // CSV
+  'CSV exportieren': 'Export CSV',
+  'Für Excel, Numbers oder Sheets': 'For Excel, Numbers or Sheets',
+  'CSV-Dateien lassen sich in Excel, Numbers oder Google Sheets öffnen. Beide Exporte enthalten nur deine lokalen Daten.':
+    'CSV files can be opened in Excel, Numbers or Google Sheets. Both exports contain only your local data.',
+  'Einträge': 'Entries',
+  'Tageswerte': 'Daily values',
+  'Datum, Mahlzeit, Lebensmittel, Menge und Nährwerte': 'Date, meal, food, amount and nutrition',
+  'Kalorien, Makros, Wasser, Schritte, Gewicht und Erfolge': 'Calories, macros, water, steps, weight and wins',
+
+  // Sanfte Erinnerung
+  'Sanfte Erinnerung': 'Gentle reminder',
+  'Aus · keine Erinnerungen': 'Off · no reminders',
+  'Erinnerung aktivieren': 'Enable reminder',
+  'Eine ruhige Erinnerung beim nächsten Öffnen – nicht per Push, nicht als Drohung. Standardmäßig aus.':
+    'A calm reminder the next time you open the app – not a push notification, not a threat. Off by default.',
+  'Uhrzeit': 'Time',
+  'Erscheint nur, wenn du an dem Tag noch nichts eingetragen hast.': 'Only appears if you haven’t logged anything that day.',
+  'Erinnerung deaktiviert': 'Reminder disabled',
+  'Kurzer Check-in?': 'Quick check-in?',
+  'Trag ein, was du möchtest – oder lass es. Kein Druck.': 'Log what you like – or skip it. No pressure.',
+  'Heute nicht': 'Not today',
+  'Heute nicht – alles gut.': 'Not today – that’s okay.',
+  'Eintragen': 'Log',
 };
 
 /* ---------------- Lebensmittel (Datenbanknamen) ---------------- */
@@ -1047,6 +1133,13 @@ const RULES = [
   [/^Eintragen · ca\. ([\d.,]+) kcal$/, 'Add · approx. $1 kcal'],
   [/^(Kleine|Normale|Große) Portion · ca\. ([\d.,]+) kcal$/, (m) => `${tr(`${m[1]} Portion`)} · approx. ${m[2]} kcal`],
   [/^(.+) schnell eintragen$/, (m) => `Quick log for ${tr(m[1])}`],
+  [/^(\d+) (Eintrag|Einträge) von gestern übernommen$/, (m) => `${m[1]} ${m[1] === '1' ? 'entry' : 'entries'} copied from yesterday`],
+  [/^(\d+) (Eintrag|Einträge) exportiert$/, (m) => `${m[1]} ${m[1] === '1' ? 'entry' : 'entries'} exported`],
+  [/^(\d+) (Tag|Tage) exportiert$/, (m) => `${m[1]} ${m[1] === '1' ? 'day' : 'days'} exported`],
+  [/^(\d+) kleine (Erfolg|Erfolge) – das zählt\.$/, (m) => `${m[1]} small ${m[1] === '1' ? 'win' : 'wins'} – that counts.`],
+  [/^Letzte: (.+) · (\d+) (Stand|Stände)$/, (m) => `Last: ${m[1]} · ${m[2]} ${m[2] === '1' ? 'snapshot' : 'snapshots'}`],
+  [/^Beim Öffnen ab (\d{2}:\d{2}) · kein Push$/, 'On open from $1 · no push'],
+  [/^Erinnerung ab (\d{2}:\d{2})$/, 'Reminder from $1'],
 ];
 
 /* ---------------- Übersetzen ---------------- */

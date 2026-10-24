@@ -3,10 +3,10 @@
    ============================================================ */
 import {
   store, getDay, todayKey, addDays, dayLabel, shortDate,
-  totals, mealTotals, MEALS, entryMacros, removeEntry, updateEntry,
+  totals, mealTotals, MEALS, entryMacros, removeEntry, updateEntry, addEntries, copyMealFrom,
   setWater, setSteps, streak, weekSummary, activePause, endPause,
 } from '../store.js';
-import { esc, fmt, icon, ring, macroRow, toast, openSheet, confirmDialog, haptic } from '../ui.js';
+import { esc, fmt, icon, ring, macroRow, toast, toastAction, openSheet, confirmDialog, haptic } from '../ui.js';
 import { flexStatus } from '../calc.js';
 import { openAddSheet, openQuickLogSheet } from './add.js';
 import { openPauseSheet, pauseStateLabel } from '../pause.js';
@@ -31,6 +31,7 @@ export function renderDiary(root) {
   const key = selectedDate;
   const day = getDay(key);
   const t = totals(day);
+  const previousDay = getDay(addDays(key, -1));
   const target = state.targets;
   const pct = target.kcal ? t.kcal / target.kcal : 0;
   const remaining = Math.round(target.kcal - t.kcal);
@@ -63,6 +64,12 @@ export function renderDiary(root) {
   const minimal = Boolean(state.settings.minimalMode);
   const showCheckin = state.settings.hungerCheck !== false;
   const showWins = state.settings.nonScaleWins !== false;
+  const now = new Date();
+  const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const reminderDue = Boolean(state.settings.reminderEnabled)
+    && day.entries.length === 0
+    && state.settings.reminderDismissedAt !== todayKey()
+    && hhmm >= (state.settings.reminderTime || '18:00');
   const bandPct = Math.max(0, Number(state.settings.flexBand) || 0);
   const flex = flexStatus(t.kcal, target.kcal, bandPct);
   const flexOn = flex.enabled;
@@ -240,6 +247,16 @@ export function renderDiary(root) {
     ${paused ? pauseCard() : minimal ? minimalCard() : gentle ? gentleSummary() : normalSummary()}
     ${gentle && !paused && !minimal ? gentleWeek() : ''}
     ${showWins ? winsCard(day) : ''}
+    ${reminderDue ? `<section class="card reminder-card">
+      <div class="hstack" style="justify-content:space-between;align-items:flex-start">
+        <div class="grow">
+          <div class="card-title" style="margin-bottom:2px">Kurzer Check-in?</div>
+          <div class="tiny muted">Trag ein, was du möchtest – oder lass es. Kein Druck.</div>
+        </div>
+        <button class="icon-btn" data-reminder-dismiss aria-label="Heute nicht">${icon('x')}</button>
+      </div>
+      <button class="btn btn-sm btn-primary" data-reminder-add style="margin-top:12px">Eintragen</button>
+    </section>` : ''}
 
     <section class="card">
       <div class="hstack" style="align-items:flex-start">
@@ -290,7 +307,12 @@ export function renderDiary(root) {
     </section>
 
     <div class="section-title">Mahlzeiten</div>
-    ${MEALS.map((meal) => mealCard(day, meal, showCheckin)).join('')}
+    ${MEALS.map((meal) => mealCard(
+      day,
+      meal,
+      showCheckin,
+      (previousDay.entries || []).some((e) => e.meal === meal.id),
+    )).join('')}
 
     <p class="tiny muted center" style="margin:18px 0 8px">
       ${t.fiber > 0 ? `${fmt(t.fiber)} g Ballaststoffe · ` : ''}${day.entries.length} Einträge
@@ -399,10 +421,25 @@ export function renderDiary(root) {
   root.querySelectorAll('[data-quick-meal]').forEach((btn) => btn.addEventListener('click', () => {
     openQuickLogSheet({ dateKey: key, meal: btn.dataset.quickMeal });
   }));
+  root.querySelectorAll('[data-copy-meal]').forEach((btn) => btn.addEventListener('click', () => {
+    const count = copyMealFrom(key, btn.dataset.copyMeal);
+    toast(count ? `${count} ${count === 1 ? 'Eintrag' : 'Einträge'} von gestern übernommen` : 'Gestern war nichts eingetragen', count ? 'ok' : 'err');
+    haptic();
+  }));
   root.querySelectorAll('[data-checkin]').forEach((btn) => btn.addEventListener('click', () => {
     openCheckinSheet(key, btn.dataset.checkin);
   }));
   if (showWins) bindWins(root, key);
+  root.querySelector('[data-reminder-dismiss]')?.addEventListener('click', () => {
+    store.saveSettings({ reminderDismissedAt: todayKey() });
+    toast('Heute nicht – alles gut.');
+    haptic();
+  });
+  root.querySelector('[data-reminder-add]')?.addEventListener('click', () => {
+    const hour = new Date().getHours();
+    const meal = hour < 11 ? 'breakfast' : hour < 15 ? 'lunch' : hour < 21 ? 'dinner' : 'snack';
+    openQuickLogSheet({ dateKey: key, meal });
+  });
 
   root.querySelectorAll('[data-entry]').forEach((btn) => btn.addEventListener('click', () => {
     const entry = day.entries.find((e) => e.id === btn.dataset.entry);
@@ -470,7 +507,7 @@ function openStepsSheet(key, root) {
   });
 }
 
-function mealCard(day, meal, showCheckin = true) {
+function mealCard(day, meal, showCheckin = true, canCopy = false) {
   const entries = day.entries.filter((e) => e.meal === meal.id);
   const mt = mealTotals(day, meal.id);
   const checkin = showCheckin ? checkinFor(day, meal.id) : null;
@@ -486,7 +523,9 @@ function mealCard(day, meal, showCheckin = true) {
       </div>
       ${entries.length
         ? entries.map((e) => entryRow(e)).join('')
-        : `<div class="empty-line">Noch nichts eingetragen</div>`}
+        : canCopy
+          ? `<button class="empty-line copy-line" data-copy-meal="${meal.id}">Noch nichts eingetragen <span>· Gestern kopieren</span></button>`
+          : `<div class="empty-line">Noch nichts eingetragen</div>`}
       ${showCheckin ? `<button class="checkin-line${checkin ? ' has' : ''}" data-checkin="${meal.id}">
         <span>${checkinText}</span>
         <span class="action">${checkin ? 'ändern' : 'erfassen'}</span>
@@ -548,6 +587,15 @@ export function openEntrySheet(entry, key) {
         ${[50, 100, 150, 200, 250].map((g) => `<button class="chip" data-g="${g}">${g} g</button>`).join('')}
       </div>
       <div class="stat-grid" id="entry-stats"></div>
+      <div class="hstack" style="gap:8px;margin-top:12px">
+        <button class="btn btn-sm grow" data-dup>Duplizieren</button>
+      </div>
+      <div class="field" style="margin-top:12px;margin-bottom:0">
+        <label for="entry-meal">Mahlzeit</label>
+        <select class="select" id="entry-meal">
+          ${MEALS.map((m) => `<option value="${m.id}" ${m.id === entry.meal ? 'selected' : ''}>${m.label}</option>`).join('')}
+        </select>
+      </div>
       <div class="divider"></div>
       <div class="vstack tiny muted">
         <div class="row static" style="padding:0;border:0"><span class="grow">Pro 100 g</span><span class="v">${fmt(entry.per100.kcal, 1)} kcal · P ${fmt(entry.per100.protein, 1)} · KH ${fmt(entry.per100.carbs, 1)} · F ${fmt(entry.per100.fat, 1)}</span></div>
@@ -594,6 +642,19 @@ export function openEntrySheet(entry, key) {
       sheet.close();
       toast('Eintrag aktualisiert');
     });
+
+    sheet.body.querySelector('[data-dup]')?.addEventListener('click', () => {
+      const grams = Math.max(1, Number(String(input.value).replace(',', '.')) || entry.grams);
+      addEntries(key, entry.meal, [{ ...entry, grams }]);
+      sheet.close();
+      toast('Eintrag dupliziert');
+    });
+
+    sheet.body.querySelector('#entry-meal')?.addEventListener('change', (e) => {
+      updateEntry(key, entry.id, { meal: e.target.value });
+      sheet.close();
+      toast('Mahlzeit geändert');
+    });
   }
 
   sheet.foot?.querySelector('[data-del]')?.addEventListener('click', async () => {
@@ -606,7 +667,10 @@ export function openEntrySheet(entry, key) {
     });
     if (ok) {
       removeEntry(key, entry.id);
-      toast('Gelöscht');
+      toastAction('Eintrag gelöscht', 'Rückgängig', () => {
+        addEntries(key, entry.meal, [entry]);
+        toast('Eintrag wiederhergestellt');
+      });
     }
   });
 

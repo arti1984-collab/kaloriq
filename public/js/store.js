@@ -218,6 +218,18 @@ function defaultState() {
       hungerCheck: true,
       // Kleine Nicht-Zahl-Erfolge im Tagebuch anzeigen.
       nonScaleWins: true,
+      // Zuletzt verwendete Lebensmittel (Snapshots für den Schnellzugriff).
+      recentFoods: [],
+      // Trackingsstil: 'precise' | 'rough' | 'overview'
+      trackingStyle: 'precise',
+      // Standard-Mengenmodus im Hinzufügen-Sheet: 'g' | 'hand'
+      portionMode: 'g',
+      // Datum der letzten Backup-Erinnerung (YYYY-MM-DD).
+      backupRemindedAt: '',
+      // Sanfte Erinnerung beim Öffnen (keine Push-Nachricht).
+      reminderEnabled: false,
+      reminderTime: '18:00',
+      reminderDismissedAt: '',
       // Letzter Stand des Geräte-Schrittsensors (kumulativ seit Neustart).
       // { date: 'YYYY-MM-DD', value: number, ts: number } oder null.
       stepCounter: null,
@@ -264,6 +276,12 @@ function migrate(raw) {
   }
   delete settings.gentlePaused;
   settings.pauseMigrated = true;
+
+  if (!Array.isArray(settings.recentFoods)) settings.recentFoods = [];
+  if (!['precise', 'rough', 'overview'].includes(settings.trackingStyle)) settings.trackingStyle = 'precise';
+  if (!['g', 'hand'].includes(settings.portionMode)) settings.portionMode = 'g';
+  if (typeof settings.reminderEnabled !== 'boolean') settings.reminderEnabled = false;
+  if (!/^\d{2}:\d{2}$/.test(settings.reminderTime || '')) settings.reminderTime = '18:00';
   for (const [k, v] of Object.entries(state.days)) {
     state.days[k] = { ...emptyDay(k), ...(v || {}) };
     if (!Array.isArray(state.days[k].entries)) state.days[k].entries = [];
@@ -636,6 +654,96 @@ export function toggleWin(dateK, id) {
     if (day.wins[id]) delete day.wins[id];
     else day.wins[id] = true;
   }, 'wins');
+}
+
+/* ---------- Schnellzugriff: zuletzt & Favoriten ---------- */
+
+function foodSnapshot(food) {
+  if (!food || !food.name) return null;
+  return {
+    id: food.id || '',
+    name: String(food.name),
+    brand: food.brand || '',
+    group: food.group || '',
+    emoji: food.emoji || '',
+    per100: {
+      kcal: Number(food.per100?.kcal) || 0,
+      protein: Number(food.per100?.protein) || 0,
+      carbs: Number(food.per100?.carbs) || 0,
+      fat: Number(food.per100?.fat) || 0,
+      fiber: Number(food.per100?.fiber) || 0,
+    },
+    portion: food.portion ? { label: food.portion.label, grams: Number(food.portion.grams) || 100 } : null,
+    image: food.image || '',
+    source: food.source || 'local',
+    code: food.code || '',
+  };
+}
+
+const sameFood = (a, b) => Boolean(a && b)
+  && ((a.id && b.id && a.id === b.id) || (String(a.name).toLowerCase() === String(b.name).toLowerCase()
+    && String(a.brand || '').toLowerCase() === String(b.brand || '').toLowerCase()));
+
+export function recentFoods() {
+  return Array.isArray(state.settings.recentFoods) ? state.settings.recentFoods : [];
+}
+
+export function rememberFood(food) {
+  const snap = foodSnapshot(food);
+  if (!snap) return;
+  const list = recentFoods().filter((f) => !sameFood(f, snap));
+  list.unshift(snap);
+  store.saveSettings({ recentFoods: list.slice(0, 12) });
+}
+
+export function isFavoriteFood(food) {
+  return (state.favorites || []).some((f) => sameFood(f, food));
+}
+
+export function toggleFavoriteFood(food) {
+  const snap = foodSnapshot(food);
+  if (!snap) return false;
+  const list = (state.favorites || []).filter((f) => !sameFood(f, snap));
+  const exists = (state.favorites || []).some((f) => sameFood(f, snap));
+  if (!exists) list.unshift(snap);
+  store.set((s) => { s.favorites = list.slice(0, 40); }, 'favorites');
+  return !exists;
+}
+
+/* ---------- Tages-Kopien ---------- */
+
+/** Einträge einer Mahlzeit vom Vortag (oder einem anderen Tag) kopieren. */
+export function copyMealFrom(dateK, mealId, fromKey = addDays(dateK, -1)) {
+  const source = state.days[fromKey];
+  const entries = (source?.entries || []).filter((e) => e.meal === mealId);
+  if (!entries.length) return 0;
+  return addEntries(dateK, mealId, entries).length;
+}
+
+/* ---------- Trackingsstil ---------- */
+
+/**
+ * Setzt die Grundeinstellungen für einen Trackingsstil.
+ * Der Stil ist eine Orientierung, keine Sperre – alles bleibt änderbar.
+ */
+export function applyTrackingStyle(style) {
+  const next = ['precise', 'rough', 'overview'].includes(style) ? style : 'precise';
+  const base = { trackingStyle: next };
+  if (next === 'precise') {
+    Object.assign(base, {
+      minimalMode: false, flexBand: 10, hungerCheck: true, nonScaleWins: true, portionMode: 'g',
+    });
+  } else if (next === 'rough') {
+    Object.assign(base, {
+      minimalMode: false, flexBand: 15, hungerCheck: false, nonScaleWins: true, portionMode: 'hand',
+    });
+  } else {
+    Object.assign(base, {
+      minimalMode: true, flexBand: 15, hungerCheck: false, nonScaleWins: true, portionMode: 'hand',
+    });
+  }
+  store.saveSettings(base);
+  return next;
 }
 
 /**

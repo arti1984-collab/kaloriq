@@ -1,15 +1,16 @@
 /* ============================================================
    Kaloriq – Profil & Einstellungen
    ============================================================ */
-import { store, exportJson, importJson, todayKey, streak, streakInfo, listBackups, backupNow, restoreBackup, activePause } from '../store.js';
+import { store, exportJson, importJson, todayKey, streak, streakInfo, listBackups, backupNow, restoreBackup, activePause, applyTrackingStyle } from '../store.js';
 import { ACTIVITY, GOALS, MACRO_PRESETS, computeTargets, projection, round1, bmi, bmiCategory, flexStatus } from '../calc.js';
 import {
-  esc, fmt, icon, toast, openSheet, confirmDialog, downloadFile, haptic,
+  esc, fmt, icon, toast, openSheet, confirmDialog, downloadFile, haptic, copyText,
 } from '../ui.js';
 import { estimate, detectProxy, proxyStatus, listModels, pickModel } from '../ai.js';
 import { APP_VERSION } from '../version.js';
 import { getLang, setLang, locale } from '../i18n.js';
 import { openPauseSheet, pauseStateLabel } from '../pause.js';
+import { exportEntriesCsv, exportDaysCsv } from '../csv.js';
 
 export function renderProfile(root) {
   const state = store.get();
@@ -23,14 +24,23 @@ export function renderProfile(root) {
   const minimal = Boolean(state.settings.minimalMode);
   const hungerCheck = state.settings.hungerCheck !== false;
   const winsOn = state.settings.nonScaleWins !== false;
+  const trackingStyle = state.settings.trackingStyle || 'precise';
+  const reminderOn = Boolean(state.settings.reminderEnabled);
+  const reminderTime = state.settings.reminderTime || '18:00';
+  const styleText = trackingStyle === 'rough'
+    ? 'Grob · Handportionen und Schnell-Eintrag'
+    : trackingStyle === 'overview'
+      ? 'Überblick · ohne Zahlen, Fokus auf Erfolge'
+      : 'Genau · Gramm, Makros und Ziele';
   const flexBand = Math.max(0, Number(state.settings.flexBand) || 0);
   const flexOn = flexBand > 0;
   const flexRange = flexStatus(t.kcal, t.kcal, flexBand);
   const grace = streakInfo();
   const graceUsedMonth = Math.min(grace.graceUsedThisMonth, grace.limit);
   const backups = listBackups();
+  const lastBackup = backups[0]?.at;
   const backupSub = backups.length
-    ? `${backups.length} ${backups.length === 1 ? 'Stand' : 'Stände'} · automatisch alle 12 Std.`
+    ? `Letzte: ${new Date(lastBackup).toLocaleDateString(locale(), { day: 'numeric', month: 'short' })} · ${backups.length} ${backups.length === 1 ? 'Stand' : 'Stände'}`
     : 'Automatisch alle 12 Std. – noch keine vorhanden';
 
   root.innerHTML = `
@@ -95,6 +105,14 @@ export function renderProfile(root) {
 
     <div class="section-title">Wohlbefinden</div>
     <section class="card flush">
+      <button class="row" data-style>
+        <span class="grow">
+          <span class="t">Trackingsstil</span>
+          <span class="s">${styleText}</span>
+        </span>
+        <span class="v">${trackingStyle === 'rough' ? 'Grob' : trackingStyle === 'overview' ? 'Überblick' : 'Genau'}</span>
+        ${icon('chev', 'chev')}
+      </button>
       <button class="row" data-gentle role="switch" aria-checked="${gentle}" aria-label="Sanfter Modus">
         <span class="grow">
           <span class="t">Sanfter Modus</span>
@@ -156,6 +174,13 @@ export function renderProfile(root) {
         </span>
         <span class="switch" aria-hidden="true" aria-checked="${winsOn}" style="pointer-events:none"></span>
       </button>
+      <button class="row" data-reminder>
+        <span class="grow">
+          <span class="t">Sanfte Erinnerung</span>
+          <span class="s">${reminderOn ? `Beim Öffnen ab ${reminderTime} · kein Push` : 'Aus · keine Erinnerungen'}</span>
+        </span>
+        ${icon('chev', 'chev')}
+      </button>
     </section>
 
     <div class="section-title">KI-Tracking</div>
@@ -180,6 +205,10 @@ export function renderProfile(root) {
         <span class="grow"><span class="t">Sprache</span><span class="s">${getLang() === 'en' ? 'English' : 'Deutsch'}</span></span>
         ${icon('chev', 'chev')}
       </button>
+      <button class="row" data-feedback>
+        <span class="grow"><span class="t">Feedback &amp; Hilfe</span><span class="s">Problem melden oder Idee vorschlagen</span></span>
+        ${icon('info', 'chev')}
+      </button>
       <button class="row" data-install>
         <span class="grow"><span class="t">Auf dem Handy installieren</span><span class="s">Als App mit eigenem Icon</span></span>
         <span class="pill">Android</span>
@@ -197,6 +226,10 @@ export function renderProfile(root) {
       </button>
       <button class="row" data-export>
         <span class="grow"><span class="t">Daten exportieren</span><span class="s">JSON-Backup</span></span>
+        ${icon('download', 'chev')}
+      </button>
+      <button class="row" data-csv>
+        <span class="grow"><span class="t">CSV exportieren</span><span class="s">Für Excel, Numbers oder Sheets</span></span>
         ${icon('download', 'chev')}
       </button>
       <button class="row" data-import>
@@ -229,6 +262,7 @@ export function renderProfile(root) {
     toast(next ? 'Sanfter Modus aktiviert' : 'Sanfter Modus deaktiviert');
     haptic();
   });
+  root.querySelector('[data-style]').addEventListener('click', () => openTrackingStyleSheet(root));
   root.querySelector('[data-flex]').addEventListener('click', () => {
     const on = (Number(store.get().settings.flexBand) || 0) > 0;
     store.saveSettings({ flexBand: on ? 0 : 10 });
@@ -256,6 +290,7 @@ export function renderProfile(root) {
     toast(next ? 'Kleine Erfolge aktiviert' : 'Kleine Erfolge deaktiviert');
     haptic();
   });
+  root.querySelector('[data-reminder]').addEventListener('click', () => openReminderSheet(root));
   root.querySelector('[data-ai]').addEventListener('click', () => openAiSettings(root));
   root.querySelector('[data-aitest]').addEventListener('click', (e) => testAi(e.currentTarget));
   root.querySelector('[data-recipes]').addEventListener('click', () => {
@@ -265,11 +300,13 @@ export function renderProfile(root) {
     downloadFile(`kaloriq-backup-${todayKey()}.json`, exportJson());
     toast('Backup gespeichert');
   });
+  root.querySelector('[data-csv]').addEventListener('click', openCsvSheet);
   root.querySelector('[data-import]').addEventListener('click', openImport);
   root.querySelector('[data-backups]').addEventListener('click', () => openBackups(root));
   root.querySelector('[data-reset]').addEventListener('click', resetAll);
   root.querySelector('[data-install]').addEventListener('click', installApp);
   root.querySelector('[data-lang]').addEventListener('click', () => openLanguage(root));
+  root.querySelector('[data-feedback]').addEventListener('click', openFeedbackSheet);
 }
 
 /* ---------------- Bausteine ---------------- */
@@ -538,6 +575,87 @@ function openFlexBandSheet(root) {
   sheet.foot?.querySelector('[data-save]')?.addEventListener('click', () => {
     store.saveSettings({ flexBand: choice });
     toast(choice ? `Flexbereich ±${choice} %` : 'Flexbereich deaktiviert');
+    haptic();
+    sheet.close();
+    renderProfile(root);
+  });
+}
+
+/* ---------------- Sanfte Erinnerung ---------------- */
+
+function openReminderSheet(root) {
+  const s = store.get().settings;
+  let enabled = Boolean(s.reminderEnabled);
+  const body = document.createElement('div');
+  body.innerHTML = `
+    <p class="small muted" style="margin-bottom:14px">Eine ruhige Erinnerung beim nächsten Öffnen – nicht per Push, nicht als Drohung. Standardmäßig aus.</p>
+    <button class="row" data-reminder-toggle role="switch" aria-checked="${enabled}" aria-label="Erinnerung aktivieren">
+      <span class="grow"><span class="t">Erinnerung aktivieren</span><span class="s">${enabled ? 'Aktiv' : 'Aus'}</span></span>
+      <span class="switch" aria-hidden="true" aria-checked="${enabled}" style="pointer-events:none"></span>
+    </button>
+    <div class="field" style="margin-top:14px">
+      <label for="reminder-time">Uhrzeit</label>
+      <input class="input" id="reminder-time" type="time" value="${esc(s.reminderTime || '18:00')}">
+      <span class="hint">Erscheint nur, wenn du an dem Tag noch nichts eingetragen hast.</span>
+    </div>`;
+  const sheet = openSheet({
+    title: 'Sanfte Erinnerung',
+    body,
+    footer: '<button class="btn btn-primary btn-block" data-save>Speichern</button>',
+  });
+
+  const toggle = body.querySelector('[data-reminder-toggle]');
+  const paint = () => {
+    toggle.setAttribute('aria-checked', String(enabled));
+    toggle.querySelector('.switch')?.setAttribute('aria-checked', String(enabled));
+    toggle.querySelector('.s').textContent = enabled ? 'Aktiv' : 'Aus';
+  };
+  toggle.addEventListener('click', () => { enabled = !enabled; paint(); haptic(); });
+
+  sheet.foot?.querySelector('[data-save]')?.addEventListener('click', () => {
+    const time = body.querySelector('#reminder-time').value || '18:00';
+    store.saveSettings({ reminderEnabled: enabled, reminderTime: time });
+    toast(enabled ? `Erinnerung ab ${time}` : 'Erinnerung deaktiviert');
+    sheet.close();
+    renderProfile(root);
+  });
+}
+
+/* ---------------- Trackingsstil ---------------- */
+
+function openTrackingStyleSheet(root) {
+  const current = store.get().settings.trackingStyle || 'precise';
+  const options = [
+    { id: 'precise', icon: '🎯', label: 'Genau', sub: 'Gramm, Makros und Tagesziele – volle Kontrolle.' },
+    { id: 'rough', icon: '✋', label: 'Grob', sub: 'Handportionen und Schnell-Eintrag – weniger Wiegen.' },
+    { id: 'overview', icon: '🌿', label: 'Überblick', sub: 'Zahlen ausblenden, Fokus auf Erfolge, Wasser und Schritte.' },
+  ];
+
+  const body = document.createElement('div');
+  body.innerHTML = `
+    <p class="small muted" style="margin-bottom:14px">Wähle, wie viel Genauigkeit sich für dich gerade richtig anfühlt. Du kannst den Stil jederzeit ändern – nichts wird gesperrt.</p>
+    ${options.map((o) => `<button class="choice" data-style-choice="${o.id}" aria-pressed="${current === o.id}">
+      <span class="ico">${o.icon}</span>
+      <span class="grow"><span class="t">${o.label}</span><span class="s">${o.sub}</span></span>
+      <span class="dot"></span>
+    </button>`).join('')}
+  `;
+
+  const sheet = openSheet({
+    title: 'Trackingsstil',
+    body,
+    footer: '<button class="btn btn-primary btn-block" data-save>Übernehmen</button>',
+  });
+
+  let choice = current;
+  body.querySelectorAll('[data-style-choice]').forEach((b) => b.addEventListener('click', () => {
+    choice = b.dataset.styleChoice;
+    body.querySelectorAll('[data-style-choice]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+
+  sheet.foot?.querySelector('[data-save]')?.addEventListener('click', () => {
+    applyTrackingStyle(choice);
+    toast(choice === 'rough' ? 'Trackingsstil: Grob' : choice === 'overview' ? 'Trackingsstil: Überblick' : 'Trackingsstil: Genau');
     haptic();
     sheet.close();
     renderProfile(root);
@@ -817,6 +935,74 @@ function openLanguage(root) {
       renderProfile(root);
     });
   });
+}
+
+/* ---------------- CSV ---------------- */
+
+function openCsvSheet() {
+  const body = document.createElement('div');
+  body.innerHTML = `
+    <p class="small muted" style="margin-bottom:14px">CSV-Dateien lassen sich in Excel, Numbers oder Google Sheets öffnen. Beide Exporte enthalten nur deine lokalen Daten.</p>
+    <div class="vstack">
+      <button class="row" data-csv-entries>
+        <span class="grow"><span class="t">Einträge</span><span class="s">Datum, Mahlzeit, Lebensmittel, Menge und Nährwerte</span></span>
+        ${icon('download', 'chev')}
+      </button>
+      <button class="row" data-csv-days>
+        <span class="grow"><span class="t">Tageswerte</span><span class="s">Kalorien, Makros, Wasser, Schritte, Gewicht und Erfolge</span></span>
+        ${icon('download', 'chev')}
+      </button>
+    </div>`;
+  const sheet = openSheet({ title: 'CSV exportieren', body });
+  body.querySelector('[data-csv-entries]')?.addEventListener('click', () => {
+    const count = exportEntriesCsv();
+    toast(`${count} ${count === 1 ? 'Eintrag' : 'Einträge'} exportiert`);
+    sheet.close();
+  });
+  body.querySelector('[data-csv-days]')?.addEventListener('click', () => {
+    const count = exportDaysCsv();
+    toast(`${count} ${count === 1 ? 'Tag' : 'Tage'} exportiert`);
+    sheet.close();
+  });
+}
+
+/* ---------------- Feedback ---------------- */
+
+function openFeedbackSheet() {
+  const state = store.get();
+  const days = Object.values(state.days || {}).filter((d) => d?.entries?.length).length;
+  const diag = [
+    `Kaloriq ${APP_VERSION}`,
+    `Sprache: ${getLang()}`,
+    `Gerät: ${navigator.userAgent}`,
+    `Standalone: ${matchMedia('(display-mode: standalone)').matches ? 'ja' : 'nein'}`,
+    `Tage mit Einträgen: ${days}`,
+  ].join('\n');
+  const issue = (title) => `https://github.com/arti1984-collab/kaloriq/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(`Bitte beschreibe dein Problem oder deine Idee:\n\n\n---\n${diag}`)}`;
+
+  const body = document.createElement('div');
+  body.innerHTML = `
+    <p class="small muted" style="margin-bottom:14px">Direkt, ehrlich, ohne Konto: Melde ein Problem oder schlage eine Verbesserung vor. Die technischen Angaben helfen beim Einordnen – persönliche Daten werden nicht übertragen.</p>
+    <div class="vstack">
+      <a class="btn btn-block" href="${issue('Problem: ')}" target="_blank" rel="noopener noreferrer">Problem melden</a>
+      <a class="btn btn-block" href="${issue('Idee: ')}" target="_blank" rel="noopener noreferrer">Idee vorschlagen</a>
+      <button class="btn btn-block btn-ghost" data-copy-diag>Diagnose kopieren</button>
+    </div>
+    <div class="card" style="padding:14px;margin-top:14px">
+      <div class="tiny muted" style="white-space:pre-wrap">${esc(diag)}</div>
+    </div>`;
+
+  const sheet = openSheet({ title: 'Feedback & Hilfe', body, tall: true });
+
+  body.querySelector('[data-copy-diag]')?.addEventListener('click', async () => {
+    try {
+      await copyText(diag);
+      toast('Diagnose kopiert');
+    } catch {
+      toast('Kopieren nicht möglich', 'err');
+    }
+  });
+  void sheet;
 }
 
 /* ---------------- Sicherungen ---------------- */

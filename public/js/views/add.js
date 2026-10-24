@@ -1,7 +1,9 @@
 /* ============================================================
    Kaloriq – Hinzufügen (Suche, Barcode, Eigene, KI)
    ============================================================ */
-import { store, addEntries, todayKey, MEALS } from '../store.js';
+import {
+  store, addEntries, todayKey, MEALS, recentFoods, isFavoriteFood, toggleFavoriteFood, rememberFood,
+} from '../store.js';
 import { searchLocal, searchRemote, lookupBarcode, foodEmoji, customFoodFromInput } from '../foods.js';
 import { estimate, prepareImage, detectProxy } from '../ai.js';
 import { esc, fmt, icon, toast, openSheet, haptic } from '../ui.js';
@@ -173,13 +175,35 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
         <input class="input" id="food-q" type="search" placeholder="Lebensmittel suchen…" autocomplete="off" enterkeyhint="search">
       </div>
       <div class="tiny muted" style="margin:0 4px 8px">Eigene Datenbank · Open Food Facts auf Anfrage</div>
+      <div id="food-quick"></div>
       <div id="food-results"></div>
       <div id="food-remote" style="margin-top:12px"></div>`;
 
     const input = panel.querySelector('#food-q');
     const results = panel.querySelector('#food-results');
     const remoteBox = panel.querySelector('#food-remote');
+    const quick = panel.querySelector('#food-quick');
     let timer = null;
+
+    const paintQuick = () => {
+      if (!quick) return;
+      if (input.value.trim()) { quick.innerHTML = ''; return; }
+      const favorites = (store.get().favorites || []).slice(0, 6);
+      const recents = recentFoods().slice(0, 6);
+      const block = (title, items, attr) => items.length
+        ? `<div class="section-title" style="margin:4px 4px 8px">${title}</div>
+           <div class="chips" style="margin-bottom:14px">${items.map((f, i) => `<button class="chip" data-${attr}="${i}">${esc(f.name)}</button>`).join('')}</div>`
+        : '';
+      quick.innerHTML = block('Favoriten', favorites, 'quick-fav') + block('Zuletzt', recents, 'quick-recent');
+      quick.querySelectorAll('[data-quick-fav]').forEach((btn) => btn.addEventListener('click', () => {
+        const f = favorites[Number(btn.dataset.quickFav)];
+        if (f) renderQuantity(f);
+      }));
+      quick.querySelectorAll('[data-quick-recent]').forEach((btn) => btn.addEventListener('click', () => {
+        const f = recents[Number(btn.dataset.quickRecent)];
+        if (f) renderQuantity(f);
+      }));
+    };
 
     // Schnellzugriff: Chip übernimmt den Begriff in die Suche
     results.addEventListener('click', (e) => {
@@ -255,6 +279,7 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
     input.addEventListener('input', () => {
       const q = input.value.trim();
       clearTimeout(timer);
+      paintQuick();
       if (!q) { results.innerHTML = hintBlock(); remoteBox.innerHTML = ''; return; }
       paintLocal(q);
       if (q.length >= 3) timer = setTimeout(() => searchOnline(q), 600);
@@ -269,6 +294,7 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
     });
 
     results.innerHTML = hintBlock();
+    paintQuick();
     setTimeout(() => input.focus(), 180);
   }
 
@@ -298,6 +324,7 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
   function renderQuantity(food) {
     const defaultGrams = food.portion?.grams || 100;
     const baseGrams = defaultGrams;
+    const favorite = isFavoriteFood(food);
     const handGrams = {
       small: Math.max(10, Math.round(baseGrams * 0.7)),
       medium: Math.max(10, Math.round(baseGrams)),
@@ -312,6 +339,7 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
             <div class="t" style="font-weight:680;font-size:16px">${esc(food.name)}</div>
             <div class="s tiny muted">${food.brand ? esc(food.brand) + ' · ' : ''}${fmt(food.per100.kcal)} kcal pro 100 g</div>
           </div>
+          <button class="icon-btn" data-fav aria-label="Favorit" aria-pressed="${favorite}">${icon('star')}</button>
         </div>
         <div class="divider"></div>
         <div class="seg" style="margin-bottom:12px" data-unit-switch>
@@ -397,11 +425,20 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
       haptic();
     }));
 
+    if (store.get().settings.portionMode === 'hand') applyUnit('hand');
+
     panel.querySelectorAll('[data-meal]').forEach((b) => b.addEventListener('click', () => {
       state.meal = b.dataset.meal;
       panel.querySelectorAll('[data-meal]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
       sheet.el.querySelector('.sheet-head .small').textContent = mealLabel(state.meal);
     }));
+    panel.querySelector('[data-fav]')?.addEventListener('click', (e) => {
+      const btn = e.currentTarget;
+      const on = toggleFavoriteFood(food);
+      btn.setAttribute('aria-pressed', String(on));
+      toast(on ? 'Zu Favoriten hinzugefügt' : 'Aus Favoriten entfernt');
+      haptic();
+    });
     panel.querySelector('[data-back]').addEventListener('click', () => renderSearch());
 
     // Hauptbutton im Footer
@@ -423,6 +460,7 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
         source: food.source,
         emoji: food.emoji,
       }]);
+      rememberFood(food);
       haptic(12);
       toast(`${food.name} hinzugefügt`);
       sheet.close();
@@ -673,6 +711,7 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
         source: 'custom',
         emoji: '✏️',
       }]);
+      rememberFood(food);
       toast('Eigenes Lebensmittel gespeichert');
       sheet.close();
     });
@@ -922,6 +961,7 @@ export function openAiSheet({ dateKey = todayKey(), meal = 'lunch' } = {}) {
           emoji: '📷',
         }));
         if (!items.length) return toast('Keine Einträge ausgewählt', 'err');
+        items.forEach((item) => rememberFood({ ...item, source: state.demo ? 'demo' : 'ai', emoji: '📷' }));
         addEntries(state.dateKey, state.meal, items);
         haptic(15);
         toast(`${items.length} Einträge hinzugefügt`);

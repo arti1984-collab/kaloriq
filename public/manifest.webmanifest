@@ -25,6 +25,18 @@
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
+      "name": "Schnell eintragen",
+      "short_name": "Schnell",
+      "url": "/?action=quick&meal=lunch",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Wasser +250 ml",
+      "short_name": "Wasser",
+      "url": "/?action=water",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
       "name": "Tagebuch",
       "short_name": "Tagebuch",
       "url": "/#/diary",

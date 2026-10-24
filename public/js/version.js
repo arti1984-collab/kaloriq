@@ -2,4 +2,4 @@
    Kaloriq – zentrale Versionsnummer
    Wird von scripts/bump-version.mjs automatisch gepflegt.
    ============================================================ */
-export const APP_VERSION = '1.2.14';
+export const APP_VERSION = '1.3.0';

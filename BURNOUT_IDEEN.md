@@ -7,10 +7,11 @@ Kaloriq ist offline-first und komplett privat. Gerade deshalb kann es sich
 bewusst von klassischen Trackern abgrenzen: **Dranbleiben belohnen statt
 Perfektion verlangen.**
 
-> Stand: 24.10.2026 · Umgesetzt: **Minimalmodus** und **Flexbereich** (1.2.6),
+> Stand: 25.10.2026 · Umgesetzt: **Minimalmodus** und **Flexbereich** (1.2.6),
 > **Gnaden-Tage** (1.2.9), **Pausenmodus** (1.2.10),
 > **Hunger-Sättigungs-Check** (1.2.11), **Kleine Erfolge** (1.2.12),
-> **Handportionen** und **Rough Log** (1.2.13).
+> **Handportionen** und **Rough Log** (1.2.13),
+> **Schnellzugriff, Trackingsstil und Wochenrückblick** (1.3.0).
 
 ---
 
@@ -19,7 +20,7 @@ Perfektion verlangen.**
 | Idee | Nutzen | Aufwand | Bemerkung | Status |
 |---|---|---|---|---|
 | **Flexbereich statt „zu viel/zu wenig“** | Reduziert Schuldgefühle enorm | Gering | Statt einer harten Zielgrenze gilt ein Bereich von ±5–15 % als „im Rahmen“. Der Ring bleibt neutral statt knallrot. | **Umgesetzt (1.2.6)** |
-| **Wöchentlicher Fokus statt Tagesdruck** | Weniger Druck pro Tag | Gering | Im Fortschritt oder direkt im Tagebuch den **7-Tage-Durchschnitt** prominenter anzeigen. Der Tagesring bleibt, rückt aber nicht mehr in den Mittelpunkt. | Idee |
+| **Wöchentlicher Fokus statt Tagesdruck** | Weniger Druck pro Tag | Gering | Im Fortschritt oder direkt im Tagebuch den **7-Tage-Durchschnitt** prominenter anzeigen. Der Tagesring bleibt, rückt aber nicht mehr in den Mittelpunkt. | Teilweise umgesetzt (1.3.0) |
 | **Streak umdeuten („Aktive Tage“ statt „Perfekt getrackt“)** | Bricht den „Alles-oder-Nichts“-Effekt | Gering | Ein Streak wirkt schnell wie eine Pflicht. Schon **1 Eintrag** reicht, um den Tag als „aktiv“ zu zählen. | Idee |
 | **Neutrale Sprache & Texte** | Psychologisch wirkungsvoll | Gering | „Du hast X kcal übrig“ oder „Überschritten“ durch neutralere Varianten ersetzen („X kcal im Rahmen“, „Spielraum“). Direkt in `public/js/i18n.js` möglich. | Teilweise umgesetzt (1.2.6) |
 

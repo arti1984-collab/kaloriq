@@ -1,13 +1,14 @@
 /* ============================================================
    Kaloriq – Onboarding (Plan erstellen)
    ============================================================ */
-import { store } from '../store.js';
+import { store, applyTrackingStyle } from '../store.js';
 import { ACTIVITY, GOALS, computeTargets, bmi, bmiCategory, healthyWeightRange, projection } from '../calc.js';
 import { esc, fmt, icon, toast } from '../ui.js';
 import { locale } from '../i18n.js';
 
 let step = 0;
 let draft = null;
+let onboardingStyle = 'precise';
 
 function ensureDraft() {
   if (draft) return draft;
@@ -59,6 +60,13 @@ export function renderOnboarding(root) {
     });
   });
 
+  qa('[data-style]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      onboardingStyle = btn.dataset.style;
+      qa('[data-style]').forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+    });
+  });
+
   q('[data-back]')?.addEventListener('click', () => {
     step = Math.max(0, step - 1);
     renderOnboarding(root);
@@ -69,6 +77,10 @@ export function renderOnboarding(root) {
     if (step === total - 1) {
       store.saveProfile({ ...d, rate: Number(d.rate) || 0.5 });
       store.finishOnboarding();
+      applyTrackingStyle(onboardingStyle);
+      step = 0;
+      draft = null;
+      onboardingStyle = 'precise';
       return;
     }
     step++;
@@ -282,6 +294,14 @@ function stepView(d) {
             <span class="v">${fmt(t.water)} ml</span>
           </div>
         </div>
+
+        <div class="section-title">Wie möchtest du tracken?</div>
+        <div class="chips">
+          <button class="chip" data-style="precise" aria-pressed="${onboardingStyle === 'precise'}">🎯 Genau</button>
+          <button class="chip" data-style="rough" aria-pressed="${onboardingStyle === 'rough'}">✋ Grob</button>
+          <button class="chip" data-style="overview" aria-pressed="${onboardingStyle === 'overview'}">🌿 Überblick</button>
+        </div>
+        <p class="tiny muted" style="margin-top:8px">Genau: Gramm und Makros · Grob: Handportionen und Schnell-Eintrag · Überblick: ohne Zahlen, Fokus auf Erfolge. Alles bleibt später änderbar.</p>
         <p class="tiny muted center" style="margin-top:14px">Richtwerte, keine medizinische Beratung.</p>`;
     }
 

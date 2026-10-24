@@ -385,12 +385,44 @@ export async function searchRemote(query, limit = 20) {
 export async function lookupBarcode(code) {
   const clean = String(code || '').replace(/\D/g, '');
   if (clean.length < 6) throw new Error('Bitte einen gültigen Barcode eingeben.');
+
+  const cached = readBarcodeCache()[clean];
+  if (cached) return cached;
+
   const url = `https://world.openfoodfacts.org/api/v2/product/${clean}.json?fields=${OFF_FIELDS}`;
   const data = await fetchJson(url, 12000);
   if (data.status === 0 || !data.product) throw new Error('Produkt nicht gefunden. Bitte manuell eingeben.');
   const mapped = mapOffProduct(data.product);
   if (!mapped) throw new Error('Für dieses Produkt fehlen Nährwerte.');
+  writeBarcodeCache(clean, mapped);
   return mapped;
+}
+
+/* ---------- Barcode-Cache (offline wiederverwendbar) ---------- */
+
+const BARCODE_CACHE_KEY = 'kaloriq.barcode.v1';
+
+function readBarcodeCache() {
+  try {
+    const raw = localStorage.getItem(BARCODE_CACHE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeBarcodeCache(code, food) {
+  try {
+    const map = readBarcodeCache();
+    map[code] = { ...food, cachedAt: Date.now() };
+    const keys = Object.keys(map).sort((a, b) => (map[b].cachedAt || 0) - (map[a].cachedAt || 0));
+    const next = {};
+    for (const key of keys.slice(0, 80)) next[key] = map[key];
+    localStorage.setItem(BARCODE_CACHE_KEY, JSON.stringify(next));
+  } catch {
+    /* Speicher voll oder nicht verfügbar – Suche funktioniert weiter. */
+  }
 }
 
 /* ---------------- Eigene Lebensmittel ---------------- */

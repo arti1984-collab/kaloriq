@@ -57,6 +57,7 @@ const PATHS = {
   play: '<path d="M7 4.5l12 7.5-12 7.5z"/>',
   pause: '<path d="M9 5v14M15 5v14"/>',
   stop: '<rect x="6" y="6" width="12" height="12" rx="2"/>',
+  star: '<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.2 1 5.9-5.2-2.7-5.2 2.7 1-5.9L3.5 9.7l5.9-.9z"/>',
 };
 
 export function icon(name, cls = '') {
@@ -76,6 +77,25 @@ export function toast(message, type = 'ok', ms = 2600) {
     node.classList.add('out');
     setTimeout(() => node.remove(), 240);
   }, ms);
+}
+
+/** Toast mit einer Aktion, z. B. „Rückgängig“. */
+export function toastAction(message, actionLabel, onAction, ms = 5200) {
+  const root = $('#toast-root');
+  if (!root) return;
+  const node = document.createElement('div');
+  node.className = 'toast action';
+  node.innerHTML = `<span>✓</span><span class="grow">${esc(tr(message))}</span><button type="button">${esc(tr(actionLabel))}</button>`;
+  const remove = () => {
+    node.classList.add('out');
+    setTimeout(() => node.remove(), 240);
+  };
+  node.querySelector('button')?.addEventListener('click', () => {
+    remove();
+    try { onAction?.(); } catch { /* egal */ }
+  });
+  root.appendChild(node);
+  setTimeout(remove, ms);
 }
 
 /* ---------------- Sheet ---------------- */

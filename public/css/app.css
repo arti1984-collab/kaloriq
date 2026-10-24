@@ -442,6 +442,17 @@ svg { display: block; }
   border-bottom: 1px solid var(--line-2);
 }
 .meal .empty-line:last-child { border-bottom: 0; }
+.copy-line {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--line-2);
+  background: none;
+  text-align: left;
+  color: var(--accent-strong);
+  cursor: pointer;
+}
+.copy-line span { color: var(--muted); }
 
 /* ---------- Hunger & Sättigung ---------- */
 
@@ -921,9 +932,24 @@ body:not([data-tab="diary"]):not([data-tab="progress"]) .fab { display: none; }
   font-weight: 550;
   box-shadow: var(--shadow-md);
   animation: toastIn .25s var(--ease);
+  pointer-events: auto;
 }
 .toast.err { background: #3d1416; color: #ffe5e5; }
 .toast.out { animation: toastOut .22s var(--ease) forwards; }
+.toast.action { gap: 10px; }
+.toast.action button {
+  margin-left: auto;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .16);
+  color: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.toast.action button:active { transform: scale(.96); }
 @keyframes toastIn { from { opacity: 0; transform: translateY(10px) scale(.97); } }
 @keyframes toastOut { to { opacity: 0; transform: translateY(8px) scale(.98); } }
 
@@ -1209,6 +1235,35 @@ body:not([data-tab="diary"]):not([data-tab="progress"]) .fab { display: none; }
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
+
+/* ---------- Fokus & Barrierefreiheit ---------- */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+
+.icon-btn[aria-pressed="true"] svg,
+#fab[aria-pressed="true"] svg { fill: var(--accent); }
+.icon-btn[aria-pressed="true"] { color: var(--accent-strong); border-color: color-mix(in srgb, var(--accent) 30%, var(--line)); }
+
+/* ---------- Fataler Fehler ---------- */
+
+.fatal-error {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--bg) 92%, #000);
+  backdrop-filter: blur(10px);
+}
+.fatal-error .card { max-width: 420px; width: 100%; text-align: center; padding: 22px; }
+.fatal-error h2 { font-size: 20px; margin-bottom: 8px; }
+.fatal-error p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.fatal-error code { display: block; margin: 10px 0; padding: 8px 10px; border-radius: 8px; background: var(--bg-2); font-size: 11px; overflow-wrap: anywhere; }
 
 @media (min-width: 620px) {
   .view, .topbar { padding-left: 20px; padding-right: 20px; }

@@ -1,8 +1,11 @@
 /* ============================================================
    Kaloriq – Bootstrap & Navigation
    ============================================================ */
-import { store, hydrateFromDurable, requestPersistentStorage } from './store.js';
-import { $, icon, setActiveTab, toast } from './ui.js';
+import {
+  store, hydrateFromDurable, requestPersistentStorage,
+  listBackups, backupNow, exportJson, setWater, todayKey,
+} from './store.js';
+import { $, icon, setActiveTab, toast, toastAction, downloadFile } from './ui.js';
 import { setLang, applyI18n, watchI18n } from './i18n.js';
 import { detectProxy } from './ai.js';
 import { resumeSteps } from './steps.js';
@@ -12,7 +15,7 @@ import { renderProgress } from './views/progress.js';
 import { renderFasting } from './views/fasting.js';
 import { renderProfile } from './views/profile.js';
 import { renderRecipes } from './views/recipes.js';
-import { openAiSheet } from './views/add.js';
+import { openAiSheet, openQuickLogSheet, openAddSheet } from './views/add.js';
 
 const TABS = [
   { id: 'diary', label: 'Tagebuch', icon: 'book' },
@@ -85,6 +88,72 @@ function scheduleRender() {
   });
 }
 
+/** Einmal pro Tag an eine ältere Sicherung erinnern – ohne Druck. */
+function maybeBackupReminder() {
+  const state = store.get();
+  if (!state.onboarded) return;
+  const hasEntries = Object.values(state.days || {}).some((d) => d?.entries?.length);
+  if (!hasEntries) return;
+  const last = listBackups()[0]?.at || 0;
+  if (last && Date.now() - last < 14 * 86400000) return;
+  const day = todayKey();
+  if (state.settings.backupRemindedAt === day) return;
+  store.saveSettings({ backupRemindedAt: day });
+  toastAction('Letzte Sicherung ist älter als 14 Tage', 'Jetzt sichern', () => {
+    backupNow();
+    toast('Sicherung angelegt');
+  }, 6500);
+}
+
+/** Letzter Ausweg bei einem Startfehler: Daten sichern statt leerer Seite. */
+function showFatalError(err) {
+  if (document.getElementById('fatal-error')) return;
+  const wrap = document.createElement('div');
+  wrap.id = 'fatal-error';
+  wrap.className = 'fatal-error';
+  wrap.innerHTML = `
+    <div class="card">
+      <h2>Etwas ist schiefgelaufen</h2>
+      <p>Die App konnte nicht vollständig starten. Deine gespeicherten Daten bleiben auf dem Gerät. Lade die Seite neu oder sichere sie vorher als JSON.</p>
+      <code></code>
+      <div class="vstack" style="margin-top:14px">
+        <button class="btn btn-primary btn-block" data-reload>Neu laden</button>
+        <button class="btn btn-block" data-export>Daten als JSON sichern</button>
+      </div>
+    </div>`;
+  wrap.querySelector('code').textContent = String(err?.message || err || 'Unbekannter Fehler').slice(0, 300);
+  wrap.querySelector('[data-reload]')?.addEventListener('click', () => location.reload());
+  wrap.querySelector('[data-export]')?.addEventListener('click', () => {
+    downloadFile(`kaloriq-notfall-${todayKey()}.json`, exportJson());
+  });
+  document.body.appendChild(wrap);
+}
+
+/** PWA-Shortcuts und ?action=… auswerten. */
+function handleActionParam() {
+  const params = new URLSearchParams(location.search);
+  const action = params.get('action');
+  if (!action || !store.get().onboarded) return;
+  const meal = params.get('meal') || 'breakfast';
+  const clean = () => history.replaceState(null, '', location.pathname + location.hash);
+  if (action === 'ai') {
+    setTimeout(() => openAiSheet(), 260);
+    clean();
+  } else if (action === 'quick') {
+    setTimeout(() => openQuickLogSheet({ meal }), 260);
+    clean();
+  } else if (action === 'search') {
+    setTimeout(() => openAddSheet({ meal }), 260);
+    clean();
+  } else if (action === 'water') {
+    const today = todayKey();
+    const current = store.get().days[today]?.water || 0;
+    setWater(today, current + 250);
+    toast('250 ml Wasser hinzugefügt');
+    clean();
+  }
+}
+
 async function boot() {
   // Zuerst die IndexedDB-Zweitkopie prüfen, den Start aber nicht blockieren.
   const hydration = hydrateFromDurable().catch(() => false);
@@ -138,17 +207,19 @@ async function boot() {
   requestPersistentStorage();
   window.addEventListener('pointerdown', () => requestPersistentStorage(), { once: true, passive: true });
 
-  // Android-Shortcut "KI-Tracking" (?action=ai)
-  const params = new URLSearchParams(location.search);
-  if (params.get('action') === 'ai' && store.get().onboarded) {
-    setTimeout(() => openAiSheet(), 260);
-    history.replaceState(null, '', location.pathname + location.hash);
-  }
+  // PWA-Shortcuts (?action=ai|quick|search|water) und Sicherungserinnerung
+  handleActionParam();
+  maybeBackupReminder();
 
   // Service Worker (nur über https/localhost – auf LAN-IP ohne TLS nicht verfügbar)
   // In der APK nicht nötig: die Dateien liegen bereits lokal in der App.
   const isNativeApp = Boolean(window.Capacitor?.isNativePlatform?.());
   if ('serviceWorker' in navigator && !isNativeApp) {
+    let hadController = Boolean(navigator.serviceWorker.controller);
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController) { hadController = true; return; }
+      toastAction('Neue Version verfügbar', 'Neu laden', () => location.reload(), 8000);
+    });
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     });
@@ -176,7 +247,20 @@ async function boot() {
   window.addEventListener('offline', () => toast('Offline – lokale Daten funktionieren weiter', 'err'));
 }
 
+window.addEventListener('error', (event) => {
+  if (!event.error) return;
+  console.error('Fehler:', event.error);
+  toastAction('Etwas ist schiefgelaufen', 'Neu laden', () => location.reload(), 7000);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  const reason = event.reason;
+  if (reason?.name === 'AbortError') return;
+  console.error('Unbehandelter Fehler:', reason);
+  toastAction('Etwas ist schiefgelaufen', 'Neu laden', () => location.reload(), 7000);
+});
+
 boot().catch((err) => {
   console.error('Start fehlgeschlagen:', err);
-  render();
+  showFatalError(err);
 });

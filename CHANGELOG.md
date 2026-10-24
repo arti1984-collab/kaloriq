@@ -47,6 +47,76 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.3.0] – 25.10.2026
+
+### Hinzugefügt
+
+- **Schnellzugriff im Tagebuch:** Zuletzt verwendete und favorisierte
+  Lebensmittel stehen oben in der Suche. Favoriten lassen sich direkt im
+  Mengen-Sheet markieren.
+- **Gestern kopieren:** Eine leere Mahlzeit übernimmt mit einem Tipp alle
+  Einträge derselben Mahlzeit vom Vortag.
+- **Einträge bearbeiten:** Duplizieren, in eine andere Mahlzeit verschieben
+  und nach dem Löschen per **„Rückgängig“** wiederherstellen.
+- **Trackingsstil:** Genau, Grob oder Überblick – auswählbar im Onboarding
+  und später unter **Profil → Wohlbefinden → Trackingsstil**. Der Stil setzt
+  passende Voreinstellungen (z. B. Handportionen bei „Grob“, Minimalmodus bei
+  „Überblick“), sperrt aber nichts.
+- **Wochenrückblick ohne Druck:** Tage mit Einträgen, kleine Erfolge,
+  Check-ins und Wasser-Tage im Fortschritt – ohne Kalorienbewertung.
+- **Backup-Status und sanfte Erinnerung:** Die letzte Sicherung ist sichtbar;
+  nach 14 Tagen erinnert Kaloriq einmal täglich ans Sichern.
+- **Globaler Startfehler-Bildschirm:** Statt einer leeren Seite gibt es
+  „Neu laden“ und „Daten als JSON sichern“.
+- **Update-Hinweis:** Eine neue App-Version kann direkt neu geladen werden.
+- **Feedback & Hilfe:** Problem oder Idee über GitHub melden; Version, Gerät
+  und Sprache werden als Diagnose mitgegeben. Die Diagnose lässt sich auch
+  kopieren.
+- **CSV-Export:** Alle Einträge oder Tageswerte als CSV für Excel, Numbers
+  oder Google Sheets.
+- **Sanfte Erinnerung:** Standardmäßig aus. Wenn aktiviert, erscheint einmal
+  beim nächsten Öffnen ein ruhiger Check-in-Hinweis – kein Push, keine
+  Streak-Drohung.
+- **PWA-Schnellaktionen:** „Schnell eintragen“ und „Wasser +250 ml“ als
+  Startmenü-Shortcuts; Barcode-Produkte werden lokal zwischengespeichert und
+  sind offline wiederverwendbar.
+- **Barrierefreiheit:** sichtbarer Tastaturfokus, reduzierte Bewegung und
+  klarere Beschriftungen für die neuen Aktionen.
+
+### Geändert
+
+- Der Trackingsstil beeinflusst die Standard-Mengeneingabe: „Grob“ startet
+  mit Handportionen, „Genau“ mit Gramm.
+- Einträge mit Quelle `rough` bleiben als grobe Schätzung markiert und lassen
+  sich im Eintrag nur löschen; für eine andere Portionsgröße wird neu
+  eingetragen.
+- Die lokale Lebensmitteldatenbank umfasst 212 Einträge (siehe 1.2.14).
+
+### Nicht enthalten
+
+- **Health Connect / Apple Health**, ein echtes **Android-Widget** und
+  **System-Push-Erinnerungen** bleiben native Folgearbeit. Die sanfte
+  Erinnerung erscheint beim Öffnen der App; PWA-Schnellaktionen sind
+  vorhanden. **Play-Store-Präsenz** ist weiterhin nicht Teil dieses Stands.
+
+### Getestet
+
+- Zuletzt/Favoriten, Gestern kopieren, Duplizieren, Verschieben und
+  Rückgängig; Anzeige und Persistenz nach Reload.
+- Trackingsstil Genau/Grob/Überblick inkl. Handportionen als Standard bei
+  „Grob“; Onboarding-Auswahl und spätere Änderung.
+- Wochenrückblick, Backup-Status, Feedback-Sheet, CSV-Export und
+  PWA-Shortcuts (`quick`, `water`).
+- Sanfte Erinnerung: Anzeige, Ausblenden und „Heute nicht“.
+- Deutsch/Englisch, keine Konsolenfehler.
+
+### Veröffentlicht
+
+- Service-Worker-Cache `kaloriq-v32`, Android `versionName 1.3.0` /
+  `versionCode 10300`; signierte APK als GitHub-Release `v1.3.0`.
+
+---
+
 ## [1.2.14] – 24.10.2026
 
 ### Geändert

@@ -53,6 +53,10 @@ als 2×2-Montage (`uebersicht.png`).
 | **Pausenmodus** | „Nur heute drüber“ oder 3/7/14 Tage/offen – Serie eingefroren, kein Kaloriendruck |
 | **Hunger & Sättigung** | Optionaler 1–10-Check-in pro Mahlzeit, vor und nach dem Essen – ohne Pflicht, ohne Bewertung |
 | **Kleine Erfolge** | Wasser, Spaziergang, bewusst gegessen, Zeit für mich – Nicht-Zahl-Erfolge zum Antippen, ohne Punkte |
+| **Schnellzugriff** | Zuletzt/Favoriten, Gestern kopieren, Duplizieren, Mahlzeit verschieben, Löschen rückgängig |
+| **Trackingsstil** | Genau / Grob / Überblick – passend zu Alltag und Drucklevel |
+| **Wochenrückblick** | Tage, kleine Erfolge, Check-ins und Wasser – ohne Kaloriendruck |
+| **CSV & Feedback** | CSV-Export, In-App-Feedback, Backup-Erinnerung und Update-Hinweis |
 | **Handportionen** | Klein/Mittel/Groß statt Gramm – mit grober Gramm-Orientierung, ohne Waage |
 | **Schnell eintragen** | Leicht/Normal/Reichhaltig pro Mahlzeit – grobe Schätzung ohne Grammangaben |
 | **Sprache** | Deutsch / English – Umschaltung unter **Profil → Sprache**, alle Screens sofort übersetzt |
@@ -78,6 +82,13 @@ als 2×2-Montage (`uebersicht.png`).
 - **Schnell eintragen:** Pro Mahlzeit eine grobe Schätzung als Leicht,
   Normal oder Reichhaltig (20/30/40 % des Tagesziels) – optional mit Name.
   Der Eintrag ist als „grobe Schätzung“ markiert und später editierbar.
+- **Schnellzugriff:** Zuletzt verwendete und favorisierte Lebensmittel stehen
+  oben in der Suche. „Gestern kopieren“ übernimmt eine Mahlzeit vom Vortag,
+  Einträge lassen sich duplizieren, in eine andere Mahlzeit verschieben und
+  nach dem Löschen mit einem Tipp wiederherstellen.
+- **Trackingsstil:** Genau (Gramm/Makros), Grob (Handportionen und
+  Schnell-Eintrag) oder Überblick (ohne Zahlen, Fokus auf Erfolge). Der Stil
+  lässt sich im Onboarding und später unter Profil ändern.
 
 ### Rezepte
 
@@ -121,6 +132,8 @@ als 2×2-Montage (`uebersicht.png`).
   Blick.
 - Wochenauswertung: Ø Kalorien, Balken pro Tag, Makro-Durchschnitt und
   Tageshistorie mit Einträgen und Wasser.
+- **Wochenrückblick ohne Druck:** Tage mit Einträgen, kleine Erfolge,
+  Check-ins und Wasser-Tage auf einen Blick – ohne Kalorienbewertung.
 
 ### Fasten
 
@@ -156,6 +169,9 @@ als 2×2-Montage (`uebersicht.png`).
   getrunken, Spaziergang gemacht, bewusst gegessen, mir Zeit genommen. Kein
   Punktesystem, keine Serien, keine Bewertung; ausgewählte Erfolge bekommen
   nur einen ruhigen Haken. Über **Profil → Wohlbefinden** ausblendbar.
+- **Sanfte Erinnerung:** Standardmäßig aus. Wenn aktiviert, erscheint einmal
+  beim nächsten Öffnen ein ruhiger Check-in-Hinweis – nicht per Push, ohne
+  Streak-Drohung.
 
 ### Profil, Sprache & Daten
 
@@ -165,6 +181,13 @@ als 2×2-Montage (`uebersicht.png`).
   Einträge und Profil bleiben unverändert.
 - **JSON-Export/-Import**, automatische Sicherungen (alle 12 Stunden, maximal
   drei Stände) und ein Zurücksetzen, das vorher automatisch sichert.
+- **CSV-Export** für Excel, Numbers oder Sheets – wahlweise alle Einträge oder
+  die Tageswerte.
+- **Backup-Status und sanfte Erinnerung:** Die letzte Sicherung ist sichtbar;
+  nach 14 Tagen erinnert Kaloriq einmal täglich ans Sichern.
+- **Feedback & Hilfe** direkt im Profil: Problem oder Idee über GitHub melden,
+  inklusive Version, Gerät und Sprache. Dazu ein Update-Hinweis, wenn eine neue
+  App-Version bereitsteht.
 - Gemini-Key lokal oder über den Server-Proxy; Modellliste direkt aus der
   Google-API laden.
 
@@ -330,6 +353,7 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 | Version | Schwerpunkt |
 |---|---|
+| **1.3.0** | Schnellzugriff, Trackingsstil, Wochenrückblick, CSV/Feedback und Vertrauens-UX |
 | **1.2.14** | Lokale Lebensmittel-Datenbank auf 212 Einträge erweitert |
 | **1.2.13** | Handportionen und „Schnell eintragen“ (Rough Log) |
 | **1.2.12** | Kleine Nicht-Zahl-Erfolge im Tagebuch (ohne Punkte oder Serien) |
@@ -443,6 +467,7 @@ public/
     pause.js            Pausenmodus (nur heute, mehrere Tage, offenes Ende)
     checkin.js          Hunger-/Sättigungs-Check pro Mahlzeit
     wins.js             Kleine Nicht-Zahl-Erfolge im Tagebuch
+    csv.js              CSV-Export für Einträge und Tageswerte
     views/              onboarding · diary · add (Suche/Barcode/KI) · recipes · progress · fasting · profile
 android-app/            Capacitor-Projekt für die APK (siehe ANDROID.md)
 scripts/build-apk.mjs   APK bauen (npm run apk)
@@ -465,6 +490,7 @@ scripts/tunnel.mjs      HTTPS-Tunnel für die Installation (npm run tunnel)
 - **Kein Account, keine Synchronisierung** zwischen Geräten (bewusst). Sync ließe sich später über einen kleinen Server oder Supabase ergänzen.
 - **Schrittzähler:** In der APK liest ein natives Plugin den Hardware-Schrittzähler (`TYPE_STEP_COUNTER`). Der Sensor zählt kumulativ seit dem Geräteneustart weiter, auch wenn die App geschlossen ist – beim nächsten Öffnen wird die Differenz nachgetragen. Nach einem Tageswechsel ohne App-Kontakt werden die Schritte dem Tag des Öffnens zugerechnet; nach mehr als 20 Stunden Pause wird der Stand neu gesetzt, statt willkürlich zu verteilen. Im Browser (PWA) bleibt es beim Bewegungssensor und Zählen nur bei geöffneter App; Safari hat keinen HealthKit-Zugriff und pausiert Web-Apps im Hintergrund. Ein echter Hintergrund-Schrittzähler auf dem iPhone würde eine native App mit HealthKit voraussetzen. Schritte lassen sich außerdem jederzeit manuell korrigieren.
 - **Community-Rezeptdatenbank, Fitnessarmband-Anbindung und Cloud-Sync** sind nicht enthalten. Eigene Rezepte bleiben lokal und lassen sich als JSON teilen.
+- **Native Erweiterungen:** Health Connect/Apple Health, ein echtes Android-Widget und System-Push-Erinnerungen sind bewusst nicht enthalten – sie brauchen native Folgearbeit. PWA-Schnellaktionen für Schnell-Eintrag und Wasser sind vorhanden; die sanfte Erinnerung erscheint beim Öffnen der App.
 
 ## Rechtliches
 

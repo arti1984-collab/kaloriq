@@ -35,6 +35,9 @@ export function renderProgress(root) {
       : weekFlex.state === 'below'
         ? 'darunter'
         : 'im Rahmen';
+  const winsTotal = week.days.reduce((n, d) => n + Object.keys(d.day?.wins || {}).length, 0);
+  const checkinTotal = week.days.reduce((n, d) => n + Object.keys(d.day?.checkins || {}).length, 0);
+  const waterDays = week.days.filter((d) => (d.day?.water || 0) > 0).length;
   const headerSub = paused
     ? `<span>Pause</span> · <span>${pauseStateLabel(pause)}</span>`
     : minimal
@@ -63,6 +66,18 @@ export function renderProgress(root) {
       <p class="gentle-note">Kalorienziel, Wochenbilanz und Makros sind ausgeblendet. Gewicht und Verlauf bleiben sichtbar.</p>
       <button class="btn btn-sm btn-ghost" data-minimal-off style="margin-top:10px">${icon('chart')} Zahlen einblenden</button>
     </section>` : ''}
+
+    <section class="card review-card">
+      <div class="card-title">Wochenrückblick</div>
+      <p class="tiny muted">Was diese Woche schon da war – ohne Druck.</p>
+      <div class="stat-grid" style="margin-top:12px">
+        <div class="stat"><div class="lbl">Tage getrackt</div><div class="val">${week.loggedDays}<small>/7</small></div></div>
+        <div class="stat"><div class="lbl">Kleine Erfolge</div><div class="val">${winsTotal}</div></div>
+        <div class="stat"><div class="lbl">Check-ins</div><div class="val">${checkinTotal}</div></div>
+        <div class="stat"><div class="lbl">Wasser-Tage</div><div class="val">${waterDays}<small>/7</small></div></div>
+      </div>
+      ${winsTotal ? `<p class="gentle-note">${winsTotal} kleine ${winsTotal === 1 ? 'Erfolg' : 'Erfolge'} – das zählt.</p>` : ''}
+    </section>
 
     <section class="card">
       <div class="card-title">Gewicht</div>
