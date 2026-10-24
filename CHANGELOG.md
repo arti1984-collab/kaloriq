@@ -47,6 +47,30 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.2.7] – 24.10.2026
+
+### Behoben
+
+- **Schrittzähler (APK) reagiert schneller:** Der native Sensor meldet neue
+  Werte jetzt höchstens alle **500 ms** statt alle 2 Sekunden an die App.
+  Schritte, die innerhalb dieses Fensters eintreffen, gehen nicht mehr
+  verloren – ein nachlaufendes Update zeigt immer den neuesten Stand.
+- **Sofortiger Stand nach dem Zurückkehren:** Beim Wechsel aus dem
+  Hintergrund wird der Sensor neu registriert. Android liefert dabei direkt
+  den aktuellen Zählerstand, statt auf den nächsten Schrittschub zu warten.
+- **Sensorrate:** Registrierung mit `SENSOR_DELAY_UI` statt
+  `SENSOR_DELAY_NORMAL`, damit Werte zeitnaher ankommen.
+- **Weniger Re-Renders:** Die App baut die Tagebuch-Ansicht nicht mehr bei
+  jedem Sensor-Update komplett neu auf. Die Schritt-Anzeige wird über das
+  Live-Event aktualisiert, was die Oberfläche flüssiger hält.
+
+### Veröffentlicht
+
+- Service-Worker-Cache `kaloriq-v24`, Android `versionName 1.2.7` /
+  `versionCode 10207`; signierte APK als GitHub-Release `v1.2.7`.
+
+---
+
 ## [1.2.6] – 24.10.2026
 
 ### Hinzugefügt

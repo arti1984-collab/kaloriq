@@ -114,6 +114,11 @@ async function boot() {
       paintTabbar();
     }
     if (reason === 'onboarding') requestPersistentStorage();
+    // Schritte aktualisieren sich live über `kaloriq:steps` in der
+    // Tagebuch-Ansicht. Ein vollständiger Re-Render bei jedem Sensor-Update
+    // würde die Oberfläche nur unnötig alle paar hundert Millisekunden
+    // neu aufbauen und die Anzeige träge wirken lassen.
+    if (reason === 'steps') return;
     scheduleRender();
   });
   window.addEventListener('hashchange', () => {

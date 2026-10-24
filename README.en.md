@@ -88,7 +88,8 @@ as a 2×2 montage (`uebersicht.png`).
 
 - **Android APK:** native step counter via `TYPE_STEP_COUNTER`. The sensor
   keeps counting while the app is closed; the next time you open Kaloriq, it
-  adds the difference.
+  adds the difference. The display refreshes at least every 0.5 seconds and
+  shows the current reading immediately when returning from the background.
 - Day changes, device restarts and long pauses (> 20 h) are handled;
   **stale sensor values** (older than 5 minutes) are ignored to avoid incorrect
   step counts.
@@ -294,6 +295,7 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.2.7** | Step counter responds faster (500 ms, immediate value after resume) |
 | **1.2.6** | Minimal mode and flex range against perfection pressure |
 | **1.2.5** | TikTok link in the profile and on the GitHub project page |
 | **1.2.4** | Local recipes with ingredients, nutrition, servings, diary logging and JSON exchange |

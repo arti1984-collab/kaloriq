@@ -36,7 +36,7 @@ public class StepCounterBridge implements SensorEventListener {
     /** Eindeutiger Request-Code für die Aktivitäts-Berechtigung. */
     public static final int REQUEST_CODE = 4311;
 
-    private static final long EMIT_INTERVAL_MS = 2000L;
+    private static final long EMIT_INTERVAL_MS = 500L;
 
     private final Activity activity;
     private final WebView webView;
@@ -49,7 +49,21 @@ public class StepCounterBridge implements SensorEventListener {
     private long lastSensorAt = -1;
     private long lastSensorWall = -1;
     private long lastEmitAt = 0;
+    private long pendingValue = -1;
+    private boolean emitScheduled = false;
     private volatile boolean destroyed = false;
+
+    /** Nachlaufendes Update: zeigt den letzten Schritt spätestens nach 500 ms. */
+    private final Runnable emitPending = () -> {
+        emitScheduled = false;
+        if (destroyed || pendingValue < 0) {
+            return;
+        }
+        long value = pendingValue;
+        pendingValue = -1;
+        lastEmitAt = SystemClock.elapsedRealtime();
+        emit("update", value);
+    };
 
     public StepCounterBridge(Activity activity, WebView webView) {
         this.activity = activity;
@@ -102,9 +116,13 @@ public class StepCounterBridge implements SensorEventListener {
 
     /* ---------------- Lifecycle (von MainActivity aufgerufen) ---------------- */
 
-    /** Nach dem Wechsel in den Vordergrund: Sensor ggf. erneut registrieren. */
+    /** Nach dem Wechsel in den Vordergrund: Sensor neu registrieren.
+     *  Android liefert beim erneuten Registrieren sofort den aktuellen
+     *  Zählerstand – dadurch springt die Anzeige nicht erst beim nächsten
+     *  Schrittereignis, sondern direkt auf den echten Wert. */
     public void onResume() {
         if (listening) {
+            stopListening();
             registerListener();
         }
     }
@@ -162,7 +180,7 @@ public class StepCounterBridge implements SensorEventListener {
             return;
         }
         if (!listening) {
-            sensorManager.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_UI);
             listening = true;
         }
         // Nach einem Neustart der App oder einem Reload der Seite den letzten
@@ -182,6 +200,9 @@ public class StepCounterBridge implements SensorEventListener {
             sensorManager.unregisterListener(this);
         }
         listening = false;
+        mainHandler.removeCallbacks(emitPending);
+        emitScheduled = false;
+        pendingValue = -1;
     }
 
     @Override
@@ -200,13 +221,25 @@ public class StepCounterBridge implements SensorEventListener {
         lastSensorAt = SystemClock.elapsedRealtime();
         lastSensorWall = System.currentTimeMillis();
 
-        // Nicht bei jedem Schritt die WebView aufrufen.
+        // Höchstens alle 500 ms ein Update an die WebView – aber ohne das
+        // letzte Ereignis zu verlieren. Bisher wurden Ereignisse innerhalb
+        // des Intervalls einfach verworfen, dadurch konnte die Anzeige
+        // mehrere Sekunden hinterherlaufen.
         long now = SystemClock.elapsedRealtime();
-        if (lastEmitAt != 0 && now - lastEmitAt < EMIT_INTERVAL_MS) {
+        pendingValue = value;
+        if (lastEmitAt == 0 || now - lastEmitAt >= EMIT_INTERVAL_MS) {
+            mainHandler.removeCallbacks(emitPending);
+            emitScheduled = false;
+            pendingValue = -1;
+            lastEmitAt = now;
+            emit("update", value);
             return;
         }
-        lastEmitAt = now;
-        emit("update", value);
+
+        if (!emitScheduled) {
+            emitScheduled = true;
+            mainHandler.postDelayed(emitPending, EMIT_INTERVAL_MS - (now - lastEmitAt));
+        }
     }
 
     @Override
