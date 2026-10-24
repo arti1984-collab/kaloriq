@@ -37,7 +37,7 @@ als 2×2-Montage (`uebersicht.png`).
 |---|---|
 | **Onboarding** | Geschlecht, Alter, Größe, Gewicht, Zielgewicht, Aktivität, Ziel (ab-/zunehmen/halten), Tempo → Kalorien- und Makroplan (Mifflin-St Jeor + PAL) |
 | **Tagebuch** | Frühstück / Mittag / Abend / Snacks, Tagesring, Makro-Balken, Einträge bearbeiten & löschen, Tage blättern, Serie (Streak) |
-| **Lebensmittelsuche** | ~130 lokale Lebensmittel (offline, Richtwerte pro 100 g) + Open Food Facts auf Anfrage |
+| **Lebensmittelsuche** | Über 200 lokale Lebensmittel (offline, Richtwerte pro 100 g) + Open Food Facts auf Anfrage |
 | **Barcode** | Kamera-Scan in der APK (nativer ZXing-Scanner), in Chrome (`BarcodeDetector`) und in Safari/Firefox (ZXing JS) oder Nummer eintippen → Open Food Facts |
 | **KI-Tracking** | Foto **oder** Text → Gemini schätzt Bestandteile, Gramm, Kalorien & Makros. Jede Position editierbar, einzelne Positionen abwählbar |
 | **Eigene Lebensmittel** | Mit Nährwerten pro 100 g + optionaler Portion, dauerhaft gespeichert |
@@ -65,7 +65,7 @@ als 2×2-Montage (`uebersicht.png`).
 - Vier Mahlzeiten (Frühstück, Mittag, Abend, Snacks), Einträge **bearbeiten,
   verschieben und löschen**, Tage vor- und zurückblättern, Tagesnotiz.
 - **Streak**: zählt Tage in Folge mit mindestens einem Eintrag.
-- Lebensmittel hinzufügen über die lokale Datenbank (~130 Lebensmittel,
+- Lebensmittel hinzufügen über die lokale Datenbank (über 200 Lebensmittel,
   offline), Open-Food-Facts-Suche, **Barcode** (Kamera-Scan in APK, Chrome,
   Safari und Firefox; Nummer überall eintippbar), eigene Lebensmittel und
   Favoriten.
@@ -330,6 +330,7 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 | Version | Schwerpunkt |
 |---|---|
+| **1.2.14** | Lokale Lebensmittel-Datenbank auf 212 Einträge erweitert |
 | **1.2.13** | Handportionen und „Schnell eintragen“ (Rough Log) |
 | **1.2.12** | Kleine Nicht-Zahl-Erfolge im Tagebuch (ohne Punkte oder Serien) |
 | **1.2.11** | Hunger-Sättigungs-Check pro Mahlzeit (optional, 1–10) |
@@ -434,7 +435,7 @@ public/
     app.js              Bootstrap, Router, Tabs, Install-Prompt
     store.js            State + localStorage/IndexedDB, Tage, Statistik
     calc.js             BMR/TDEE/Ziele, Makros, Fasten-Pläne
-    foods.js            Lokale DB (~130 Lebensmittel) + Open Food Facts
+    foods.js            Lokale DB (über 200 Lebensmittel) + Open Food Facts
     recipes.js          Rezeptmodell, Nährwertberechnung, JSON-Import/-Export
     i18n.js             Sprachumschaltung (Wörterbuch, Muster, DOM-Übersetzung)
     ai.js               Gemini-Aufrufe, Bildverkleinerung, Demo-Modus

@@ -37,7 +37,7 @@ as a 2×2 montage (`uebersicht.png`).
 |---|---|
 | **Onboarding** | Sex, age, height, weight, target weight, activity level, goal (lose/maintain/gain), pace → calorie and macro plan (Mifflin-St Jeor + PAL) |
 | **Diary** | Breakfast / lunch / dinner / snacks, daily ring, macro bars, edit & delete entries, browse days, streak |
-| **Food search** | ~130 local foods (offline, reference values per 100 g) + Open Food Facts on request |
+| **Food search** | Over 200 local foods (offline, reference values per 100 g) + Open Food Facts on request |
 | **Barcode** | Camera scan in the APK (native ZXing scanner), in Chrome (`BarcodeDetector`) and in Safari/Firefox (ZXing JS), or type the number → Open Food Facts |
 | **AI tracking** | Photo **or** text → Gemini estimates ingredients, grams, calories & macros. Every item editable, individual items can be deselected |
 | **Custom foods** | With nutrition values per 100 g + optional serving, stored permanently |
@@ -65,7 +65,7 @@ as a 2×2 montage (`uebersicht.png`).
 - Four meals (breakfast, lunch, dinner, snacks), **edit, move and delete**
   entries, browse days forwards and backwards, daily note.
 - **Streak**: counts consecutive days with at least one entry.
-- Add foods via the local database (~130 foods, offline), Open Food Facts
+- Add foods via the local database (over 200 foods, offline), Open Food Facts
   search, **barcode** (camera scan in the APK, Chrome, Safari and Firefox;
   the number can be typed anywhere), custom foods and favorites.
 - **AI photo or text**: Gemini estimates ingredients, grams, calories and
@@ -325,6 +325,7 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.2.14** | Local food database expanded to 212 entries |
 | **1.2.13** | Hand portions and quick log (rough log) |
 | **1.2.12** | Small non-number wins in the diary (no points or streaks) |
 | **1.2.11** | Hunger/satiety check per meal (optional, 1–10) |
@@ -429,7 +430,7 @@ public/
     app.js              Bootstrap, router, tabs, install prompt
     store.js            State + localStorage/IndexedDB, days, statistics
     calc.js             BMR/TDEE/goals, macros, fasting plans
-    foods.js            Local DB (~130 foods) + Open Food Facts
+    foods.js            Local DB (over 200 foods) + Open Food Facts
     recipes.js          Recipe model, nutrition math, JSON import/export
     i18n.js             Language switching (dictionary, patterns, DOM translation)
     ai.js               Gemini calls, image resizing, demo mode

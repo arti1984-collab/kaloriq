@@ -47,6 +47,43 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.2.14] – 24.10.2026
+
+### Geändert
+
+- **Lokale Lebensmitteldatenbank erweitert:** von rund 130 auf **212
+  Einträge**. Neu sind unter anderem Roggenbrot, Vollkorntoast, Ciabatta,
+  Bagel, Basmati- und Vollkornreis, Bulgur, Hirse, Gnocchi, Buttermilch,
+  Kefir, Sojajoghurt, Parmesan, Cheddar, Hähnchenschenkel, Putenhack,
+  Rindersteak, Forelle, Kabeljau, Seitan, Edamame, weiße Bohnen, Blumenkohl,
+  Rosenkohl, Aubergine, Kürbis, Lauch, Rote Bete, Rucola, Pfirsich,
+  Nektarine, Ananas, Kirschen, Pflaumen, Himbeeren, Johannisbeeren, Datteln,
+  Cashewkerne, Pistazien, Haselnüsse, Sonnenblumen- und Kürbiskerne,
+  Mandelmus, Popcorn, Salzstangen, Reiswaffeln, Müsliriegel, Apfelkuchen,
+  Donut, grüner Tee, Espresso, Kakao, Apfelschorle, Limonade, Sekt,
+  Kokoswasser, Bratwurst, Käsespätzle, Maultaschen, Chili con Carne,
+  Gemüsecurry, Kartoffel- und Linsensuppe, Toast Hawaii, Flammkuchen,
+  Porridge, Overnight Oats, Sandwich und Gyros.
+- **Ballaststoffe:** Neue Einträge enthalten, wo sinnvoll, einen
+  Ballaststoffwert. Das Datenmodell unterstützt dafür ein optionales neuntes
+  Feld; bestehende Einträge bleiben unverändert.
+- **Englische Suche:** Alle 212 lokalen Lebensmittel haben englische Namen
+  und sind damit auch über englische Begriffe auffindbar.
+
+### Getestet
+
+- 212 Einträge, keine doppelten Namen, alle mit englischer Übersetzung.
+- Suche auf Deutsch und Englisch (z. B. „Roggen“, „cauliflower“, „Edamame“,
+  „Flammkuchen“, „tarte flambee“), Anzeige und Nährwerte.
+- Build und APK; keine Konsolenfehler.
+
+### Veröffentlicht
+
+- Service-Worker-Cache `kaloriq-v31`, Android `versionName 1.2.14` /
+  `versionCode 10214`; signierte APK als GitHub-Release `v1.2.14`.
+
+---
+
 ## [1.2.13] – 24.10.2026
 
 ### Hinzugefügt
