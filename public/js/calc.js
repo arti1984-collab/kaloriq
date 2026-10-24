@@ -119,3 +119,46 @@ export function projection(profile) {
 
 export const round1 = (n) => Math.round((Number(n) || 0) * 10) / 10;
 export const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+
+/**
+ * Flexbereich: Toleranz um das Kalorienziel.
+ *
+ * `bandPct` ist die halbe Breite in Prozent (z. B. 10 → ±10 %).
+ * `bandPct = 0` schaltet den Flexbereich aus und liefert die klassischen
+ * Zustände (`over` / `under`).
+ *
+ * Zustände für die Anzeige:
+ *   empty  – noch nichts eingetragen
+ *   below  – unter dem unteren Rand
+ *   in     – im Rahmen
+ *   above  – über dem oberen Rand
+ *   under  – unter dem Ziel (ohne Flexbereich)
+ *   over   – über dem Ziel (ohne Flexbereich)
+ */
+export function flexStatus(kcal, target, bandPct = 0) {
+  const goal = Math.max(0, Number(target) || 0);
+  const value = Math.max(0, Number(kcal) || 0);
+  const pct = Math.max(0, Number(bandPct) || 0);
+  const enabled = pct > 0 && goal > 0;
+  const low = Math.round(goal * (1 - pct / 100));
+  const high = Math.round(goal * (1 + pct / 100));
+
+  let state;
+  if (!value) state = 'empty';
+  else if (!enabled) state = value > goal ? 'over' : value === goal ? 'in' : 'under';
+  else if (value < low) state = 'below';
+  else if (value > high) state = 'above';
+  else state = 'in';
+
+  return {
+    enabled,
+    pct,
+    low,
+    high,
+    goal,
+    value,
+    diff: value - goal,
+    ratio: goal ? value / goal : 0,
+    state,
+  };
+}

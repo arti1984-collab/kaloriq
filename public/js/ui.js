@@ -55,6 +55,7 @@ const PATHS = {
   settings: '<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-1.9-3.3-2.3.9a7 7 0 0 0-2-1.2L14.3 3h-3.8l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-.9L3.9 9.3l2 1.5A7 7 0 0 0 5.8 12c0 .4 0 .8.1 1.2l-2 1.5 1.9 3.3 2.3-.9a7 7 0 0 0 2 1.2l.4 2.7h3.8l.4-2.7a7 7 0 0 0 2-1.2l2.3.9 1.9-3.3-2-1.5c.1-.4.1-.8.1-1.2z"/>',
   refresh: '<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/>',
   play: '<path d="M7 4.5l12 7.5-12 7.5z"/>',
+  pause: '<path d="M9 5v14M15 5v14"/>',
   stop: '<rect x="6" y="6" width="12" height="12" rx="2"/>',
 };
 
@@ -296,14 +297,14 @@ export function lineChart({ points, target = null, height = 130, min = null, max
     </div>`;
 }
 
-export function weekBars(days, target, maxKcal = 0) {
+export function weekBars(days, target, maxKcal = 0, gentle = false) {
   const max = Math.max(maxKcal, target, ...days.map((d) => d.totals.kcal), 1);
   return `<div class="bars">
     ${days.map((d, i) => {
       const isToday = i === days.length - 1;
       const k = d.totals.kcal;
       const hPct = Math.round((k / max) * 100);
-      const over = target && k > target * 1.03;
+      const over = !gentle && target && k > target * 1.03;
       const label = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][new Date(d.key + 'T00:00:00').getDay()];
       return `<div class="col${isToday ? ' today' : ''}" title="${fmt(k)} kcal">
         <div class="stack" style="height:${Math.max(3, hPct)}%">
@@ -317,9 +318,9 @@ export function weekBars(days, target, maxKcal = 0) {
 
 /* ---------------- Kleinkram ---------------- */
 
-export function macroRow(name, value, target, cls) {
+export function macroRow(name, value, target, cls, gentle = false) {
   const pct = target ? clamp((value / target) * 100, 0, 100) : 0;
-  const over = target && value > target * 1.05;
+  const over = !gentle && target && value > target * 1.05;
   return `<div class="macro-row">
     <span class="name"><span>${esc(name)}</span> <b>${fmt(value)}/${fmt(target)}g</b></span>
     <span class="bar ${cls}${over ? ' over' : ''}"><i style="width:${pct}%"></i></span>

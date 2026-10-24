@@ -264,6 +264,67 @@ svg { display: block; }
 .kcal-left .lbl { font-size: 11.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
 .kcal-left .row2 { display: flex; gap: 14px; margin-top: 10px; }
 
+/* ---------- Sanfter Modus ---------- */
+
+.gentle-card {
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--accent-soft) 0%, transparent 58%),
+    var(--card);
+  border-color: color-mix(in srgb, var(--accent) 18%, var(--line));
+}
+
+.gentle-kicker {
+  font-size: 11px;
+  font-weight: 720;
+  color: var(--accent-strong);
+  text-transform: uppercase;
+  letter-spacing: .09em;
+}
+
+.gentle-note {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.gentle-week-value {
+  font-size: 26px;
+  font-weight: 740;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.bar.gentle > i { background: var(--accent); }
+
+.gentle-pause {
+  text-align: center;
+  padding: 24px 18px 22px;
+}
+.gentle-pause h2 {
+  font-size: 20px;
+  letter-spacing: -.02em;
+}
+
+/* Minimalmodus: nur Mahlzeiten, Wasser, Schritte */
+.minimal-card {
+  padding: 20px 18px;
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--accent-soft) 0%, transparent 58%),
+    var(--card);
+  border-color: color-mix(in srgb, var(--accent) 18%, var(--line));
+}
+.minimal-card .gentle-note { margin-top: 6px; }
+
+/* Flexbereich: Toleranz um das Kalorienziel */
+.flex-hint {
+  margin-top: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- Macro bars ---------- */
 
 .macros { display: grid; gap: 9px; margin-top: 16px; }

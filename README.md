@@ -48,6 +48,7 @@ als 2×2-Montage (`uebersicht.png`).
 | **Woche** | Ø Kalorien, Balkendiagramm pro Tag, Makro-Durchschnitt, Tageshistorie |
 | **Fasten** | 14:10 / 16:8 / 18:6 / 20:4 / 24 h, Live-Timer, Verlauf der letzten 7 Tage |
 | **Daten** | JSON-Export/-Import, automatische Sicherungen, IndexedDB-Zweitkopie, Zurücksetzen |
+| **Wohlbefinden** | Sanfter Modus mit Pause, **Minimalmodus** (ohne Ring, Ziel und Makros) und **Flexbereich** ±5–15 % – weniger Perfektionsdruck, keine roten Zahlen |
 | **Sprache** | Deutsch / English – Umschaltung unter **Profil → Sprache**, alle Screens sofort übersetzt |
 | **APK** | Eigene Android-App, komplett offline (`npm run apk`) – siehe [ANDROID.md](ANDROID.md) |
 
@@ -112,6 +113,16 @@ als 2×2-Montage (`uebersicht.png`).
   Verlauf der letzten sieben Tage.
 - Ein laufendes Fasten bleibt beim Schließen der App erhalten und wird beim
   nächsten Öffnen weitergezählt.
+
+### Wohlbefinden (Anti-Burnout)
+
+- **Sanfter Modus:** Wochenrahmen statt Tagesdruck, keine roten Zahlen und eine
+  Pause, die das Kalorienziel im Tagebuch ausblendet – ohne Daten zu löschen.
+- **Minimalmodus:** Blendet Tagesring, Kalorienziel, Makros und Wochenbilanz
+  aus. Mahlzeiten, Wasser, Schritte, Gewicht und Verlauf bleiben sichtbar.
+- **Flexbereich:** ±5 %, ±10 % oder ±15 % um den Richtwert gelten als
+  „im Rahmen“. Innerhalb dieses Bereichs bleibt alles neutral, auch wenn ein
+  Tag leicht über dem Ziel liegt. Abschaltbar; Standard ist ±10 %.
 
 ### Profil, Sprache & Daten
 
@@ -286,6 +297,7 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 | Version | Schwerpunkt |
 |---|---|
+| **1.2.6** | Minimalmodus und Flexbereich gegen Perfektionsdruck |
 | **1.2.5** | TikTok-Link im Profil und auf der GitHub-Projektseite |
 | **1.2.4** | Lokale Rezepte mit Zutaten, Nährwerten, Portionen, Tagebuch-Übernahme und JSON-Austausch |
 | **1.2.3** | Persistenter Speicher und IndexedDB-Zweitkopie gegen iOS-Speicherbereinigung |

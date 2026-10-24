@@ -196,6 +196,14 @@ function defaultState() {
       lang: 'de',
       stepGoal: 8000,
       stepsEnabled: false,
+      // Sanfter Modus: Wochenrahmen statt Tagesdruck, keine roten Zahlen.
+      gentleMode: false,
+      gentlePaused: false,
+      // Flexbereich: ±X % um das Kalorienziel gelten als „im Rahmen“.
+      // 0 = aus, klassische Anzeige mit harter Zielgrenze.
+      flexBand: 10,
+      // Minimalmodus: Kalorienziel, Ring und Makros ausblenden.
+      minimalMode: false,
       // Letzter Stand des Geräte-Schrittsensors (kumulativ seit Neustart).
       // { date: 'YYYY-MM-DD', value: number, ts: number } oder null.
       stepCounter: null,

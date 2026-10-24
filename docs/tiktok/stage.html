@@ -1,0 +1,977 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kaloriq · TikTok-Stage (9:16)</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body {
+    margin: 0; background: #0b100e; color: #d8e8e1;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  body { display: flex; justify-content: center; padding: 24px 16px 48px; }
+  #app { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+  canvas {
+    width: 405px; height: auto; border-radius: 16px; background: #f5f6f4;
+    box-shadow: 0 30px 90px rgba(0,0,0,.65);
+  }
+  #side { max-width: 340px; }
+  h1 { font-size: 20px; margin: 0 0 6px; color: #fff; }
+  p { margin: 0 0 14px; font-size: 14px; line-height: 1.55; color: #9db3ab; }
+  button {
+    display: block; width: 100%; margin-bottom: 10px; padding: 12px 14px;
+    font: 600 15px "Segoe UI", system-ui, sans-serif; color: #04120c;
+    background: #21c98c; border: 0; border-radius: 12px; cursor: pointer;
+  }
+  button.secondary { background: #1d2a26; color: #cfe6dc; border: 1px solid #2b3b35; }
+  button:disabled { opacity: .5; cursor: default; }
+  #log {
+    margin-top: 14px; padding: 12px; border-radius: 12px; background: #121a17;
+    border: 1px solid #22302b; font: 12px/1.5 Consolas, monospace; color: #7fd8b3;
+    white-space: pre-wrap; min-height: 90px;
+  }
+  kbd { background: #1d2a26; border-radius: 5px; padding: 1px 6px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="stage" width="1080" height="1920"></canvas>
+  <div id="side">
+    <h1>Kaloriq · TikTok-Bühne</h1>
+    <p>
+      1080 × 1920 (9:16), ca. 22 s, komplett offline. Zeigt denselben Ablauf wie im
+      Skript unter <code>docs/tiktok/TIKTOK-SKRIPT.md</code>.
+    </p>
+    <button id="btnRec">● Video aufnehmen &amp; hochladen</button>
+    <button id="btnPlay" class="secondary">▶ Bühne nur abspielen</button>
+    <button id="btnPoster" class="secondary">▣ Poster-Bild speichern</button>
+    <button id="btnSound" class="secondary">♪ Sound: aus</button>
+    <div id="log">bereit …</div>
+    <p style="margin-top:18px">
+      Aufnahme startet die Timeline und liefert am Ende eine MP4 (H.264) an
+      <code>/upload</code> &rarr; <code>docs/tiktok/out/</code>.
+      Standard: <b>ohne Ton</b> – den Sound legst du in der TikTok-App selbst
+      darüber. Mit „♪ Sound: an" kommt eine chillige Klavierbegleitung
+      (Am7 – Fmaj7 – Cmaj7 – G6, 92 BPM) dazu, ohne Copyright.
+    </p>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ------------------------------------------------------------------ *
+ *  Konstanten & Hilfsfunktionen
+ * ------------------------------------------------------------------ */
+
+const W = 1080, H = 1920;
+const FONT = '"Segoe UI", "Segoe UI Variable Display", system-ui, -apple-system, Arial, sans-serif';
+
+const C = {
+  bg: '#f5f6f4', bg2: '#eceeeb', card: '#ffffff', ink: '#0b100e', muted: '#6b7a75',
+  accent: '#10b981', accentStrong: '#0a9c6c', accentSoft: '#e6f8f0',
+  dark: '#0b100e', dark2: '#131a17', darkCard: '#151c19', darkAccent: '#21c98c',
+  red: '#ef4444', amber: '#f59e0b', blue: '#3b82f6', white: '#ffffff'
+};
+
+const canvas = document.getElementById('stage');
+const ctx = canvas.getContext('2d', { alpha: false });
+const logEl = document.getElementById('log');
+
+const log = (msg) => {
+  logEl.textContent = (new Date().toLocaleTimeString('de-DE') + '  ' + msg + '\n' + logEl.textContent).slice(0, 4000);
+  console.log('[stage]', msg);
+};
+
+const clamp01 = (v) => Math.min(1, Math.max(0, v));
+const easeOut = (t) => 1 - Math.pow(1 - clamp01(t), 3);
+const easeIn = (t) => Math.pow(clamp01(t), 3);
+const easeInOut = (t) => (t = clamp01(t)) < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const backOut = (t, s = 1.7) => { t = clamp01(t) - 1; return t * t * ((s + 1) * t + s) + 1; };
+/** 0 -> 1 über die Dauer d, mit Overshoot */
+const pop = (t, d = .5, s = 1.7) => backOut(t / d, s);
+/** Verzögerung + Dauer */
+const seg = (t, from, dur) => clamp01((t - from) / dur);
+
+function rr(c, x, y, w, h, r) { c.beginPath(); c.roundRect(x, y, w, h, r); }
+
+function T(str, x, y, o = {}) {
+  const size = o.size || 48, weight = o.weight || 700;
+  ctx.font = `${weight} ${size}px ${FONT}`;
+  ctx.fillStyle = o.color || C.ink;
+  ctx.textAlign = o.align || 'center';
+  ctx.textBaseline = o.baseline || 'alphabetic';
+  if (o.alpha != null) ctx.globalAlpha = o.alpha;
+  if (o.ls) ctx.letterSpacing = o.ls;
+  if (o.stroke) { ctx.lineWidth = o.strokeW || 10; ctx.strokeStyle = o.stroke; ctx.lineJoin = 'round'; ctx.strokeText(str, x, y); }
+  ctx.fillText(str, x, y);
+  if (o.ls) ctx.letterSpacing = '0px';
+  if (o.alpha != null) ctx.globalAlpha = 1;
+}
+
+function measure(str, size, weight = 700) {
+  ctx.font = `${weight} ${size}px ${FONT}`;
+  return ctx.measureText(str).width;
+}
+
+function wrap(str, maxWidth, size, weight = 700) {
+  ctx.font = `${weight} ${size}px ${FONT}`;
+  const words = String(str).split(' ');
+  const lines = [];
+  let cur = '';
+  for (const w of words) {
+    const test = cur ? cur + ' ' + w : w;
+    if (ctx.measureText(test).width > maxWidth && cur) { lines.push(cur); cur = w; }
+    else cur = test;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+function block(str, x, y, o = {}) {
+  const size = o.size || 44, lh = o.lh || Math.round(size * 1.3), align = o.align || 'center';
+  const lines = wrap(str, o.maxWidth || 900, size, o.weight || 700);
+  lines.forEach((ln, i) => T(ln, x, y + i * lh, { ...o, size, align }));
+  return y + lines.length * lh;
+}
+
+function shadow(c, color, blur, oy) {
+  c.shadowColor = color; c.shadowBlur = blur; c.shadowOffsetY = oy || 0; c.shadowOffsetX = 0;
+}
+function noShadow(c) { c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0; }
+
+function pill(x, y, w, h, fill, label, color, o = {}) {
+  rr(ctx, x, y, w, h, h / 2);
+  ctx.fillStyle = fill; ctx.fill();
+  if (o.border) { ctx.strokeStyle = o.border; ctx.lineWidth = 2; ctx.stroke(); }
+  T(label, x + w / 2, y + h / 2 + (o.size || 30) * 0.35, {
+    size: o.size || 30, weight: o.weight || 700, color, align: 'center'
+  });
+}
+
+function card(x, y, w, h, r = 40, fill = C.card, withShadow = true) {
+  if (withShadow) shadow(ctx, 'rgba(11,16,14,.16)', 46, 18);
+  rr(ctx, x, y, w, h, r);
+  ctx.fillStyle = fill; ctx.fill();
+  noShadow(ctx);
+}
+
+/** Bild zentriert in den Rahmen einpassen (cover) + optionales Zoom/Pan */
+function cover(img, x, y, w, h, zoom = 1, panX = 0, panY = 0) {
+  const ir = img.width / img.height, r = w / h;
+  let dw, dh;
+  if (ir > r) { dw = w * zoom; dh = dw / ir; } else { dh = h * zoom; dw = dh * ir; }
+  ctx.drawImage(img, x + (w - dw) / 2 + panX * w, y + (h - dh) / 2 + panY * h, dw, dh);
+}
+
+/** Bild in Rahmen einpassen (contain) */
+function contain(img, x, y, w, h) {
+  const ir = img.width / img.height, r = w / h;
+  let dw, dh;
+  if (ir > r) { dw = w; dh = dw / ir; } else { dh = h; dw = dh * ir; }
+  ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+}
+
+function lightBg() {
+  ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
+  const g = ctx.createRadialGradient(W * 0.78, -120, 60, W * 0.78, -120, 1150);
+  g.addColorStop(0, 'rgba(16,185,129,.22)'); g.addColorStop(1, 'rgba(16,185,129,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const g2 = ctx.createRadialGradient(120, H - 60, 40, 120, H - 60, 900);
+  g2.addColorStop(0, 'rgba(16,185,129,.10)'); g2.addColorStop(1, 'rgba(16,185,129,0)');
+  ctx.fillStyle = g2; ctx.fillRect(0, 0, W, H);
+}
+
+function darkBg() {
+  ctx.fillStyle = C.dark; ctx.fillRect(0, 0, W, H);
+  const g = ctx.createRadialGradient(W / 2, H * 0.42, 60, W / 2, H * 0.42, 1100);
+  g.addColorStop(0, 'rgba(33,201,140,.20)'); g.addColorStop(1, 'rgba(33,201,140,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+
+/** Geräte-Rahmen mit App-Screenshot */
+function phone(img, x, y, w, o = {}) {
+  const h = w * (1864 / 860);
+  const rot = o.rot || 0;
+  ctx.save();
+  ctx.translate(x + w / 2, y + h / 2);
+  ctx.rotate(rot);
+  ctx.translate(-w / 2, -h / 2);
+  shadow(ctx, 'rgba(11,16,14,.22)', 60, 26);
+  rr(ctx, 0, 0, w, h, 46);
+  ctx.fillStyle = '#12181a'; ctx.fill();
+  noShadow(ctx);
+  const pad = 9;
+  ctx.save();
+  rr(ctx, pad, pad, w - pad * 2, h - pad * 2, 38);
+  ctx.clip();
+  cover(img, pad, pad, w - pad * 2, h - pad * 2, o.zoom || 1, o.panX || 0, o.panY || 0);
+  ctx.restore();
+  rr(ctx, 0, 0, w, h, 46);
+  ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.restore();
+  return h;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Bilder laden
+ * ------------------------------------------------------------------ */
+
+const IMG = {};
+const IMG_SOURCES = {
+  tagebuch: '../screenshots/tagebuch.png',
+  fortschritt: '../screenshots/fortschritt.png',
+  fasten: '../screenshots/fasten.png',
+  profil: '../screenshots/profil.png',
+  logo: '../../public/icons/icon-512.png'
+};
+
+function loadImages() {
+  return Promise.all(Object.entries(IMG_SOURCES).map(([key, src]) => new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => { IMG[key] = img; res(); };
+    img.onerror = () => rej(new Error('Bild nicht geladen: ' + src));
+    img.src = src;
+  })));
+}
+
+/* ------------------------------------------------------------------ *
+ *  Szenen
+ * ------------------------------------------------------------------ */
+
+const SCENES = [];
+
+SCENES.push({
+  id: 'hook', dur: 3.0,
+  draw(t) {
+    lightBg();
+    const a = Math.min(1, t / .18);
+    ctx.save(); ctx.globalAlpha = a;
+
+    // App-Chip
+    const cw = 250, cx = W / 2 - cw / 2;
+    pill(cx, 300, cw, 68, C.accentSoft, 'Kaloriq', C.accentStrong, { size: 34, weight: 800 });
+    ctx.restore();
+
+    ctx.save();
+    ctx.globalAlpha = a * clamp01(seg(t, .05, .4));
+    const s1 = pop(t - .05, .55, 1.5);
+    ctx.save();
+    ctx.translate(W / 2, 560); ctx.scale(s1, s1); ctx.translate(-W / 2, -560);
+    T('Kalorien', W / 2, 560, { size: 156, weight: 900, color: C.ink });
+    ctx.restore();
+
+    const s2 = pop(t - .55, .55, 1.5);
+    ctx.save();
+    ctx.globalAlpha = a * clamp01(seg(t, .55, .3));
+    ctx.translate(W / 2, 720); ctx.scale(s2, s2); ctx.translate(-W / 2, -720);
+    T('ohne Abwiegen.', W / 2, 720, { size: 118, weight: 900, color: C.accentStrong });
+    ctx.restore();
+    ctx.restore();
+
+    // Untertitel
+    ctx.save();
+    const a3 = clamp01(seg(t, 1.35, .45));
+    ctx.globalAlpha = a3;
+    T('Foto rein. Makros raus.', W / 2, 830, { size: 46, weight: 600, color: C.muted });
+    ctx.restore();
+
+    // Telefon kommt von unten
+    ctx.save();
+    const p = easeOut(seg(t, .35, .9));
+    const py = 980 + (1 - p) * 620;
+    const pw = 470;
+    ctx.globalAlpha = a * clamp01(seg(t, .35, .35));
+    ctx.save();
+    ctx.translate(W / 2, py + pw * (1864 / 860) / 2);
+    ctx.rotate(-0.05 + (1 - p) * 0.06);
+    ctx.translate(-W / 2, -(py + pw * (1864 / 860) / 2));
+    phone(IMG.tagebuch, W / 2 - pw / 2, py, pw, { zoom: 1.0 });
+    ctx.restore();
+    ctx.restore();
+  }
+});
+
+SCENES.push({
+  id: 'ki', dur: 3.7,
+  draw(t) {
+    lightBg();
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, t / .18);
+
+    T('1 · KI-FOTO', W / 2, 300, { size: 34, weight: 800, color: C.muted, ls: '4px' });
+
+    // Foto-Karte
+    const p = easeOut(seg(t, 0, .5));
+    const fx = 80, fy = 420, fw = 430, fh = 520;
+    ctx.save();
+    ctx.translate(fx + fw / 2, fy + fh / 2); ctx.scale(p, p); ctx.translate(-(fx + fw / 2), -(fy + fh / 2));
+    shadow(ctx, 'rgba(11,16,14,.18)', 44, 16);
+    const g = ctx.createLinearGradient(fx, fy, fx + fw, fy + fh);
+    g.addColorStop(0, '#fdf3e2'); g.addColorStop(1, '#f2e2c8');
+    rr(ctx, fx, fy, fw, fh, 40); ctx.fillStyle = g; ctx.fill();
+    noShadow(ctx);
+    T('🥣', fx + fw / 2, fy + fh / 2 + 90, { size: 190 });
+    ctx.restore();
+
+    // Blitz
+    const flash = clamp01(seg(t, .5, .12)) * (1 - clamp01(seg(t, .62, .45)));
+    if (flash > 0) {
+      ctx.save(); ctx.globalAlpha = flash * .85;
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H); ctx.restore();
+    }
+
+    // Kamera-Badge
+    const bp = pop(t - .5, .4, 1.6);
+    ctx.save();
+    ctx.translate(fx + fw - 52, fy + 52); ctx.scale(bp, bp); ctx.translate(-(fx + fw - 52), -(fy + 52));
+    ctx.beginPath(); ctx.arc(fx + fw - 52, fy + 52, 46, 0, Math.PI * 2);
+    ctx.fillStyle = C.ink; ctx.fill();
+    T('📷', fx + fw - 52, fy + 52 + 18, { size: 46 });
+    ctx.restore();
+
+    // Pfeil
+    const ap = easeOut(seg(t, .75, .4));
+    ctx.save(); ctx.globalAlpha = ap;
+    T('→', 570, 700, { size: 92, weight: 900, color: C.accentStrong, alpha: ap });
+    ctx.restore();
+
+    // Ergebniskarte
+    const rp = easeOut(seg(t, 1.05, .55));
+    const rx = 590, ry = 455, rw = 420, rh = 450;
+    ctx.save();
+    ctx.translate(rx + rw / 2, ry + rh / 2); ctx.scale(rp, rp); ctx.translate(-(rx + rw / 2), -(ry + rh / 2));
+    card(rx, ry, rw, rh, 40);
+    T('Haferflocken', rx + rw / 2, ry + 92, { size: 46, weight: 800 });
+    T('80 g', rx + rw / 2, ry + 156, { size: 38, weight: 600, color: C.muted });
+    T('296 kcal', rx + rw / 2, ry + 250, { size: 62, weight: 900, color: C.accentStrong });
+    // Makro-Chips
+    const chips = [['P 10 g', '#ef4444'], ['KH 46 g', '#f59e0b'], ['F 6 g', '#3b82f6']];
+    const cw = 116, gap = 12;
+    const startX = rx + (rw - (cw * 3 + gap * 2)) / 2;
+    chips.forEach((c, i) => {
+      const cp = pop(t - (1.5 + i * .12), .35, 1.8);
+      ctx.save();
+      ctx.translate(startX + cw / 2 + i * (cw + gap), ry + 320);
+      ctx.scale(cp, cp); ctx.translate(-(startX + cw / 2 + i * (cw + gap)), -(ry + 320));
+      rr(ctx, startX + i * (cw + gap), ry + 296, cw, 48, 24);
+      ctx.fillStyle = c[1] + '22'; ctx.fill();
+      T(c[0], startX + cw / 2 + i * (cw + gap), ry + 328, { size: 26, weight: 800, color: c[1] });
+      ctx.restore();
+    });
+    ctx.restore();
+
+    // Bild-Check
+    const ck = pop(t - 1.9, .4, 2);
+    if (t > 1.9) {
+      ctx.save();
+      ctx.globalAlpha = clamp01(seg(t, 1.9, .2));
+      ctx.translate(fx + 56, fy + 56); ctx.scale(ck, ck); ctx.translate(-(fx + 56), -(fy + 56));
+      ctx.beginPath(); ctx.arc(fx + 56, fy + 56, 46, 0, Math.PI * 2);
+      ctx.fillStyle = C.accent; ctx.fill();
+      T('✓', fx + 56, fy + 56 + 20, { size: 56, weight: 900, color: '#fff' });
+      ctx.restore();
+    }
+
+    // Caption
+    ctx.save();
+    ctx.globalAlpha = clamp01(seg(t, 1.3, .45));
+    block('Die KI schätzt Bestandteile, Gramm, Kalorien & Makros – alles editierbar.',
+      W / 2, 1090, { size: 46, weight: 600, color: C.ink, maxWidth: 900, lh: 60 });
+    ctx.restore();
+    ctx.restore();
+  }
+});
+
+SCENES.push({
+  id: 'tagebuch', dur: 3.5,
+  draw(t) {
+    lightBg();
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, t / .2);
+
+    const pw = 500, ph = pw * (1864 / 860);
+    const px = W / 2 - pw / 2;
+    const py = 330 - easeOut(seg(t, 0, .6)) * 60;
+    // sanftes Scrollen nach unten (simuliert Screen-Recording)
+    const pan = -0.02 - easeIn(seg(t, .6, 2.4)) * 0.16;
+    phone(IMG.tagebuch, px, py, pw, { zoom: 1.12, panY: pan });
+
+    // Badge mit den echten Werten aus der App
+    const bp = pop(t - .3, .5, 1.6);
+    ctx.save();
+    ctx.translate(200, 250); ctx.scale(bp, bp); ctx.translate(-200, -250);
+    shadow(ctx, 'rgba(11,16,14,.18)', 30, 10);
+    rr(ctx, 40, 210, 400, 92, 46); ctx.fillStyle = C.ink; ctx.fill();
+    noShadow(ctx);
+    T('215 kcal übrig', 240, 268, { size: 40, weight: 800, color: '#fff' });
+    ctx.restore();
+
+    const sp = pop(t - .8, .5, 1.6);
+    ctx.save();
+    ctx.translate(810, 250); ctx.scale(sp, sp); ctx.translate(-810, -250);
+    rr(ctx, 640, 214, 340, 84, 42); ctx.fillStyle = C.accentSoft; ctx.fill();
+    T('89 % im Ziel', 810, 268, { size: 36, weight: 800, color: C.accentStrong });
+    ctx.restore();
+
+    ctx.save();
+    ctx.globalAlpha = clamp01(seg(t, 1.1, .5));
+    block('Tagesring, Makro-Balken, Wasser und Schritte – alles auf einem Blick.',
+      W / 2, 1500, { size: 44, weight: 600, color: C.ink, maxWidth: 880, lh: 58 });
+    ctx.restore();
+    ctx.restore();
+  }
+});
+
+SCENES.push({
+  id: 'barcode', dur: 3.1,
+  draw(t) {
+    lightBg();
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, t / .18);
+
+    T('2 · BARCODE', W / 2, 300, { size: 34, weight: 800, color: C.muted, ls: '4px' });
+
+    const x = 90, y = 420, w = 900, h = 640;
+    card(x, y, w, h, 48);
+
+    T('Chips Original', x + 70, y + 110, { size: 54, weight: 800, align: 'left' });
+    T('Snack · 1 Packung', x + 70, y + 168, { size: 34, weight: 600, color: C.muted, align: 'left' });
+
+    // Balkendiagramm-Optik: Nährwerte
+    const bars = [['Kalorien', '145 kcal', C.accent, .62], ['Protein', '2 g', C.red, .12], ['Zucker', '9 g', C.amber, .3]];
+    bars.forEach((b, i) => {
+      const by = y + 240 + i * 74;
+      T(b[0], x + 70, by, { size: 30, weight: 700, color: C.muted, align: 'left' });
+      const bw = 420;
+      rr(ctx, x + 300, by - 30, bw, 22, 11); ctx.fillStyle = C.bg2; ctx.fill();
+      const fill = easeOut(seg(t, .5 + i * .15, .6));
+      rr(ctx, x + 300, by - 30, bw * b[3] * fill, 22, 11); ctx.fillStyle = b[2]; ctx.fill();
+      T(b[1], x + 760, by, { size: 30, weight: 800, align: 'right', color: C.ink });
+    });
+
+    // Barcode
+    const by0 = y + 500;
+    let seed = 7;
+    const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    let bx = x + 70;
+    while (bx < x + w - 120) {
+      const bw2 = 4 + Math.round(rnd() * 9);
+      if (rnd() > .35) { ctx.fillStyle = '#0b100e'; ctx.fillRect(bx, by0 - 60, bw2, 96); }
+      bx += bw2 + 4 + Math.round(rnd() * 6);
+    }
+    T('400 168 210 3931', x + w / 2, by0 + 70, { size: 30, weight: 700, color: C.muted, ls: '3px' });
+
+    // Scan-Linie
+    const scan = seg(t, .25, 1.1);
+    if (scan < 1) {
+      ctx.save();
+      ctx.globalAlpha = .9;
+      const ly = y + 60 + scan * (h - 160);
+      const g = ctx.createLinearGradient(0, ly - 26, 0, ly + 26);
+      g.addColorStop(0, 'rgba(16,185,129,0)'); g.addColorStop(.5, C.accent); g.addColorStop(1, 'rgba(16,185,129,0)');
+      ctx.fillStyle = g; ctx.fillRect(x + 24, ly - 26, w - 48, 52);
+      ctx.restore();
+    }
+
+    // Treffer
+    const hp = pop(t - 1.45, .45, 2);
+    if (t > 1.45) {
+      ctx.save();
+      ctx.globalAlpha = clamp01(seg(t, 1.45, .2));
+      ctx.translate(x + w - 90, y + 90); ctx.scale(hp, hp); ctx.translate(-(x + w - 90), -(y + 90));
+      ctx.beginPath(); ctx.arc(x + w - 90, y + 90, 56, 0, Math.PI * 2);
+      ctx.fillStyle = C.accent; ctx.fill();
+      T('✓', x + w - 90, y + 90 + 24, { size: 62, weight: 900, color: '#fff' });
+      ctx.restore();
+    }
+
+    ctx.save();
+    ctx.globalAlpha = clamp01(seg(t, 1.5, .5));
+    block('Barcode scannen – Name und Kalorien stehen sofort da.',
+      W / 2, 1180, { size: 46, weight: 600, color: C.ink, maxWidth: 880, lh: 60 });
+    ctx.restore();
+    ctx.restore();
+  }
+});
+
+SCENES.push({
+  id: 'fasten', dur: 3.3,
+  draw(t) {
+    lightBg();
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, t / .2);
+
+    const pw = 430, ph = pw * (1864 / 860);
+    const px = 90, py = 430;
+    ctx.save();
+    ctx.translate(px + pw / 2, py + ph / 2);
+    ctx.rotate(-0.04);
+    ctx.translate(-(px + pw / 2), -(py + ph / 2));
+    phone(IMG.fasten, px, py, pw);
+    ctx.restore();
+
+    const cards = [
+      ['⏱', '16:8 Fasten', 'Timer läuft weiter'],
+      ['👟', '8.742 Schritte', 'Sensor des Handys'],
+      ['💧', '1,85 l Wasser', 'Tagesziel 2,80 l']
+    ];
+    cards.forEach((c, i) => {
+      const cp = easeOut(seg(t, .25 + i * .28, .5));
+      const cy = 470 + i * 230;
+      const cx = 560;
+      ctx.save();
+      ctx.globalAlpha = clamp01(seg(t, .25 + i * .28, .3));
+      ctx.translate(cx + 210, cy + 100); ctx.scale(cp, cp); ctx.translate(-(cx + 210), -(cy + 100));
+      card(cx, cy, 430, 190, 34);
+      T(c[0], cx + 66, cy + 112, { size: 62 });
+      T(c[1], cx + 130, cy + 88, { size: 38, weight: 800, align: 'left' });
+      T(c[2], cx + 130, cy + 134, { size: 28, weight: 600, color: C.muted, align: 'left' });
+      ctx.restore();
+    });
+
+    ctx.save();
+    ctx.globalAlpha = clamp01(seg(t, 1.2, .5));
+    block('Fasten, Schritte, Wasser und Gewicht – alles in einer App.',
+      W / 2, 1520, { size: 44, weight: 600, color: C.ink, maxWidth: 880, lh: 58 });
+    ctx.restore();
+    ctx.restore();
+  }
+});
+
+SCENES.push({
+  id: 'privacy', dur: 2.9,
+  draw(t) {
+    darkBg();
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, t / .2);
+
+    // Schild
+    const sp = pop(t, .6, 1.5);
+    ctx.save();
+    ctx.translate(W / 2, 470); ctx.scale(sp, sp); ctx.translate(-W / 2, -470);
+    ctx.beginPath();
+    ctx.moveTo(W / 2, 330);
+    ctx.lineTo(W / 2 + 130, 380);
+    ctx.lineTo(W / 2 + 130, 500);
+    ctx.quadraticCurveTo(W / 2 + 130, 590, W / 2, 640);
+    ctx.quadraticCurveTo(W / 2 - 130, 590, W / 2 - 130, 500);
+    ctx.lineTo(W / 2 - 130, 380);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(33,201,140,.16)'; ctx.fill();
+    ctx.strokeStyle = C.darkAccent; ctx.lineWidth = 8; ctx.stroke();
+    T('✓', W / 2, 520, { size: 110, weight: 900, color: C.darkAccent });
+    ctx.restore();
+
+    const lines = ['Kein Konto.', 'Keine Cloud.', 'Volles Offline.'];
+    lines.forEach((l, i) => {
+      const a = clamp01(seg(t, .45 + i * .22, .4));
+      const y = 830 + i * 140;
+      ctx.save();
+      ctx.globalAlpha = a;
+      const p = easeOut(seg(t, .45 + i * .22, .5));
+      ctx.translate(W / 2, y); ctx.scale(.96 + .04 * p, .96 + .04 * p); ctx.translate(-W / 2, -y);
+      T(l, W / 2, y, { size: 92, weight: 900, color: '#f2faf7' });
+      ctx.restore();
+    });
+
+    ctx.save();
+    ctx.globalAlpha = clamp01(seg(t, 1.25, .5));
+    T('Deine Daten bleiben auf deinem Handy.', W / 2, 1290, { size: 44, weight: 600, color: '#8fb3a6' });
+    ctx.restore();
+    ctx.restore();
+  }
+});
+
+SCENES.push({
+  id: 'cta', dur: 3.2,
+  draw(t) {
+    lightBg();
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, t / .2);
+
+    const lp = pop(t, .6, 1.4);
+    ctx.save();
+    ctx.translate(W / 2, 560); ctx.scale(lp, lp); ctx.translate(-W / 2, -560);
+    shadow(ctx, 'rgba(16,185,129,.45)', 70, 0);
+    rr(ctx, W / 2 - 130, 430, 260, 260, 62); ctx.fillStyle = C.accent; ctx.fill();
+    noShadow(ctx);
+    ctx.save();
+    rr(ctx, W / 2 - 130, 430, 260, 260, 62); ctx.clip();
+    cover(IMG.logo, W / 2 - 130, 430, 260, 260);
+    ctx.restore();
+    ctx.restore();
+
+    ctx.save();
+    const tp = easeOut(seg(t, .25, .5));
+    ctx.globalAlpha = clamp01(seg(t, .25, .3));
+    ctx.translate(W / 2, 880); ctx.scale(.9 + .1 * tp, .9 + .1 * tp); ctx.translate(-W / 2, -880);
+    T('Kaloriq', W / 2, 880, { size: 140, weight: 900, color: C.ink });
+    ctx.restore();
+
+    ctx.save();
+    ctx.globalAlpha = clamp01(seg(t, .6, .45));
+    T('Kalorien · Makros · Fasten · KI-Foto', W / 2, 960, { size: 42, weight: 600, color: C.muted });
+    ctx.restore();
+
+    ctx.save();
+    const pp = pop(t - .9, .5, 1.6);
+    ctx.globalAlpha = clamp01(seg(t, .9, .3));
+    ctx.translate(W / 2, 1090); ctx.scale(pp, pp); ctx.translate(-W / 2, -1090);
+    pill(W / 2 - 290, 1040, 580, 92, C.ink, 'Kostenlos · Android & iPhone', '#fff', { size: 38, weight: 800 });
+    ctx.restore();
+
+    ctx.save();
+    ctx.globalAlpha = clamp01(seg(t, 1.25, .45));
+    T('Link in Bio', W / 2, 1245, { size: 58, weight: 900, color: C.accentStrong });
+    ctx.restore();
+
+    ctx.save();
+    ctx.globalAlpha = clamp01(seg(t, 1.45, .5));
+    T('github.com/arti1984-collab/kaloriq', W / 2, 1320, { size: 34, weight: 600, color: C.muted });
+    ctx.restore();
+
+    // Pfeil nach oben (Bio-Link)
+    ctx.save();
+    const bob = Math.sin(t * 6) * 10;
+    ctx.globalAlpha = clamp01(seg(t, 1.8, .4)) * .9;
+    T('▲', W / 2, 1440 + bob, { size: 56, weight: 900, color: C.accentStrong });
+    ctx.restore();
+    ctx.restore();
+  }
+});
+
+const TOTAL = SCENES.reduce((s, sc) => s + sc.dur, 0);
+const START = SCENES.reduce((acc, sc) => { acc.push({ sc, at: acc.length ? acc[acc.length - 1].at + acc[acc.length - 1].sc.dur : 0 }); return acc; }, []);
+
+/* ------------------------------------------------------------------ *
+ *  Timeline
+ * ------------------------------------------------------------------ */
+
+let clockStart = null;
+let rafId = null;
+
+function renderAt(elapsed) {
+  const t = Math.max(0, elapsed);
+  let sc = SCENES[0], local = 0;
+  for (const s of START) {
+    if (t >= s.at) { sc = s.sc; local = t - s.at; } else break;
+  }
+  if (local > sc.dur) local = sc.dur;
+  // Überblendung: Inhalt der Szene am Anfang ein-, am Ende ausblenden
+  ctx.save();
+  ctx.globalAlpha = 1;
+  sc.draw(local);
+  ctx.restore();
+}
+
+function loop() {
+  if (clockStart == null) return;
+  const elapsed = (performance.now() - clockStart) / 1000;
+  renderAt(Math.min(elapsed, TOTAL));
+  const st = window.__stage = window.__stage || {};
+  const now = performance.now();
+  const gap = st.lastAt ? now - st.lastAt : 0;
+  if (gap > (st.maxGap || 0)) st.maxGap = gap;
+  st.lastAt = now;
+  st.frames = (st.frames || 0) + 1;
+  st.lastElapsed = elapsed;
+  if (st.resetAt === clockStart && st.firstElapsed == null) st.firstElapsed = elapsed;
+  if (elapsed < TOTAL + .35) rafId = requestAnimationFrame(loop);
+  else { clockStart = null; log('Timeline fertig (' + TOTAL.toFixed(1) + ' s)'); }
+}
+
+function play() {
+  if (rafId) cancelAnimationFrame(rafId);
+  clockStart = performance.now();
+  const st = window.__stage = window.__stage || {};
+  st.resetAt = clockStart;
+  st.firstElapsed = null;
+  st.maxGap = 0;
+  st.lastAt = 0;
+  rafId = requestAnimationFrame(loop);
+}
+
+/** Wartet, bis der Renderer flüssig Bild für Bild liefert (kein Drosseln). */
+function waitStable(minFrames = 20, budgetMs = 12000) {
+  return new Promise((resolve) => {
+    const t0 = performance.now();
+    let n = 0;
+    (function tick() {
+      n++;
+      const dt = performance.now() - t0;
+      if (n < minFrames && dt < budgetMs) requestAnimationFrame(tick);
+      else resolve({ frames: n, ms: Math.round(dt) });
+    })();
+  });
+}
+
+/** N Frames abwarten (rAF-basiert). */
+function nextFrames(count = 2) {
+  return new Promise((resolve) => {
+    let left = count;
+    (function tick() {
+      if (left-- <= 0) return resolve();
+      requestAnimationFrame(tick);
+    })();
+  });
+}
+
+/* ------------------------------------------------------------------ *
+ *  Ton: prozeduraler Beat (kein Copyright)
+ * ------------------------------------------------------------------ */
+
+let audioCtx = null, masterGain = null, musicOn = false, schedTimer = null;
+let nextNoteTime = 0, beatIndex = 0, reverbBus = null, musicArmed = false;
+const BPM = 92, SPB = 60 / BPM;
+
+/* Chill-Piano: Am7 - Fmaj7 - Cmaj7 - G6, ruhige Achtel-Arpeggien, weicher Hall. */
+const CHORDS = [
+  { bass: 110.00, tones: [220.00, 261.63, 329.63, 392.00], spark: [659.25, 587.33] }, // Am7
+  { bass: 87.31,  tones: [174.61, 220.00, 261.63, 329.63], spark: [698.46, 523.25] }, // Fmaj7
+  { bass: 130.81, tones: [261.63, 329.63, 392.00, 493.88], spark: [659.25, 783.99] }, // Cmaj7
+  { bass: 98.00,  tones: [196.00, 246.94, 293.66, 329.63], spark: [587.33, 739.99] }  // G6
+];
+const VELOCITY = [1.0, 0.42, 0.62, 0.4, 0.72, 0.45, 0.58, 0.38];
+
+function initAudio() {
+  if (audioCtx) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  audioCtx = new AC();
+
+  // Master: Kompressor -> Ausgang (sanft, kein clipping)
+  const comp = audioCtx.createDynamicsCompressor();
+  comp.threshold.value = -20; comp.ratio.value = 3; comp.knee.value = 14;
+  comp.attack.value = 0.006; comp.release.value = 0.28;
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.9;
+  masterGain.connect(comp);
+  comp.connect(audioCtx.destination);
+
+  // Hall: kurze Rückkopplung, tiefpassgefiltert
+  const delay = audioCtx.createDelay(1.0);
+  delay.delayTime.value = 0.23;
+  const fb = audioCtx.createGain(); fb.gain.value = 0.34;
+  const damp = audioCtx.createBiquadFilter(); damp.type = 'lowpass'; damp.frequency.value = 2200;
+  const wet = audioCtx.createGain(); wet.gain.value = 0.5;
+  delay.connect(damp); damp.connect(fb); fb.connect(delay);
+  damp.connect(wet); wet.connect(masterGain);
+  reverbBus = delay;
+
+  // Hintergrundrauschen (sehr leise "Raumluft")
+  const len = Math.floor(audioCtx.sampleRate * 2);
+  const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  let last = 0;
+  for (let i = 0; i < len; i++) {
+    const w = Math.random() * 2 - 1;
+    last = (last + 0.02 * w) / 1.02;      // braunes Rauschen = ruhiges Rauschen
+    d[i] = last * 3.2;
+  }
+  const noise = audioCtx.createBufferSource();
+  noise.buffer = buf; noise.loop = true;
+  const nf = audioCtx.createBiquadFilter(); nf.type = 'lowpass'; nf.frequency.value = 900;
+  const ng = audioCtx.createGain(); ng.gain.value = 0.035;
+  noise.connect(nf); nf.connect(ng); ng.connect(masterGain);
+  noise.start();
+
+  nextNoteTime = audioCtx.currentTime + 0.08;
+  beatIndex = 0;
+  musicArmed = false;
+}
+
+/** Startet die Notenfolge exakt mit dem Aufnahmebeginn. */
+function armMusic() {
+  if (!audioCtx) return;
+  nextNoteTime = audioCtx.currentTime + 0.12;
+  beatIndex = 0;
+  if (!schedTimer) schedTimer = setInterval(schedule, 40);
+  musicArmed = true;
+}
+
+function schedule() {
+  if (!audioCtx || !musicArmed) return;
+  while (nextNoteTime < audioCtx.currentTime + 0.25) {
+    playStep(beatIndex, nextNoteTime);
+    nextNoteTime += SPB / 2; // Achtel
+    beatIndex++;
+  }
+}
+
+/** Ein weicher Piano-Ton: Obertöne + schneller Anschlag, langer Ausklang. */
+function piano(t, freq, dur, vol, bright = 1) {
+  const g = audioCtx.createGain();
+  const lp = audioCtx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(Math.min(9000, freq * 9 * bright), t);
+  lp.frequency.exponentialRampToValueAtTime(Math.max(600, freq * 2.6), t + dur);
+  lp.Q.value = 0.4;
+
+  const parts = [[1, 1], [2, 0.34], [3, 0.12], [4.02, 0.05]];
+  parts.forEach(([mult, amp]) => {
+    const o = audioCtx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = freq * mult;
+    const og = audioCtx.createGain();
+    og.gain.value = amp;
+    o.connect(og); og.connect(lp);
+    o.start(t); o.stop(t + dur + 0.2);
+  });
+
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol, t + 0.008);          // Anschlag
+  g.gain.exponentialRampToValueAtTime(vol * 0.28, t + 0.35);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  lp.connect(g);
+  g.connect(masterGain);
+  if (reverbBus) g.connect(reverbBus);
+}
+
+function playStep(i, t) {
+  const eighth = i % 8, bar = Math.floor(i / 8);
+  const chord = CHORDS[bar % CHORDS.length];
+
+  // Bass auf dem ersten Achtel jedes Taktes
+  if (eighth === 0) piano(t, chord.bass, SPB * 3.4, 0.16, 0.7);
+
+  // Arpeggio über die Akkordtöne
+  const pattern = [0, 1, 2, 3, 2, 1, 3, 2];
+  const tone = chord.tones[pattern[eighth]];
+  piano(t, tone, SPB * 1.9, 0.1 * VELOCITY[eighth], 1);
+
+  // Glitzer im zweiten Takt: einzelne hohe Töne
+  if (bar % 2 === 1 && (eighth === 2 || eighth === 6)) {
+    piano(t + 0.02, chord.spark[(eighth === 2 ? 0 : 1)], SPB * 2.6, 0.055, 1.4);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ *  Aufnahme
+ * ------------------------------------------------------------------ */
+
+function pickMime() {
+  const list = [
+    'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+    'video/mp4;codecs=avc1.42E01E',
+    'video/mp4',
+    'video/webm;codecs=vp9,opus',
+    'video/webm'
+  ];
+  return list.find((m) => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
+}
+
+let recording = false;
+
+async function record(attempt = 0) {
+  const btn = document.getElementById('btnRec');
+  if (recording) return;
+  recording = true;
+  btn.disabled = true;
+  try {
+    if (!window.MediaRecorder) throw new Error('MediaRecorder nicht verfügbar');
+    const mime = pickMime();
+    log('Aufnahme startet … ' + mime);
+
+    // 1) Renderer aufwärmen: flüssige Bildfolge abwarten, sonst ruckelt die Aufnahme.
+    const warm = await waitStable(20);
+    log('Warm-up: ' + warm.frames + ' Bilder in ' + warm.ms + ' ms');
+
+    // 2) Stream + Ton vorbereiten
+    const stream = canvas.captureStream(30);
+    if (musicOn) {
+      initAudio();
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+      const dest = audioCtx.createMediaStreamDestination();
+      masterGain.connect(dest);
+      const track = dest.stream.getAudioTracks()[0];
+      if (track) stream.addTrack(track);
+      log('Audio: ' + audioCtx.state + ' · ' + (track ? track.readyState : 'kein Track'));
+    }
+
+    const rec = new MediaRecorder(stream, {
+      mimeType: mime,
+      videoBitsPerSecond: 9_000_000,
+      audioBitsPerSecond: 128_000
+    });
+    const chunks = [];
+    rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+    const stopped = new Promise((res) => { rec.onstop = res; });
+
+    // 3) Timeline zurücksetzen, zwei Bilder zeichnen, DANN aufnehmen –
+    //    sonst landet das Standbild von vorher im ersten Frame.
+    play();
+    await nextFrames(2);
+    if (musicOn) armMusic();
+    window.__rec = {
+      t0: performance.now(),
+      hidden: document.hidden,
+      visibility: document.visibilityState,
+      clockAtStart: clockStart,
+      firstElapsed: window.__stage && window.__stage.firstElapsed
+    };
+    rec.start(250);
+    const waitMs = Math.max(200, (TOTAL + .6) * 1000 - (performance.now() - clockStart));
+    await new Promise((r) => setTimeout(r, waitMs));
+    rec.stop();
+    await stopped;
+    const maxGap = (window.__stage && window.__stage.maxGap) || 0;
+    window.__rec.durationMs = performance.now() - window.__rec.t0;
+    window.__rec.maxGap = maxGap;
+    window.__rec.frames = window.__stage && window.__stage.frames;
+    window.__rec.lastElapsed = window.__stage && window.__stage.lastElapsed;
+    log('Aufnahme: ' + (window.__rec.durationMs / 1000).toFixed(2) + ' s · letzter Frame bei '
+      + (window.__rec.lastElapsed != null ? window.__rec.lastElapsed.toFixed(2) : '?') + ' s'
+      + ' · längste Pause ' + maxGap.toFixed(0) + ' ms');
+
+    // 4) Bei Rucklern (Tab im Hintergrund, Renderer-Wakeup) einfach neu aufnehmen.
+    if (maxGap > 400 && attempt < 2) {
+      log('Ruckler erkannt – neuer Versuch …');
+      recording = false;               // erlaubt den neuen Versuch
+      await record(attempt + 1);
+      return;
+    }
+
+    const blob = new Blob(chunks, { type: mime || 'video/mp4' });
+    log('Video fertig: ' + (blob.size / 1048576).toFixed(2) + ' MB');
+    const name = 'Kaloriq-TikTok' + (mime.includes('mp4') ? '.mp4' : '.webm');
+    await fetch('/upload?name=' + encodeURIComponent(name), { method: 'POST', body: blob });
+    log('Hochgeladen: docs/tiktok/out/' + name);
+  } catch (e) {
+    log('FEHLER: ' + (e && e.message ? e.message : e));
+  } finally {
+    recording = false;
+    btn.disabled = false;
+  }
+}
+
+async function savePoster() {
+  canvas.toBlob(async (blob) => {
+    await fetch('/upload?name=Kaloriq-TikTok-Poster.png', { method: 'POST', body: blob });
+    log('Poster gespeichert: docs/tiktok/out/Kaloriq-TikTok-Poster.png');
+  }, 'image/png');
+}
+
+/* ------------------------------------------------------------------ *
+ *  Start
+ * ------------------------------------------------------------------ */
+
+document.getElementById('btnRec').addEventListener('click', () => { initAudio(); record(); });
+document.getElementById('btnPlay').addEventListener('click', () => { initAudio(); play(); });
+document.getElementById('btnPoster').addEventListener('click', savePoster);
+document.getElementById('btnSound').addEventListener('click', (e) => {
+  musicOn = !musicOn;
+  e.target.textContent = '♪ Sound: ' + (musicOn ? 'an' : 'aus');
+  if (musicOn) initAudio();
+});
+
+loadImages().then(() => {
+  log('Bilder geladen · ' + SCENES.length + ' Szenen · ' + TOTAL.toFixed(1) + ' s');
+  window.STAGE_READY = true;
+  window.STAGE_TOTAL = TOTAL;
+  play();
+}).catch((e) => { log('FEHLER: ' + e.message); window.STAGE_READY = false; });
+</script>
+</body>
+</html>

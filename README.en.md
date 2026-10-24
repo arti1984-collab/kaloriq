@@ -48,6 +48,7 @@ as a 2×2 montage (`uebersicht.png`).
 | **Week** | Average calories, bar chart per day, macro average, daily history |
 | **Fasting** | 14:10 / 16:8 / 18:6 / 20:4 / 24 h, live timer, history of the last 7 days |
 | **Data** | JSON export/import, automatic backups, IndexedDB second copy, reset |
+| **Wellbeing** | Gentle mode with pause, **minimal mode** (no ring, target or macros) and **flex range** ±5–15 % – less perfection pressure, no red numbers |
 | **Language** | German / English – switch under **Profile → Language**, all screens translated instantly |
 | **APK** | Standalone Android app, fully offline (`npm run apk`) – see [ANDROID.md](ANDROID.md) |
 
@@ -111,6 +112,16 @@ as a 2×2 montage (`uebersicht.png`).
   last seven days.
 - A running fast survives closing the app and continues counting when you
   reopen it.
+
+### Wellbeing (anti-burnout)
+
+- **Gentle mode:** weekly range instead of daily pressure, no red numbers and a
+  pause that hides the calorie target in the diary – without deleting data.
+- **Minimal mode:** hides the daily ring, calorie target, macros and weekly
+  balance. Meals, water, steps, weight and history stay visible.
+- **Flex range:** ±5 %, ±10 % or ±15 % around the guide counts as “within
+  range”. Inside that range everything stays neutral, even when a day is
+  slightly above target. Can be switched off; default is ±10 %.
 
 ### Profile, language & data
 
@@ -283,6 +294,7 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.2.6** | Minimal mode and flex range against perfection pressure |
 | **1.2.5** | TikTok link in the profile and on the GitHub project page |
 | **1.2.4** | Local recipes with ingredients, nutrition, servings, diary logging and JSON exchange |
 | **1.2.3** | Persistent storage and IndexedDB second copy against iOS storage cleanup |

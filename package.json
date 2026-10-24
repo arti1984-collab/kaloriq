@@ -1,6 +1,6 @@
 {
   "name": "kaloriq",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "private": true,
   "description": "Kalorien- und Makro-Tracker mit KI-Foto-Erkennung (PWA, Android & iPhone)",
   "type": "module",
@@ -12,7 +12,8 @@
     "build:static": "node scripts/build-static.mjs",
     "build:pages": "node scripts/build-pages.mjs",
     "apk": "node scripts/build-apk.mjs",
-    "bump": "node scripts/bump-version.mjs"
+    "bump": "node scripts/bump-version.mjs",
+    "tiktok": "node scripts/render-tiktok.mjs"
   },
   "engines": {
     "node": ">=18"

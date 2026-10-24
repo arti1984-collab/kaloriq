@@ -2,7 +2,7 @@
    Kaloriq – Fortschritt (Gewicht, Woche, Makros)
    ============================================================ */
 import { store, todayKey, setWeight, weightSeries, weekSummary, streak, series } from '../store.js';
-import { bmi, bmiCategory, projection, round1 } from '../calc.js';
+import { bmi, bmiCategory, projection, round1, flexStatus } from '../calc.js';
 import { esc, fmt, icon, toast, openSheet, lineChart, weekBars, macroRow, haptic } from '../ui.js';
 import { locale } from '../i18n.js';
 
@@ -18,14 +18,48 @@ export function renderProgress(root) {
   const week = weekSummary();
   const weekTotal = week.days.reduce((a, d) => a + d.totals.kcal, 0);
   const weekTarget = t.kcal * Math.max(1, week.loggedDays);
+  const gentle = Boolean(state.settings.gentleMode);
+  const paused = gentle && Boolean(state.settings.gentlePaused);
+  const minimal = Boolean(state.settings.minimalMode);
+  const bandPct = Math.max(0, Number(state.settings.flexBand) || 0);
+  const flexOn = bandPct > 0;
+  const softWeek = gentle || flexOn;
+  const weekBand = bandPct || (gentle ? 10 : 0);
+  const weekFlex = flexStatus(week.avgKcal, t.kcal, weekBand);
+  const weekStatus = !week.loggedDays
+    ? 'keine Daten'
+    : weekFlex.state === 'above'
+      ? 'etwas darüber'
+      : weekFlex.state === 'below'
+        ? 'darunter'
+        : 'im Rahmen';
+  const headerSub = minimal
+    ? 'Minimal · ohne Zahlen'
+    : gentle
+      ? paused
+        ? '<span>Pause</span> · <span>Sanfter Modus</span>'
+        : `<span>${week.loggedDays}/7</span> <span>Tage mit Eintrag</span> · <span>Sanfter Modus</span>`
+      : `${streak() > 0 ? `🔥 ${streak()} ${streak() === 1 ? 'Tag' : 'Tage'} Serie · ` : ''}${week.loggedDays}/7 Tage getrackt`;
 
   root.innerHTML = `
     <header class="topbar">
       <div class="grow">
         <h1>Fortschritt</h1>
-        <div class="sub">${streak() > 0 ? `🔥 ${streak()} ${streak() === 1 ? 'Tag' : 'Tage'} Serie · ` : ''}${week.loggedDays}/7 Tage getrackt</div>
+        <div class="sub">${headerSub}</div>
       </div>
     </header>
+
+    ${minimal ? `<section class="card minimal-card">
+      <div class="gentle-kicker">Minimalmodus</div>
+      <p class="gentle-note">Kalorienziel, Wochenbilanz und Makros sind ausgeblendet. Gewicht und Verlauf bleiben sichtbar.</p>
+      <button class="btn btn-sm btn-ghost" data-minimal-off style="margin-top:10px">${icon('chart')} Zahlen einblenden</button>
+    </section>` : ''}
+
+    ${gentle && paused && !minimal ? `<section class="card gentle-card gentle-pause">
+      <div class="gentle-kicker">Pause</div>
+      <p class="small muted" style="margin:8px 0 0">Dein Kalorienziel ist im Tagebuch ausgeblendet. Deine Daten bleiben erhalten.</p>
+      <button class="btn btn-sm btn-primary" data-gentle-resume style="margin-top:12px">Pause beenden</button>
+    </section>` : ''}
 
     <section class="card">
       <div class="card-title">Gewicht</div>
@@ -36,10 +70,10 @@ export function renderProgress(root) {
           <div style="font-weight:680">${fmt(p.targetWeight, 1)} kg</div>
         </div>
       </div>
-      <div class="hstack" style="gap:8px;margin:6px 0 10px">
+      ${minimal ? '' : `<div class="hstack" style="gap:8px;margin:6px 0 10px">
         <span class="pill ${cat.tone === 'ok' ? '' : cat.tone === 'danger' ? 'danger' : 'warn'}">BMI ${fmt(b, 1)} · ${cat.label}</span>
         <span class="pill ${Math.abs(diff) < 0.3 ? '' : 'neutral'}">${diff > 0 ? '−' : '+'} ${fmt(Math.abs(diff), 1)} kg bis Ziel</span>
-      </div>
+      </div>`}
       ${lineChart({
         points: weights.length ? weights.map((w) => ({ label: shortLabel(w.key), value: w.weight })) : [],
         target: p.targetWeight,
@@ -48,7 +82,7 @@ export function renderProgress(root) {
       <button class="btn btn-block" data-weight style="margin-top:14px">${icon('scale')} Gewicht eintragen</button>
     </section>
 
-    <div class="stat-grid" style="margin-top:12px">
+    ${minimal ? '' : `<div class="stat-grid" style="margin-top:12px">
       <div class="stat">
         <div class="lbl">Grundumsatz</div>
         <div class="val">${fmt(t.bmr)}<small> kcal</small></div>
@@ -58,7 +92,7 @@ export function renderProgress(root) {
         <div class="val">${fmt(t.tdee)}<small> kcal</small></div>
       </div>
       <div class="stat">
-        <div class="lbl">Tagesziel</div>
+        <div class="lbl">${gentle || flexOn ? 'Richtwert' : 'Tagesziel'}</div>
         <div class="val">${fmt(t.kcal)}<small> kcal</small></div>
       </div>
       <div class="stat">
@@ -74,19 +108,21 @@ export function renderProgress(root) {
           <div class="tiny muted">Ø Kalorien (${week.loggedDays} ${week.loggedDays === 1 ? 'Tag' : 'Tage'})</div>
           <div style="font-size:22px;font-weight:720;letter-spacing:-.03em">${fmt(week.avgKcal)} <span class="small muted" style="font-weight:600">kcal</span></div>
         </div>
-        <span class="pill ${weekTarget && weekTotal > weekTarget * 1.08 ? 'warn' : ''}">
-          ${week.loggedDays ? (weekTotal >= weekTarget * 0.92 && weekTotal <= weekTarget * 1.08 ? 'im Ziel' : weekTotal > weekTarget ? 'über Ziel' : 'unter Ziel') : 'keine Daten'}
+        <span class="pill ${softWeek ? (weekFlex.state === 'in' ? '' : 'neutral') : weekTarget && weekTotal > weekTarget * 1.08 ? 'warn' : ''}">
+          ${softWeek ? weekStatus : week.loggedDays ? (weekTotal >= weekTarget * 0.92 && weekTotal <= weekTarget * 1.08 ? 'im Ziel' : weekTotal > weekTarget ? 'über Ziel' : 'unter Ziel') : 'keine Daten'}
         </span>
       </div>
-      ${weekBars(week.days, t.kcal)}
+      ${weekBars(week.days, t.kcal, 0, softWeek)}
+      ${flexOn ? `<div class="flex-hint">Ziel ±${bandPct} %: ${fmt(weekFlex.low)}–${fmt(weekFlex.high)} kcal</div>` : ''}
       <div class="divider"></div>
       <div class="macros">
-        ${macroRow('Protein', week.avgProtein, t.protein, 'protein')}
-        ${macroRow('KH', week.avgCarbs, t.carbs, 'carbs')}
-        ${macroRow('Fett', week.avgFat, t.fat, 'fat')}
+        ${macroRow('Protein', week.avgProtein, t.protein, 'protein', softWeek)}
+        ${macroRow('KH', week.avgCarbs, t.carbs, 'carbs', softWeek)}
+        ${macroRow('Fett', week.avgFat, t.fat, 'fat', softWeek)}
       </div>
       <p class="tiny muted" style="margin-top:10px">Balken = Kalorien pro Tag, Linie = dein Ziel (${fmt(t.kcal)} kcal).</p>
-    </section>
+      ${softWeek ? `<p class="gentle-note">${gentle ? 'Zahlen sind Orientierung, kein Wettkampf.' : 'Der Flexbereich lässt einzelne Tage schwanken – die Woche zählt.'}</p>` : ''}
+    </section>`}
 
     <div class="section-title">Verlauf</div>
     <section class="card flush">
@@ -106,6 +142,16 @@ export function renderProgress(root) {
   `;
 
   root.querySelector('[data-weight]').addEventListener('click', openWeightSheet);
+  root.querySelector('[data-gentle-resume]')?.addEventListener('click', () => {
+    store.saveSettings({ gentlePaused: false });
+    toast('Pause beendet');
+    haptic();
+  });
+  root.querySelector('[data-minimal-off]')?.addEventListener('click', () => {
+    store.saveSettings({ minimalMode: false });
+    toast('Zahlen wieder eingeblendet');
+    haptic();
+  });
 }
 
 function lastDays(days) {

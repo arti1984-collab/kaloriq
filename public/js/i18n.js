@@ -488,6 +488,90 @@ const EN = {
   'Test': 'Test',
   'T': 'T',
   'KH': 'C',
+
+  // Sanfter Modus / Wohlbefinden
+  'Wohlbefinden': 'Wellbeing',
+  'Sanfter Modus': 'Gentle mode',
+  'Aktiv · Wochenrahmen statt Tagesdruck': 'On · weekly range instead of daily pressure',
+  'Anti-Burnout: keine roten Zahlen, Pausen erlaubt': 'Anti-burnout: no red numbers, breaks allowed',
+  'Richtwert': 'Guide',
+  'Wochenrahmen': 'Weekly range',
+  'Wochenbalance': 'Weekly balance',
+  'Richtwert pro Tag': 'Daily guide',
+  'Pause aktiv': 'Pause active',
+  'ohne Tagesdruck': 'without daily pressure',
+  'Tracking pausieren': 'Pause tracking',
+  'Kalorienziel wieder einblenden': 'Show calorie target again',
+  'Tagesziel im Tagebuch ausblenden, Daten behalten': 'Hide the daily target in the diary, keep your data',
+  'Sanfter Modus aktiviert': 'Gentle mode enabled',
+  'Sanfter Modus deaktiviert': 'Gentle mode disabled',
+  'Pause · ohne Kaloriendruck': 'Pause · no calorie pressure',
+  'Pause machen': 'Take a pause',
+  'Pause beenden': 'End pause',
+  'Pause aktiviert': 'Pause started',
+  'Pause beendet': 'Pause ended',
+  'Kein Kaloriendruck': 'No calorie pressure',
+  'Dein Kalorienziel ist im Tagebuch ausgeblendet. Du kannst trotzdem eintragen, was du möchtest – nichts wird bewertet.':
+    'Your calorie target is hidden in the diary. You can still log whatever you like – nothing is judged.',
+  'Dein Kalorienziel ist im Tagebuch ausgeblendet. Deine Daten bleiben erhalten.':
+    'Your calorie target is hidden in the diary. Your data stays intact.',
+  'kcal heute': 'kcal today',
+  'Noch offen': 'Still open',
+  'über Richtwert': 'above guide',
+  'im Rahmen': 'within range',
+  'etwas darüber': 'slightly above',
+  'darunter': 'below',
+  'Tage mit Eintrag': 'days logged',
+  'Tag mit Eintrag': 'day logged',
+  'Noch nichts eingetragen. Du musst heute nicht alles perfekt machen.':
+    'Nothing logged yet. You don’t have to make today perfect.',
+  'Du bist im Rahmen. Kein Grund, heute etwas nachzuholen.': 'You’re within range. No need to catch up today.',
+  'Etwas über dem Richtwert. Das gleicht sich über die Woche aus – kein Grund, morgen zu sparen.':
+    'A little above the guide. It balances out over the week – no need to save up tomorrow.',
+  'Noch keine Einträge in den letzten 7 Tagen.': 'No entries in the last 7 days yet.',
+  'Du liegst im Wochenrahmen.': 'You’re within your weekly range.',
+  'Diese Woche liegt unter dem Richtwert. Auch das ist okay.': 'This week is below the guide. That’s okay too.',
+  'Etwas über dem Richtwert. Einzelne Tage gleichen sich aus – kein Grund, morgen zu sparen.':
+    'A little above the guide. Single days balance out – no need to save up tomorrow.',
+  'keine Daten': 'no data',
+  'Zahlen sind Orientierung, kein Wettkampf.': 'Numbers are guidance, not a competition.',
+
+  // Minimalmodus
+  'Minimalmodus': 'Minimal mode',
+  'Minimal · ohne Zahlen': 'Minimal · no numbers',
+  'Aktiv · Ring, Ziel und Makros ausgeblendet': 'On · ring, target and macros hidden',
+  'Nur Mahlzeiten, Wasser und Schritte anzeigen': 'Show only meals, water and steps',
+  'Kalorienziel und Makros sind ausgeblendet. Trag einfach ein, was du gegessen hast – ohne Zahlen zu vergleichen.':
+    'Calorie target and macros are hidden. Just log what you ate – no need to compare numbers.',
+  'Kalorienziel, Wochenbilanz und Makros sind ausgeblendet. Gewicht und Verlauf bleiben sichtbar.':
+    'Calorie target, weekly balance and macros are hidden. Weight and history stay visible.',
+  'Zahlen einblenden': 'Show numbers',
+  'Zahlen wieder eingeblendet': 'Numbers shown again',
+  'Minimalmodus aktiviert': 'Minimal mode enabled',
+  'Minimalmodus deaktiviert': 'Minimal mode disabled',
+
+  // Flexbereich
+  'Flexbereich': 'Flex range',
+  'Aus · Ziel zählt exakt': 'Off · the goal is exact',
+  'Toleranz': 'Tolerance',
+  'Wie viel Spielraum als „im Rahmen“ gilt': 'How much leeway counts as “within range”',
+  'Flexbereich aktiviert': 'Flex range enabled',
+  'Flexbereich deaktiviert': 'Flex range disabled',
+  'unter Richtwert': 'below guide',
+  'noch darunter': 'still below',
+  'Spielraum': 'Range',
+  'Heute liegt unter dem Richtwert. Auch das ist okay – kein Grund, alles aufzuholen.':
+    'Today is below the guide. That’s okay too – no need to catch up on everything.',
+  'Wie viel Spielraum um dein Kalorienziel als „im Rahmen“ gilt. Innerhalb des Bereichs bleibt alles neutral – ohne rote Zahlen.':
+    'How much leeway around your calorie goal counts as “within range”. Inside the range everything stays neutral – no red numbers.',
+  'Das Ziel zählt exakt': 'The goal counts exactly',
+  'Enger Spielraum': 'Narrow range',
+  'Empfohlen': 'Recommended',
+  'Großer Spielraum': 'Wide range',
+  'kcal drüber': 'kcal over',
+  'kcal im Spielraum': 'kcal within range',
+  'Der Flexbereich lässt einzelne Tage schwanken – die Woche zählt.':
+    'The flex range lets individual days vary – the week is what counts.',
 };
 
 /* ---------------- Lebensmittel (Datenbanknamen) ---------------- */
@@ -753,6 +837,10 @@ const RULES = [
   [/^Gesamtzahl für (.+)\.$/, (m) => `Total for ${tr(m[1])}.`],
   [/^(.+) entfernt$/, '$1 removed'],
   [/^([\d.,]+) Schritte$/, '$1 steps'],
+  [/^Aktiv · ±(\d+) % Spielraum um den Richtwert$/, 'On · ±$1% leeway around the guide'],
+  [/^Flexbereich ±(\d+) %$/, 'Flex range ±$1%'],
+  [/^Ziel ±(\d+) %: ([\d.,]+)–([\d.,]+) kcal$/, 'Goal ±$1%: $2–$3 kcal'],
+  [/^([\d.,]+) kcal Richtwert$/, '$1 kcal guide'],
 ];
 
 /* ---------------- Übersetzen ---------------- */

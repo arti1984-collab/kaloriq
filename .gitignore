@@ -34,3 +34,6 @@ local.properties
 .env.*
 .DS_Store
 Thumbs.db
+
+# TikTok-Renderausgaben (große MP4/PNG, lokal erzeugt)
+docs/tiktok/out/

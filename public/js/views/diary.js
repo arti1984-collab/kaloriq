@@ -4,9 +4,10 @@
 import {
   store, getDay, todayKey, addDays, dayLabel, shortDate,
   totals, mealTotals, MEALS, entryMacros, removeEntry, updateEntry,
-  setWater, setSteps, streak,
+  setWater, setSteps, streak, weekSummary,
 } from '../store.js';
 import { esc, fmt, icon, ring, macroRow, toast, openSheet, confirmDialog, haptic } from '../ui.js';
+import { flexStatus } from '../calc.js';
 import { openAddSheet } from './add.js';
 import { stepsMode, isCounting, pendingSteps, startSteps, stopSteps } from '../steps.js';
 
@@ -53,11 +54,166 @@ export function renderDiary(root) {
           ? 'Zählt mit, solange Kaloriq geöffnet ist. Im Hintergrund pausiert der Sensor.'
           : 'Tippe auf ▶, um mitzuzählen – solange die App geöffnet ist.';
 
+  const gentle = Boolean(state.settings.gentleMode);
+  const paused = gentle && Boolean(state.settings.gentlePaused);
+  const minimal = Boolean(state.settings.minimalMode);
+  const bandPct = Math.max(0, Number(state.settings.flexBand) || 0);
+  const flex = flexStatus(t.kcal, target.kcal, bandPct);
+  const flexOn = flex.enabled;
+  const gentleBand = bandPct || 5;
+  const gentleFlex = flexStatus(t.kcal, target.kcal, gentleBand);
+  const week = gentle ? weekSummary() : null;
+  const weekAvg = week?.avgKcal || 0;
+  const weekRatio = target.kcal ? weekAvg / target.kcal : 0;
+  const weekPct = Math.min(100, Math.round(weekRatio * 100));
+  const weekFlex = flexStatus(weekAvg, target.kcal, bandPct || 10);
+  const weekStatus = !week?.loggedDays
+    ? 'Noch keine Einträge in den letzten 7 Tagen.'
+    : weekFlex.state === 'above'
+      ? 'Etwas über dem Richtwert. Einzelne Tage gleichen sich aus – kein Grund, morgen zu sparen.'
+      : weekFlex.state === 'below'
+        ? 'Diese Woche liegt unter dem Richtwert. Auch das ist okay.'
+        : 'Du liegst im Wochenrahmen.';
+  const gentlePill = gentleFlex.state === 'empty'
+    ? 'Noch offen'
+    : gentleFlex.state === 'in'
+      ? 'im Rahmen'
+      : gentleFlex.state === 'above'
+        ? 'etwas darüber'
+        : isToday ? 'noch darunter' : 'unter Richtwert';
+  const gentlePillClass = gentleFlex.state === 'in' ? '' : 'neutral';
+  const gentleNote = gentleFlex.state === 'empty'
+    ? 'Noch nichts eingetragen. Du musst heute nicht alles perfekt machen.'
+    : gentleFlex.state === 'above'
+      ? 'Etwas über dem Richtwert. Das gleicht sich über die Woche aus – kein Grund, morgen zu sparen.'
+      : gentleFlex.state === 'below'
+        ? 'Heute liegt unter dem Richtwert. Auch das ist okay – kein Grund, alles aufzuholen.'
+        : 'Du bist im Rahmen. Kein Grund, heute etwas nachzuholen.';
+  const headerSub = minimal
+    ? 'Minimal · ohne Zahlen'
+    : gentle
+      ? paused
+        ? 'Pause · ohne Kaloriendruck'
+        : `<span>${week.loggedDays}/7</span> <span>Tage mit Eintrag</span> · <span>Sanfter Modus</span>`
+      : `${streak() > 0 ? `🔥 ${streak()} ${streak() === 1 ? 'Tag' : 'Tage'} Serie · ` : ''}${fmt(target.kcal)} kcal ${flexOn ? 'Richtwert' : 'Ziel'}`;
+
+  const normalSummary = () => {
+    const statusLabel = flexOn
+      ? flex.state === 'empty'
+        ? 'Noch offen'
+        : flex.state === 'in'
+          ? 'im Rahmen'
+          : flex.state === 'above'
+            ? 'etwas darüber'
+            : isToday ? 'noch darunter' : 'unter Richtwert'
+      : `${Math.round(pct * 100)} %`;
+    const statusClass = flexOn
+      ? flex.state === 'in' ? '' : 'neutral'
+      : over ? 'danger' : '';
+
+    return `
+    <section class="card summary">
+      <div class="summary-grid">
+        ${ring({
+          size: 132,
+          stroke: 11,
+          pct: Math.min(1, pct),
+          color: over && !flexOn ? 'var(--danger)' : 'var(--accent)',
+          id: 'kcal',
+          center: `<div class="big" style="${over && !flexOn ? 'color:var(--danger)' : ''}">${fmt(Math.abs(remaining))}</div>
+                   <div class="small">${over ? (flexOn && flex.state === 'in' ? 'kcal im Spielraum' : 'kcal drüber') : 'kcal übrig'}</div>`,
+        })}
+        <div>
+          <div class="kcal-left">
+            <div class="hstack" style="justify-content:space-between;align-items:flex-end">
+              <div>
+                <div class="num">${fmt(t.kcal)}</div>
+                <div class="lbl">von ${fmt(target.kcal)} kcal</div>
+              </div>
+              <span class="pill ${statusClass}">${statusLabel}</span>
+            </div>
+          </div>
+          ${flexOn ? `<div class="flex-hint">Ziel ±${bandPct} %: ${fmt(flex.low)}–${fmt(flex.high)} kcal</div>` : ''}
+          <div class="macros">
+            ${macroRow('Protein', t.protein, target.protein, 'protein', flexOn)}
+            ${macroRow('KH', t.carbs, target.carbs, 'carbs', flexOn)}
+            ${macroRow('Fett', t.fat, target.fat, 'fat', flexOn)}
+          </div>
+        </div>
+      </div>
+    </section>`;
+  };
+
+  const gentleSummary = () => `
+    <section class="card summary gentle-card">
+      <div class="summary-grid">
+        ${ring({
+          size: 132,
+          stroke: 11,
+          pct: Math.min(1, pct),
+          color: 'var(--accent)',
+          id: 'kcal',
+          center: `<div class="big">${fmt(t.kcal)}</div>
+                   <div class="small">kcal heute</div>`,
+        })}
+        <div>
+          <div class="kcal-left">
+            <div class="hstack" style="justify-content:space-between;align-items:flex-end">
+              <div>
+                <div class="num">${fmt(t.kcal)}</div>
+                <div class="lbl">von ${fmt(target.kcal)} kcal</div>
+              </div>
+              <span class="pill ${gentlePillClass}">${gentlePill}</span>
+            </div>
+          </div>
+          <div class="flex-hint">Ziel ±${gentleBand} %: ${fmt(gentleFlex.low)}–${fmt(gentleFlex.high)} kcal</div>
+          <div class="macros">
+            ${macroRow('Protein', t.protein, target.protein, 'protein', true)}
+            ${macroRow('KH', t.carbs, target.carbs, 'carbs', true)}
+            ${macroRow('Fett', t.fat, target.fat, 'fat', true)}
+          </div>
+        </div>
+      </div>
+      <p class="gentle-note">${gentleNote}</p>
+      <button class="btn btn-sm btn-ghost" data-gentle-pause style="margin-top:10px">${icon('pause')} Pause machen</button>
+    </section>`;
+
+  const minimalCard = () => `
+    <section class="card minimal-card">
+      <div class="gentle-kicker">Minimalmodus</div>
+      <p class="gentle-note">Kalorienziel und Makros sind ausgeblendet. Trag einfach ein, was du gegessen hast – ohne Zahlen zu vergleichen.</p>
+      <button class="btn btn-sm btn-ghost" data-minimal-off style="margin-top:10px">${icon('chart')} Zahlen einblenden</button>
+    </section>`;
+
+  const gentleWeek = () => `
+    <section class="card gentle-card">
+      <div class="card-title" style="margin-bottom:2px">Wochenbalance</div>
+      <div class="tiny muted"><span>Letzte 7 Tage</span> · <span>Wochenrahmen</span> ${fmt(target.kcal * 7)} kcal</div>
+      <div class="hstack" style="align-items:flex-end;margin-top:12px">
+        <div class="gentle-week-value">${fmt(weekAvg)}<span class="small muted" style="font-weight:600"> kcal Ø</span></div>
+        <div class="grow" style="text-align:right">
+          <div class="tiny muted">Richtwert pro Tag</div>
+          <div style="font-weight:680">${fmt(target.kcal)} kcal</div>
+        </div>
+      </div>
+      <div class="bar gentle" style="margin-top:10px"><i style="width:${weekPct}%"></i></div>
+      <p class="gentle-note">${weekStatus}</p>
+      <div class="tiny muted" style="margin-top:6px">${week.loggedDays}/7 <span>${week.loggedDays === 1 ? 'Tag mit Eintrag' : 'Tage mit Eintrag'}</span></div>
+    </section>`;
+
+  const pauseCard = () => `
+    <section class="card gentle-card gentle-pause">
+      <div class="gentle-kicker">Pause</div>
+      <h2 style="margin:8px 0 6px">Kein Kaloriendruck</h2>
+      <p class="small muted" style="max-width:320px;margin:0 auto">Dein Kalorienziel ist im Tagebuch ausgeblendet. Du kannst trotzdem eintragen, was du möchtest – nichts wird bewertet.</p>
+      <button class="btn btn-primary" data-gentle-resume style="margin-top:14px">Pause beenden</button>
+    </section>`;
+
   root.innerHTML = `
     <header class="topbar">
       <div class="grow">
         <h1>Tagebuch</h1>
-        <div class="sub">${streak() > 0 ? `🔥 ${streak()} ${streak() === 1 ? 'Tag' : 'Tage'} Serie · ` : ''}${fmt(target.kcal)} kcal Ziel</div>
+        <div class="sub">${headerSub}</div>
       </div>
       <button class="icon-btn" data-recipes aria-label="Rezepte">${icon('bowl')}</button>
       <button class="icon-btn" data-today aria-label="Zu heute springen">${icon('refresh')}</button>
@@ -71,35 +227,8 @@ export function renderDiary(root) {
       <button class="icon-btn" data-next aria-label="Nächster Tag" ${key >= todayKey() ? 'disabled style="opacity:.35"' : ''}>${icon('right')}</button>
     </div>
 
-    <section class="card summary">
-      <div class="summary-grid">
-        ${ring({
-          size: 132,
-          stroke: 11,
-          pct: Math.min(1, pct),
-          color: over ? 'var(--danger)' : 'var(--accent)',
-          id: 'kcal',
-          center: `<div class="big" style="${over ? 'color:var(--danger)' : ''}">${fmt(Math.abs(remaining))}</div>
-                   <div class="small">${over ? 'kcal drüber' : 'kcal übrig'}</div>`,
-        })}
-        <div>
-          <div class="kcal-left">
-            <div class="hstack" style="justify-content:space-between;align-items:flex-end">
-              <div>
-                <div class="num">${fmt(t.kcal)}</div>
-                <div class="lbl">von ${fmt(target.kcal)} kcal</div>
-              </div>
-              <span class="pill ${over ? 'danger' : ''}">${Math.round(pct * 100)} %</span>
-            </div>
-          </div>
-          <div class="macros">
-            ${macroRow('Protein', t.protein, target.protein, 'protein')}
-            ${macroRow('KH', t.carbs, target.carbs, 'carbs')}
-            ${macroRow('Fett', t.fat, target.fat, 'fat')}
-          </div>
-        </div>
-      </div>
-    </section>
+    ${paused ? pauseCard() : minimal ? minimalCard() : gentle ? gentleSummary() : normalSummary()}
+    ${gentle && !paused && !minimal ? gentleWeek() : ''}
 
     <section class="card">
       <div class="hstack" style="align-items:flex-start">
@@ -237,6 +366,23 @@ export function renderDiary(root) {
     renderDiary(root);
   });
   root.querySelector('[data-steps-edit]').addEventListener('click', () => openStepsSheet(key, root));
+
+  // Sanfter Modus: Pause starten/beenden, alle Daten bleiben erhalten.
+  root.querySelector('[data-gentle-pause]')?.addEventListener('click', () => {
+    store.saveSettings({ gentlePaused: true });
+    toast('Pause aktiviert');
+    haptic();
+  });
+  root.querySelector('[data-gentle-resume]')?.addEventListener('click', () => {
+    store.saveSettings({ gentlePaused: false });
+    toast('Pause beendet');
+    haptic();
+  });
+  root.querySelector('[data-minimal-off]')?.addEventListener('click', () => {
+    store.saveSettings({ minimalMode: false });
+    toast('Zahlen wieder eingeblendet');
+    haptic();
+  });
 
   // Mahlzeiten
   root.querySelectorAll('[data-add-meal]').forEach((btn) => btn.addEventListener('click', () => {

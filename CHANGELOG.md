@@ -47,6 +47,45 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.2.6] – 24.10.2026
+
+### Hinzugefügt
+
+- **Minimalmodus:** Unter **Profil → Wohlbefinden** lässt sich der
+  Minimalmodus einschalten. Er blendet Tagesring, Kalorienziel, Makros,
+  Wochenbilanz und die Kalorien-Statistiken aus. Sichtbar bleiben Mahlzeiten,
+  Wasser, Schritte, Gewicht und der Verlauf. Im Tagebuch und Fortschritt führt
+  ein Knopf „Zahlen einblenden“ direkt zurück.
+- **Flexbereich:** Ebenfalls unter **Profil → Wohlbefinden**. Statt einer
+  harten Zielgrenze gilt ein Spielraum von **±5 %, ±10 % oder ±15 %** um den
+  Richtwert. Innerhalb des Bereichs bleibt alles neutral („im Rahmen“), auch
+  wenn einzelne Tage über dem Ziel liegen. Rote Zahlen, rote Makro-Balken und
+  rote Wochenbalken entfallen in diesem Modus. Standard: ±10 %, abschaltbar.
+
+### Geändert
+
+- Der **Sanfte Modus** nutzt jetzt den Flexbereich (Standard ±5 %, bzw. die
+  gewählte Toleranz) statt einer festen 5-%-Grenze. Der Wochenstatus und die
+  Makro-Balken richten sich nach derselben Toleranz.
+- Das Profil zeigt bei aktivem Flexbereich **„Richtwert“** und den Spielraum
+  statt des Defizits. Das Tagebuch nennt den Wert entsprechend „Richtwert“.
+- Bei „heute noch unter dem Richtwert“ steht neutral **„noch darunter“** –
+  der Tag ist ja noch nicht vorbei.
+
+### Getestet
+
+- Minimalmodus in Tagebuch und Fortschritt (de/en): Ring, Ziel, Makros und
+  Wochenbilanz verschwinden, Mahlzeiten/Wasser/Schritte/Gewicht bleiben.
+- Flexbereich mit ±5/10/15 %: exakte Grenzen (z. B. 1.620–1.980 kcal bei
+  1.800 kcal und ±10 %), „im Rahmen“ auch bei leichter Überschreitung,
+  „etwas darüber“ oberhalb des Bereichs, keine roten Elemente.
+- Flexbereich aus: klassische Anzeige mit Prozent-Pille und roter Warnung
+  oberhalb des Ziels funktioniert unverändert.
+- Kombination mit Sanftem Modus und Pause; Sprachumschaltung de/en;
+  vorhandene Daten und Einstellungen bleiben bei allen Umschaltungen erhalten.
+
+---
+
 ## [1.2.5] – 22.10.2026
 
 ### Hinzugefügt

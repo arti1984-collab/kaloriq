@@ -2,7 +2,7 @@
    Kaloriq – Profil & Einstellungen
    ============================================================ */
 import { store, exportJson, importJson, todayKey, streak, listBackups, backupNow, restoreBackup } from '../store.js';
-import { ACTIVITY, GOALS, MACRO_PRESETS, computeTargets, projection, round1, bmi, bmiCategory } from '../calc.js';
+import { ACTIVITY, GOALS, MACRO_PRESETS, computeTargets, projection, round1, bmi, bmiCategory, flexStatus } from '../calc.js';
 import {
   esc, fmt, icon, toast, openSheet, confirmDialog, downloadFile, haptic,
 } from '../ui.js';
@@ -16,6 +16,12 @@ export function renderProfile(root) {
   const t = state.targets;
   const proj = projection(p);
   const aiConfigured = Boolean(state.settings.apiKey) || proxyStatus();
+  const gentle = Boolean(state.settings.gentleMode);
+  const paused = gentle && Boolean(state.settings.gentlePaused);
+  const minimal = Boolean(state.settings.minimalMode);
+  const flexBand = Math.max(0, Number(state.settings.flexBand) || 0);
+  const flexOn = flexBand > 0;
+  const flexRange = flexStatus(t.kcal, t.kcal, flexBand);
   const backups = listBackups();
   const backupSub = backups.length
     ? `${backups.length} ${backups.length === 1 ? 'Stand' : 'Stände'} · automatisch alle 12 Std.`
@@ -30,7 +36,7 @@ export function renderProfile(root) {
       <div class="avatar">${state.profile.name ? esc(state.profile.name.slice(0, 1).toUpperCase()) : '🙂'}</div>
       <div class="grow">
         <div class="name">${state.profile.name ? esc(state.profile.name) : 'Dein Profil'}</div>
-        <div class="meta">${p.sex === 'male' ? 'Männlich' : 'Weiblich'} · ${p.age} J. · ${fmt(p.height)} cm · ${fmt(p.weight, 1)} kg${streak() ? ` · 🔥 ${streak()} ${streak() === 1 ? 'Tag' : 'Tage'}` : ''}</div>
+        <div class="meta">${p.sex === 'male' ? 'Männlich' : 'Weiblich'} · ${p.age} J. · ${fmt(p.height)} cm · ${fmt(p.weight, 1)} kg${!gentle && streak() ? ` · 🔥 ${streak()} ${streak() === 1 ? 'Tag' : 'Tage'}` : ''}</div>
       </div>
       <button class="icon-btn" data-edit aria-label="Daten bearbeiten">${icon('pencil')}</button>
     </div>
@@ -39,11 +45,14 @@ export function renderProfile(root) {
       <div class="summary-grid">
         ${ringMini(t.kcal, p)}
         <div>
-          <div class="tiny muted" style="text-transform:uppercase;letter-spacing:.06em;font-weight:650">Tagesziel</div>
+          <div class="tiny muted" style="text-transform:uppercase;letter-spacing:.06em;font-weight:650">${gentle || flexOn ? 'Richtwert' : 'Tagesziel'}</div>
           <div style="font-size:26px;font-weight:740;letter-spacing:-.03em">${fmt(t.kcal)} <span class="small muted" style="font-weight:600">kcal</span></div>
           <div class="small muted" style="margin-top:2px">
-            ${p.goal === 'lose' ? `Defizit ${fmt(Math.abs(t.deficit))} kcal` : p.goal === 'gain' ? `Überschuss ${fmt(t.deficit)} kcal` : 'Erhaltung'}
-            · ${esc(t.preset)}
+            ${gentle
+              ? `<span>Wochenrahmen</span> ${fmt(t.kcal * 7)} kcal · <span>${paused ? 'Pause aktiv' : 'ohne Tagesdruck'}</span>`
+              : flexOn
+                ? `<span>Spielraum</span> ±${flexBand} % · ${fmt(flexRange.low)}–${fmt(flexRange.high)} kcal`
+                : `${p.goal === 'lose' ? `Defizit ${fmt(Math.abs(t.deficit))} kcal` : p.goal === 'gain' ? `Überschuss ${fmt(t.deficit)} kcal` : 'Erhaltung'} · ${esc(t.preset)}`}
           </div>
           <div class="hstack" style="gap:10px;margin-top:8px">
             <span class="pill">P ${fmt(t.protein)} g</span>
@@ -75,6 +84,46 @@ export function renderProfile(root) {
         <span class="grow"><span class="t">Schrittziel</span><span class="s">Tagesziel</span></span>
         <span class="v">${fmt(state.settings.stepGoal || 8000)}</span>
         ${icon('chev', 'chev')}
+      </button>
+    </section>
+
+    <div class="section-title">Wohlbefinden</div>
+    <section class="card flush">
+      <button class="row" data-gentle role="switch" aria-checked="${gentle}" aria-label="Sanfter Modus">
+        <span class="grow">
+          <span class="t">Sanfter Modus</span>
+          <span class="s">${gentle ? 'Aktiv · Wochenrahmen statt Tagesdruck' : 'Anti-Burnout: keine roten Zahlen, Pausen erlaubt'}</span>
+        </span>
+        <span class="switch" aria-hidden="true" aria-checked="${gentle}" style="pointer-events:none"></span>
+      </button>
+      ${gentle ? `<button class="row" data-gentle-pause>
+        <span class="grow">
+          <span class="t">${paused ? 'Pause beenden' : 'Tracking pausieren'}</span>
+          <span class="s">${paused ? 'Kalorienziel wieder einblenden' : 'Tagesziel im Tagebuch ausblenden, Daten behalten'}</span>
+        </span>
+        ${icon(paused ? 'play' : 'pause', 'chev')}
+      </button>` : ''}
+      <button class="row" data-flex role="switch" aria-checked="${flexOn}" aria-label="Flexbereich">
+        <span class="grow">
+          <span class="t">Flexbereich</span>
+          <span class="s">${flexOn ? `Aktiv · ±${flexBand} % Spielraum um den Richtwert` : 'Aus · Ziel zählt exakt'}</span>
+        </span>
+        <span class="switch" aria-hidden="true" aria-checked="${flexOn}" style="pointer-events:none"></span>
+      </button>
+      ${flexOn ? `<button class="row" data-flexband>
+        <span class="grow">
+          <span class="t">Toleranz</span>
+          <span class="s">Wie viel Spielraum als „im Rahmen“ gilt</span>
+        </span>
+        <span class="v">±${flexBand} %</span>
+        ${icon('chev', 'chev')}
+      </button>` : ''}
+      <button class="row" data-minimal role="switch" aria-checked="${minimal}" aria-label="Minimalmodus">
+        <span class="grow">
+          <span class="t">Minimalmodus</span>
+          <span class="s">${minimal ? 'Aktiv · Ring, Ziel und Makros ausgeblendet' : 'Nur Mahlzeiten, Wasser und Schritte anzeigen'}</span>
+        </span>
+        <span class="switch" aria-hidden="true" aria-checked="${minimal}" style="pointer-events:none"></span>
       </button>
     </section>
 
@@ -143,6 +192,31 @@ export function renderProfile(root) {
   root.querySelector('[data-macros]').addEventListener('click', () => openMacroSheet(root));
   root.querySelector('[data-watertarget]').addEventListener('click', () => openWaterSheet(root));
   root.querySelector('[data-stepgoal]').addEventListener('click', () => openStepGoalSheet(root));
+  root.querySelector('[data-gentle]').addEventListener('click', () => {
+    const next = !store.get().settings.gentleMode;
+    store.saveSettings({ gentleMode: next, ...(next ? {} : { gentlePaused: false }) });
+    toast(next ? 'Sanfter Modus aktiviert' : 'Sanfter Modus deaktiviert');
+    haptic();
+  });
+  root.querySelector('[data-gentle-pause]')?.addEventListener('click', () => {
+    const next = !store.get().settings.gentlePaused;
+    store.saveSettings({ gentlePaused: next });
+    toast(next ? 'Pause aktiviert' : 'Pause beendet');
+    haptic();
+  });
+  root.querySelector('[data-flex]').addEventListener('click', () => {
+    const on = (Number(store.get().settings.flexBand) || 0) > 0;
+    store.saveSettings({ flexBand: on ? 0 : 10 });
+    toast(on ? 'Flexbereich deaktiviert' : 'Flexbereich aktiviert');
+    haptic();
+  });
+  root.querySelector('[data-flexband]')?.addEventListener('click', () => openFlexBandSheet(root));
+  root.querySelector('[data-minimal]').addEventListener('click', () => {
+    const next = !store.get().settings.minimalMode;
+    store.saveSettings({ minimalMode: next });
+    toast(next ? 'Minimalmodus aktiviert' : 'Minimalmodus deaktiviert');
+    haptic();
+  });
   root.querySelector('[data-ai]').addEventListener('click', () => openAiSettings(root));
   root.querySelector('[data-aitest]').addEventListener('click', (e) => testAi(e.currentTarget));
   root.querySelector('[data-recipes]').addEventListener('click', () => {
@@ -374,6 +448,58 @@ function openStepGoalSheet(root) {
     const goal = Math.min(50000, Math.max(1000, Math.round(Number(input.value) || 8000)));
     store.saveSettings({ stepGoal: goal });
     toast('Schrittziel gespeichert');
+    sheet.close();
+    renderProfile(root);
+  });
+}
+
+/* ---------------- Flexbereich ---------------- */
+
+function openFlexBandSheet(root) {
+  const state = store.get();
+  const current = Math.max(0, Number(state.settings.flexBand) || 0);
+  const kcal = state.targets.kcal || 0;
+  const options = [
+    { value: 0, label: 'Aus', sub: 'Das Ziel zählt exakt' },
+    { value: 5, label: '±5 %', sub: 'Enger Spielraum' },
+    { value: 10, label: '±10 %', sub: 'Empfohlen' },
+    { value: 15, label: '±15 %', sub: 'Großer Spielraum' },
+  ];
+
+  const body = document.createElement('div');
+  body.innerHTML = `
+    <p class="small muted" style="margin-bottom:14px">Wie viel Spielraum um dein Kalorienziel als „im Rahmen“ gilt. Innerhalb des Bereichs bleibt alles neutral – ohne rote Zahlen.</p>
+    ${options.map((o) => {
+      const low = Math.round(kcal * (1 - o.value / 100));
+      const high = Math.round(kcal * (1 + o.value / 100));
+      const range = o.value && kcal ? `${fmt(low)}–${fmt(high)} kcal` : '';
+      return `<button class="choice" data-band="${o.value}" aria-pressed="${current === o.value}">
+        <span class="ico">${o.value ? '±' + o.value + ' %' : '–'}</span>
+        <span class="grow">
+          <span class="t">${o.label}</span>
+          <span class="s">${o.sub}${range ? ` · ${range}` : ''}</span>
+        </span>
+        <span class="dot"></span>
+      </button>`;
+    }).join('')}
+  `;
+
+  const sheet = openSheet({
+    title: 'Flexbereich',
+    body,
+    footer: '<button class="btn btn-primary btn-block" data-save>Übernehmen</button>',
+  });
+
+  let choice = current;
+  body.querySelectorAll('[data-band]').forEach((b) => b.addEventListener('click', () => {
+    choice = Number(b.dataset.band);
+    body.querySelectorAll('[data-band]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+
+  sheet.foot?.querySelector('[data-save]')?.addEventListener('click', () => {
+    store.saveSettings({ flexBand: choice });
+    toast(choice ? `Flexbereich ±${choice} %` : 'Flexbereich deaktiviert');
+    haptic();
     sheet.close();
     renderProfile(root);
   });
