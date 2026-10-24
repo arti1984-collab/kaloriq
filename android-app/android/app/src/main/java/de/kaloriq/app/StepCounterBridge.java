@@ -42,9 +42,11 @@ public class StepCounterBridge implements SensorEventListener {
     private final WebView webView;
     private final SensorManager sensorManager;
     private final Sensor stepSensor;
+    private final Sensor stepDetector;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private boolean listening = false;
+    private boolean detectorListening = false;
     private long lastValue = -1;
     private long lastSensorAt = -1;
     private long lastSensorWall = -1;
@@ -70,10 +72,13 @@ public class StepCounterBridge implements SensorEventListener {
         this.webView = webView;
         this.sensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
         Sensor sensor = null;
+        Sensor detector = null;
         if (sensorManager != null) {
             sensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+            detector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
         }
         this.stepSensor = sensor;
+        this.stepDetector = detector;
     }
 
     /* ---------------- JS-API ---------------- */
@@ -124,6 +129,16 @@ public class StepCounterBridge implements SensorEventListener {
         if (listening) {
             stopListening();
             registerListener();
+        }
+    }
+
+    /** Im Hintergrund braucht die Live-Anzeige keine Schrittereignisse.
+     *  Der Hardware-Zähler läuft ohnehin weiter; beim nächsten Resume wird
+     *  der aktuelle Stand nachgelesen. */
+    public void onPause() {
+        if (sensorManager != null && detectorListening && stepDetector != null) {
+            sensorManager.unregisterListener(this, stepDetector);
+            detectorListening = false;
         }
     }
 
@@ -183,6 +198,12 @@ public class StepCounterBridge implements SensorEventListener {
             sensorManager.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_UI);
             listening = true;
         }
+        if (stepDetector != null && !detectorListening) {
+            // Liefert ein Ereignis pro Schritt. Nur für die Live-Anzeige;
+            // die eigentliche Zählung bleibt der kumulative STEP_COUNTER.
+            sensorManager.registerListener(this, stepDetector, SensorManager.SENSOR_DELAY_UI);
+            detectorListening = true;
+        }
         // Nach einem Neustart der App oder einem Reload der Seite den letzten
         // bekannten Stand sofort an die Web-App melden – aber nur, wenn er
         // frisch ist. Ein tagelang zwischengespeicherter Wert würde sonst als
@@ -196,10 +217,11 @@ public class StepCounterBridge implements SensorEventListener {
     }
 
     private void stopListening() {
-        if (listening && sensorManager != null) {
+        if (sensorManager != null && (listening || detectorListening)) {
             sensorManager.unregisterListener(this);
         }
         listening = false;
+        detectorListening = false;
         mainHandler.removeCallbacks(emitPending);
         emitScheduled = false;
         pendingValue = -1;
@@ -207,6 +229,12 @@ public class StepCounterBridge implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
+            if (detectorListening) {
+                emitStepPulse();
+            }
+            return;
+        }
         if (event.sensor.getType() != Sensor.TYPE_STEP_COUNTER) {
             return;
         }
@@ -245,6 +273,19 @@ public class StepCounterBridge implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // Nicht relevant: TYPE_STEP_COUNTER liefert eine feste Zählung.
+    }
+
+    /** Meldet einen einzelnen Schritt für die Live-Anzeige (ohne Zählung). */
+    private void emitStepPulse() {
+        webView.post(() -> {
+            if (destroyed || !detectorListening) {
+                return;
+            }
+            webView.evaluateJavascript(
+                "window.__kaloriqStepPulse&&window.__kaloriqStepPulse();",
+                null
+            );
+        });
     }
 
     /** Meldet Status und Zählerstand an {@code window.__kaloriqNativeSteps}. */

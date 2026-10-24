@@ -28,9 +28,11 @@ const NATIVE_STALE_MS = 5 * 60 * 1000;
 let running = false;
 let detector = null;
 let pending = 0;
+let nativePending = 0;
 let flushTimer = null;
 let lastEventAt = 0;
 let nativeState = 'idle';
+let activeMode = 'none';
 
 /* ---------------- Betriebsart ---------------- */
 
@@ -83,7 +85,7 @@ export function isCounting() {
 
 /** Noch nicht gespeicherte Schritte (für die Live-Anzeige). */
 export function pendingSteps() {
-  return pending;
+  return pending + nativePending;
 }
 
 /* ---------------- Erkennung ----------------
@@ -167,12 +169,14 @@ function syncNativeCounter(value) {
 
   // Erster Start: nur den Ausgangsstand merken, nichts addieren.
   if (!base || !Number.isFinite(base.value) || typeof base.date !== 'string') {
+    nativePending = 0;
     setStepCounter({ date: today, value, ts: now });
     return false;
   }
 
   // Geräteneustart oder Sensor-Reset: Zähler beginnt wieder bei 0.
   if (value < base.value) {
+    nativePending = 0;
     setStepCounter({ date: today, value, ts: now });
     return false;
   }
@@ -192,11 +196,16 @@ function syncNativeCounter(value) {
   // welchen Tag entfallen. Nur bei kurzer Lücke den Tag übernehmen, sonst
   // den Stand neu setzen (keine willkürliche Verteilung).
   if (base.date !== today && gapHours > NATIVE_GAP_HOURS) {
+    nativePending = 0;
     setStepCounter({ date: today, value, ts: now });
     return false;
   }
 
   applyNativeSteps(today, delta, { date: today, value, ts: now });
+  // Die Live-Schritte aus TYPE_STEP_DETECTOR sind jetzt im kumulativen
+  // Zähler enthalten. Nur den bereits verbuchten Anteil abziehen, damit
+  // die Anzeige nicht springt und nichts doppelt gezählt wird.
+  nativePending = Math.max(0, nativePending - delta);
   return true;
 }
 
@@ -219,12 +228,16 @@ function onNativeStatus(data) {
 
   if (status === 'stopped') {
     running = false;
+    activeMode = 'none';
+    nativePending = 0;
     notify();
     return;
   }
 
   if (status === 'denied' || status === 'unavailable') {
     running = false;
+    activeMode = 'none';
+    nativePending = 0;
     setEnabled(false);
     emitStatus(status);
     notify();
@@ -233,6 +246,14 @@ function onNativeStatus(data) {
 
 if (typeof window !== 'undefined') {
   window.__kaloriqNativeSteps = onNativeStatus;
+  // Einzelner Schritt vom TYPE_STEP_DETECTOR: sofort für die Live-Anzeige
+  // zählen. Der kumulative Zähler bleibt für Speicherung und Hintergrund
+  // zuständig und verrechnet diesen Live-Wert beim nächsten Update.
+  window.__kaloriqStepPulse = () => {
+    if (!running || activeMode !== 'native') return;
+    nativePending += 1;
+    notify();
+  };
 }
 
 /* ---------------- DeviceMotion (Fallback) ---------------- */
@@ -281,11 +302,14 @@ export async function startSteps() {
   const native = nativeBridge();
   if (native) {
     running = true;
+    activeMode = 'native';
+    nativePending = 0;
     setEnabled(true);
     try {
       native.start();
     } catch {
       running = false;
+      activeMode = 'none';
       setEnabled(false);
       return false;
     }
@@ -300,6 +324,7 @@ export async function startSteps() {
 
   detector = createStepDetector();
   pending = 0;
+  activeMode = 'motion';
   lastEventAt = performance.now();
   window.addEventListener('devicemotion', onMotion, { passive: true });
   running = true;
@@ -313,6 +338,8 @@ export function stopSteps() {
   if (native) {
     try { native.stop(); } catch { /* egal */ }
     running = false;
+    activeMode = 'none';
+    nativePending = 0;
     setEnabled(false);
     notify();
     return;
@@ -322,6 +349,7 @@ export function stopSteps() {
   window.removeEventListener('devicemotion', onMotion);
   flushSteps();
   running = false;
+  activeMode = 'none';
   detector = null;
   setEnabled(false);
   notify();

@@ -91,7 +91,9 @@ als 2×2-Montage (`uebersicht.png`).
   zählt auch bei geschlossener App weiter; beim nächsten Öffnen trägt Kaloriq
   die Differenz nach. Die Anzeige aktualisiert sich mindestens alle
   0,5 Sekunden, beim Zurückkehren aus dem Hintergrund sofort mit dem
-  aktuellen Stand.
+  aktuellen Stand. Für die Live-Anzeige wird zusätzlich
+  `TYPE_STEP_DETECTOR` genutzt (ein Ereignis pro Schritt); gespeichert wird
+  weiterhin der kumulative Zähler, damit nichts doppelt zählt.
 - Tageswechsel, Neustart des Geräts und lange Pausen (> 20 h) werden
   abgefangen; **veraltete Sensorwerte** (älter als 5 Minuten) werden ignoriert,
   damit keine falschen Schritte entstehen.
@@ -299,6 +301,7 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 | Version | Schwerpunkt |
 |---|---|
+| **1.2.8** | Live-Schritte über `TYPE_STEP_DETECTOR`, Zählung bleibt kumulativ |
 | **1.2.7** | Schrittzähler reagiert schneller (500 ms, Sofortwert nach Resume) |
 | **1.2.6** | Minimalmodus und Flexbereich gegen Perfektionsdruck |
 | **1.2.5** | TikTok-Link im Profil und auf der GitHub-Projektseite |

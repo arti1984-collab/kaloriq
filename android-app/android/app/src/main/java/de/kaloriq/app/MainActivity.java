@@ -32,6 +32,14 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        if (stepCounter != null) {
+            stepCounter.onPause();
+        }
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // Unsere Berechtigung zuerst behandeln, danach die Capacitor-Plugins.
         if (stepCounter != null) {

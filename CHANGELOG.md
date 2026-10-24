@@ -47,6 +47,30 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.2.8] – 24.10.2026
+
+### Hinzugefügt
+
+- **Live-Schrittanzeige:** Die APK registriert zusätzlich den
+  `TYPE_STEP_DETECTOR` (ein Ereignis pro Schritt) und zeigt neue Schritte
+  sofort in der App an. Gespeichert wird weiterhin ausschließlich der
+  kumulative `TYPE_STEP_COUNTER`; der Live-Puffer wird beim nächsten
+  Zähler-Update verrechnet, damit nichts doppelt gezählt wird.
+
+### Geändert
+
+- Der Detektor wird im Hintergrund abgemeldet und beim Zurückkehren neu
+  registriert. Das spart Energie und verhindert veraltete Live-Werte.
+- Beim Stoppen oder bei fehlender Berechtigung wird der Live-Puffer
+  zurückgesetzt; die bereits gespeicherten Schritte bleiben unverändert.
+
+### Veröffentlicht
+
+- Service-Worker-Cache `kaloriq-v25`, Android `versionName 1.2.8` /
+  `versionCode 10208`; signierte APK als GitHub-Release `v1.2.8`.
+
+---
+
 ## [1.2.7] – 24.10.2026
 
 ### Behoben

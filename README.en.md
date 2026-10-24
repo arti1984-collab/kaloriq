@@ -90,6 +90,8 @@ as a 2×2 montage (`uebersicht.png`).
   keeps counting while the app is closed; the next time you open Kaloriq, it
   adds the difference. The display refreshes at least every 0.5 seconds and
   shows the current reading immediately when returning from the background.
+  For the live display, `TYPE_STEP_DETECTOR` is used as well (one event per
+  step); storage still uses the cumulative counter so nothing is counted twice.
 - Day changes, device restarts and long pauses (> 20 h) are handled;
   **stale sensor values** (older than 5 minutes) are ignored to avoid incorrect
   step counts.
@@ -295,6 +297,7 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.2.8** | Live steps via `TYPE_STEP_DETECTOR`, counting stays cumulative |
 | **1.2.7** | Step counter responds faster (500 ms, immediate value after resume) |
 | **1.2.6** | Minimal mode and flex range against perfection pressure |
 | **1.2.5** | TikTok link in the profile and on the GitHub project page |
