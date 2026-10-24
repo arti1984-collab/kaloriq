@@ -1,7 +1,7 @@
 /* ============================================================
    Kaloriq – Profil & Einstellungen
    ============================================================ */
-import { store, exportJson, importJson, todayKey, streak, listBackups, backupNow, restoreBackup } from '../store.js';
+import { store, exportJson, importJson, todayKey, streak, streakInfo, listBackups, backupNow, restoreBackup } from '../store.js';
 import { ACTIVITY, GOALS, MACRO_PRESETS, computeTargets, projection, round1, bmi, bmiCategory, flexStatus } from '../calc.js';
 import {
   esc, fmt, icon, toast, openSheet, confirmDialog, downloadFile, haptic,
@@ -22,6 +22,8 @@ export function renderProfile(root) {
   const flexBand = Math.max(0, Number(state.settings.flexBand) || 0);
   const flexOn = flexBand > 0;
   const flexRange = flexStatus(t.kcal, t.kcal, flexBand);
+  const grace = streakInfo();
+  const graceUsedMonth = Math.min(grace.graceUsedThisMonth, grace.limit);
   const backups = listBackups();
   const backupSub = backups.length
     ? `${backups.length} ${backups.length === 1 ? 'Stand' : 'Stände'} · automatisch alle 12 Std.`
@@ -125,6 +127,16 @@ export function renderProfile(root) {
         </span>
         <span class="switch" aria-hidden="true" aria-checked="${minimal}" style="pointer-events:none"></span>
       </button>
+      <button class="row" data-grace>
+        <span class="grow">
+          <span class="t">Gnaden-Tage</span>
+          <span class="s">${grace.limit
+            ? `${graceUsedMonth} von ${grace.limit} diesen Monat genutzt`
+            : 'Aus · ein leerer Tag bricht die Serie'}</span>
+        </span>
+        <span class="v">${grace.limit ? `${grace.graceRemaining} übrig` : '–'}</span>
+        ${icon('chev', 'chev')}
+      </button>
     </section>
 
     <div class="section-title">KI-Tracking</div>
@@ -217,6 +229,7 @@ export function renderProfile(root) {
     toast(next ? 'Minimalmodus aktiviert' : 'Minimalmodus deaktiviert');
     haptic();
   });
+  root.querySelector('[data-grace]').addEventListener('click', () => openGraceSheet(root));
   root.querySelector('[data-ai]').addEventListener('click', () => openAiSettings(root));
   root.querySelector('[data-aitest]').addEventListener('click', (e) => testAi(e.currentTarget));
   root.querySelector('[data-recipes]').addEventListener('click', () => {
@@ -499,6 +512,61 @@ function openFlexBandSheet(root) {
   sheet.foot?.querySelector('[data-save]')?.addEventListener('click', () => {
     store.saveSettings({ flexBand: choice });
     toast(choice ? `Flexbereich ±${choice} %` : 'Flexbereich deaktiviert');
+    haptic();
+    sheet.close();
+    renderProfile(root);
+  });
+}
+
+/* ---------------- Gnaden-Tage ---------------- */
+
+function openGraceSheet(root) {
+  const info = streakInfo();
+  const current = info.limit;
+  const options = [
+    { value: 0, label: 'Aus', sub: 'Ein leerer Tag bricht die Serie' },
+    { value: 1, label: '1 pro Monat', sub: 'Eine bewusste Auszeit' },
+    { value: 2, label: '2 pro Monat', sub: 'Empfohlen · ein Wochenende flexibel' },
+    { value: 3, label: '3 pro Monat', sub: 'Großzügiger Spielraum' },
+  ];
+
+  const body = document.createElement('div');
+  body.innerHTML = `
+    <p class="small muted" style="margin-bottom:14px">Ein Gnaden-Tag hält deine Serie am Leben, wenn du an einem Tag nichts einträgst. Sie werden automatisch verbraucht und gelten pro Kalendermonat – ohne Punkte, ohne Strafe.</p>
+    <div class="card" style="padding:14px;margin-bottom:14px">
+      <div class="hstack" style="justify-content:space-between">
+        <span class="small" style="font-weight:620">Aktuelle Serie</span>
+        <span class="pill">${info.count} ${info.count === 1 ? 'Tag' : 'Tage'}</span>
+      </div>
+      <p class="tiny muted" style="margin-top:6px">${info.limit
+        ? `${Math.min(info.graceUsedThisMonth, info.limit)} von ${info.limit} Gnaden-Tagen diesen Monat genutzt.`
+        : 'Gnaden-Tage sind ausgeschaltet.'}</p>
+    </div>
+    ${options.map((o) => `<button class="choice" data-grace-value="${o.value}" aria-pressed="${current === o.value}">
+      <span class="ico">${o.value ? o.value : '–'}</span>
+      <span class="grow">
+        <span class="t">${o.label}</span>
+        <span class="s">${o.sub}</span>
+      </span>
+      <span class="dot"></span>
+    </button>`).join('')}
+  `;
+
+  const sheet = openSheet({
+    title: 'Gnaden-Tage',
+    body,
+    footer: '<button class="btn btn-primary btn-block" data-save>Übernehmen</button>',
+  });
+
+  let choice = current;
+  body.querySelectorAll('[data-grace-value]').forEach((b) => b.addEventListener('click', () => {
+    choice = Number(b.dataset.graceValue);
+    body.querySelectorAll('[data-grace-value]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+
+  sheet.foot?.querySelector('[data-save]')?.addEventListener('click', () => {
+    store.saveSettings({ graceDaysPerMonth: choice });
+    toast(choice ? `${choice} Gnaden-Tag${choice === 1 ? '' : 'e'} pro Monat` : 'Gnaden-Tage deaktiviert');
     haptic();
     sheet.close();
     renderProfile(root);

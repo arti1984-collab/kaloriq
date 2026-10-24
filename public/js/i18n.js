@@ -572,6 +572,20 @@ const EN = {
   'kcal im Spielraum': 'kcal within range',
   'Der Flexbereich lässt einzelne Tage schwanken – die Woche zählt.':
     'The flex range lets individual days vary – the week is what counts.',
+
+  // Gnaden-Tage
+  'Gnaden-Tage': 'Grace days',
+  'Aus · ein leerer Tag bricht die Serie': 'Off · a blank day breaks the streak',
+  'Gnaden-Tage deaktiviert': 'Grace days disabled',
+  'Ein Gnaden-Tag hält deine Serie am Leben, wenn du an einem Tag nichts einträgst. Sie werden automatisch verbraucht und gelten pro Kalendermonat – ohne Punkte, ohne Strafe.':
+    'A grace day keeps your streak alive when you don’t log anything on a day. They are used automatically and apply per calendar month – no points, no penalty.',
+  'Aktuelle Serie': 'Current streak',
+  'Aus': 'Off',
+  'Ein leerer Tag bricht die Serie': 'A blank day breaks the streak',
+  'Eine bewusste Auszeit': 'A deliberate break',
+  'Empfohlen · ein Wochenende flexibel': 'Recommended · one flexible weekend',
+  'Großzügiger Spielraum': 'Generous leeway',
+  'Gnaden-Tage sind ausgeschaltet.': 'Grace days are turned off.',
 };
 
 /* ---------------- Lebensmittel (Datenbanknamen) ---------------- */
@@ -841,6 +855,15 @@ const RULES = [
   [/^Flexbereich ±(\d+) %$/, 'Flex range ±$1%'],
   [/^Ziel ±(\d+) %: ([\d.,]+)–([\d.,]+) kcal$/, 'Goal ±$1%: $2–$3 kcal'],
   [/^([\d.,]+) kcal Richtwert$/, '$1 kcal guide'],
+  [/^(\d+) von (\d+) diesen Monat genutzt$/,
+    '$1 of $2 used this month'],
+  [/^(\d+) von (\d+) Gnaden-Tagen diesen Monat genutzt\.$/,
+    '$1 of $2 grace days used this month.'],
+  [/^(\d+) übrig$/, '$1 left'],
+  [/^1 Gnaden-Tag pro Monat$/, '1 grace day per month'],
+  [/^(\d+) Gnaden-Tage pro Monat$/, '$1 grace days per month'],
+  [/^(\d+) (Tag|Tage)$/, (m) => `${m[1]} ${m[1] === '1' ? 'day' : 'days'}`],
+  [/^(\d+) pro Monat$/, '$1 per month'],
 ];
 
 /* ---------------- Übersetzen ---------------- */

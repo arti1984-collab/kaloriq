@@ -204,6 +204,9 @@ function defaultState() {
       flexBand: 10,
       // Minimalmodus: Kalorienziel, Ring und Makros ausblenden.
       minimalMode: false,
+      // Gnaden-Tage: So viele leere Tage pro Kalendermonat brechen die
+      // Serie nicht (0 = aus).
+      graceDaysPerMonth: 2,
       // Letzter Stand des Geräte-Schrittsensors (kumulativ seit Neustart).
       // { date: 'YYYY-MM-DD', value: number, ts: number } oder null.
       stepCounter: null,
@@ -625,20 +628,78 @@ export function weekSummary() {
   };
 }
 
-/** Anzahl aufeinanderfolgender Tage mit Einträgen (endet heute oder gestern). */
-export function streak() {
-  let count = 0;
-  let key = todayKey();
-  const hasToday = (state.days[key]?.entries?.length || 0) > 0;
-  if (!hasToday) key = addDays(key, -1);
-  for (let i = 0; i < 400; i++) {
+/** Erlaubte Gnaden-Tage pro Kalendermonat (0–5). */
+export function graceDaysPerMonth() {
+  return clamp(Math.round(Number(state.settings.graceDaysPerMonth) || 0), 0, 5);
+}
+
+/**
+ * Serie mit Gnaden-Tagen.
+ *
+ * Ein Gnaden-Tag ist ein Tag ohne Einträge, der die Serie nicht bricht.
+ * Pro Kalendermonat stehen `settings.graceDaysPerMonth` zur Verfügung.
+ * Verbraucht werden sie nur, wenn der Tag tatsächlich eine Lücke zwischen
+ * zwei Einträgen überbrückt – eine folgenlose Pause ohne Einträge zählt
+ * also nicht als verbraucht.
+ *
+ * Rückgabe:
+ *   count               – aufeinanderfolgende Tage mit Einträgen
+ *   limit               – erlaubte Gnaden-Tage pro Monat
+ *   graceUsed           – verbrauchte Gnaden-Tage in der aktuellen Serie
+ *   graceUsedThisMonth  – davon im aktuellen Kalendermonat
+ *   graceRemaining      – noch verfügbar in diesem Monat
+ */
+export function streakInfo() {
+  const limit = graceDaysPerMonth();
+  const logged = (key) => {
     const day = state.days[key];
-    if (day && day.entries && day.entries.length > 0) {
+    return Boolean(day && Array.isArray(day.entries) && day.entries.length > 0);
+  };
+
+  let key = todayKey();
+  // Heute darf noch leer sein, ohne die Serie zu unterbrechen (der Tag läuft
+  // ja noch). Ab gestern zählen Lücken – dort greifen die Gnaden-Tage.
+  if (!logged(key)) key = addDays(key, -1);
+
+  let count = 0;
+  const used = Object.create(null);
+  let pending = [];
+
+  for (let i = 0; i < 800; i++) {
+    if (logged(key)) {
+      // Erst wenn nach einer Lücke wieder ein Eintrag folgt, ist der
+      // Gnaden-Tag wirklich verbraucht.
+      for (const month of pending) used[month] = (used[month] || 0) + 1;
+      pending = [];
       count++;
       key = addDays(key, -1);
-    } else break;
+      continue;
+    }
+
+    if (limit <= 0) break;
+    const month = key.slice(0, 7);
+    const projected = (used[month] || 0)
+      + pending.reduce((n, m) => n + (m === month ? 1 : 0), 0);
+    if (projected >= limit) break;
+    pending.push(month);
+    key = addDays(key, -1);
   }
-  return count;
+
+  const month = todayKey().slice(0, 7);
+  const graceUsed = Object.values(used).reduce((a, n) => a + n, 0);
+  const graceUsedThisMonth = used[month] || 0;
+  return {
+    count,
+    limit,
+    graceUsed,
+    graceUsedThisMonth,
+    graceRemaining: Math.max(0, limit - graceUsedThisMonth),
+  };
+}
+
+/** Anzahl aufeinanderfolgender Tage mit Einträgen (endet heute oder gestern). */
+export function streak() {
+  return streakInfo().count;
 }
 
 export function weightSeries() {

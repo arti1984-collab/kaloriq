@@ -47,6 +47,44 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.2.9] – 24.10.2026
+
+### Hinzugefügt
+
+- **Gnaden-Tage:** Pro Kalendermonat lassen sich **0–3** leere Tage
+  festlegen, die die Serie nicht brechen. Standard sind 2. Die Einstellung
+  liegt unter **Profil → Wohlbefinden** und zeigt, wie viele Gnaden-Tage
+  diesen Monat genutzt wurden und wie viele noch übrig sind.
+- Gnaden-Tage werden **automatisch** verbraucht, aber nur wenn sie
+  tatsächlich eine Lücke zwischen zwei Einträgen überbrücken. Eine Phase
+  ohne jegliche Einträge verbraucht keine Gnaden-Tage.
+- Alles bleibt lokal in `store.js`; die Tagesdaten selbst werden nicht
+  verändert. Es gibt keine Punkte, keine Benachrichtigungen und keine Strafe.
+  Die Einstellung wirkt sofort auf bestehende Daten und kann einzelne Lücken
+  in der aktuellen Serie bis zur Monatsgrenze überbrücken.
+
+### Geändert
+
+- `streak()` basiert jetzt auf `streakInfo()`. Tagebuch, Fortschritt und
+  Profil zeigen die Serie inklusive Gnaden-Tagen; die Monatsgrenze wird
+  berücksichtigt.
+
+### Getestet
+
+- Serie mit Lücken: Mit 2 Gnaden-Tagen bleibt die Serie über zwei leere Tage
+  erhalten; der dritte leere Tag bricht sie. Mit 1 bzw. 0 Gnaden-Tagen
+  verkürzt sich die Serie entsprechend.
+- Ohne jegliche Einträge werden keine Gnaden-Tage verbraucht.
+- Profil-Zeile und Auswahl-Sheet (de/en), Speichern, Neuladen und
+  Bestandsdaten geprüft; keine Konsolenfehler.
+
+### Veröffentlicht
+
+- Service-Worker-Cache `kaloriq-v26`, Android `versionName 1.2.9` /
+  `versionCode 10209`; signierte APK als GitHub-Release `v1.2.9`.
+
+---
+
 ## [1.2.8] – 24.10.2026
 
 ### Hinzugefügt

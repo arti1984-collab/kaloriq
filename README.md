@@ -49,6 +49,7 @@ als 2×2-Montage (`uebersicht.png`).
 | **Fasten** | 14:10 / 16:8 / 18:6 / 20:4 / 24 h, Live-Timer, Verlauf der letzten 7 Tage |
 | **Daten** | JSON-Export/-Import, automatische Sicherungen, IndexedDB-Zweitkopie, Zurücksetzen |
 | **Wohlbefinden** | Sanfter Modus mit Pause, **Minimalmodus** (ohne Ring, Ziel und Makros) und **Flexbereich** ±5–15 % – weniger Perfektionsdruck, keine roten Zahlen |
+| **Gnaden-Tage** | 0–3 leere Tage pro Monat brechen die Serie nicht – automatisch, lokal, ohne Punkte |
 | **Sprache** | Deutsch / English – Umschaltung unter **Profil → Sprache**, alle Screens sofort übersetzt |
 | **APK** | Eigene Android-App, komplett offline (`npm run apk`) – siehe [ANDROID.md](ANDROID.md) |
 
@@ -127,6 +128,10 @@ als 2×2-Montage (`uebersicht.png`).
 - **Flexbereich:** ±5 %, ±10 % oder ±15 % um den Richtwert gelten als
   „im Rahmen“. Innerhalb dieses Bereichs bleibt alles neutral, auch wenn ein
   Tag leicht über dem Ziel liegt. Abschaltbar; Standard ist ±10 %.
+- **Gnaden-Tage:** 0–3 leere Tage pro Kalendermonat brechen die Serie nicht.
+  Sie werden automatisch verbraucht, aber nur wenn sie eine Lücke zwischen
+  zwei Einträgen überbrücken. Standard sind 2; die Einstellung zeigt genutzte
+  und verbleibende Gnaden-Tage für den aktuellen Monat.
 
 ### Profil, Sprache & Daten
 
@@ -301,6 +306,7 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 | Version | Schwerpunkt |
 |---|---|
+| **1.2.9** | Gnaden-Tage: 0–3 leere Tage pro Monat brechen die Serie nicht |
 | **1.2.8** | Live-Schritte über `TYPE_STEP_DETECTOR`, Zählung bleibt kumulativ |
 | **1.2.7** | Schrittzähler reagiert schneller (500 ms, Sofortwert nach Resume) |
 | **1.2.6** | Minimalmodus und Flexbereich gegen Perfektionsdruck |

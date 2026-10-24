@@ -49,6 +49,7 @@ as a 2×2 montage (`uebersicht.png`).
 | **Fasting** | 14:10 / 16:8 / 18:6 / 20:4 / 24 h, live timer, history of the last 7 days |
 | **Data** | JSON export/import, automatic backups, IndexedDB second copy, reset |
 | **Wellbeing** | Gentle mode with pause, **minimal mode** (no ring, target or macros) and **flex range** ±5–15 % – less perfection pressure, no red numbers |
+| **Grace days** | 0–3 blank days per month don’t break the streak – automatic, local, no points |
 | **Language** | German / English – switch under **Profile → Language**, all screens translated instantly |
 | **APK** | Standalone Android app, fully offline (`npm run apk`) – see [ANDROID.md](ANDROID.md) |
 
@@ -125,6 +126,10 @@ as a 2×2 montage (`uebersicht.png`).
 - **Flex range:** ±5 %, ±10 % or ±15 % around the guide counts as “within
   range”. Inside that range everything stays neutral, even when a day is
   slightly above target. Can be switched off; default is ±10 %.
+- **Grace days:** 0–3 blank days per calendar month don’t break the streak.
+  They are used automatically, but only when they bridge a gap between two
+  logged days. Default is 2; the setting shows used and remaining grace days
+  for the current month.
 
 ### Profile, language & data
 
@@ -297,6 +302,7 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.2.9** | Grace days: 0–3 blank days per month don’t break the streak |
 | **1.2.8** | Live steps via `TYPE_STEP_DETECTOR`, counting stays cumulative |
 | **1.2.7** | Step counter responds faster (500 ms, immediate value after resume) |
 | **1.2.6** | Minimal mode and flex range against perfection pressure |
