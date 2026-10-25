@@ -10,7 +10,7 @@ Eigenständige Implementierung der Funktionen bekannter Kalorien-Tracker. Keine 
 
 Folge Kaloriq auf [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
-![Kaloriq – Tagebuch, Fortschritt, Fasten und Profil](docs/screenshots/uebersicht.png)
+![Kaloriq – Tagebuch, Fortschritt, Fasten und Profil](docs/screenshots/uebersicht.png?v=1.4.0)
 
 > Screenshots mit Demo-Daten im hellen Design. Die App folgt automatisch dem Systemdesign (hell/dunkel).
 
@@ -20,11 +20,11 @@ Folge Kaloriq auf [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
 | Tagebuch | Fortschritt |
 |---|---|
-| [![Tagebuch](docs/screenshots/tagebuch.png)](docs/screenshots/tagebuch.png) | [![Fortschritt](docs/screenshots/fortschritt.png)](docs/screenshots/fortschritt.png) |
+| [![Tagebuch](docs/screenshots/tagebuch.png?v=1.4.0)](docs/screenshots/tagebuch.png) | [![Fortschritt](docs/screenshots/fortschritt.png?v=1.4.0)](docs/screenshots/fortschritt.png) |
 
 | Fasten | Profil |
 |---|---|
-| [![Fasten](docs/screenshots/fasten.png)](docs/screenshots/fasten.png) | [![Profil](docs/screenshots/profil.png)](docs/screenshots/profil.png) |
+| [![Fasten](docs/screenshots/fasten.png?v=1.4.0)](docs/screenshots/fasten.png) | [![Profil](docs/screenshots/profil.png?v=1.4.0)](docs/screenshots/profil.png) |
 
 Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzelansicht und
 als 2×2-Montage (`uebersicht.png`).
