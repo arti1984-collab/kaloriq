@@ -5,6 +5,7 @@
    ============================================================ */
 import { computeTargets, round1, clamp } from './calc.js';
 import { locale } from './i18n.js';
+import { DEFAULT_MODEL, isFreeModel } from './models.js';
 
 const KEY = 'kaloriq.state.v1';
 const LISTENERS = new Set();
@@ -191,9 +192,7 @@ function defaultState() {
     recipes: [],
     settings: {
       apiKey: '',
-      model: 'gemini-3.8-flash',
-      proxy: false,
-      useProxy: false,
+      model: DEFAULT_MODEL,
       keepScreenOn: false,
       haptics: true,
       lang: 'de',
@@ -287,6 +286,11 @@ function migrate(raw) {
   if (!['g', 'hand'].includes(settings.portionMode)) settings.portionMode = 'g';
   if (typeof settings.reminderEnabled !== 'boolean') settings.reminderEnabled = false;
   if (!/^\d{2}:\d{2}$/.test(settings.reminderTime || '')) settings.reminderTime = '18:00';
+  // Nur Free-Tier-Modelle zulassen; alte oder bezahlte Namen fallen zurück.
+  if (!isFreeModel(settings.model)) settings.model = DEFAULT_MODEL;
+  // Der frühere Server-Proxy entfällt: Jede Person nutzt ihren eigenen Key.
+  delete settings.proxy;
+  delete settings.useProxy;
   for (const [k, v] of Object.entries(state.days)) {
     state.days[k] = { ...emptyDay(k), ...(v || {}) };
     if (!Array.isArray(state.days[k].entries)) state.days[k].entries = [];

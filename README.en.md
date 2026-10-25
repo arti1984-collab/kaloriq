@@ -6,7 +6,7 @@ Calorie, macro and fasting tracker with AI photo recognition – as an installab
 
 An independent implementation of the features of well-known calorie trackers. No third-party brands or assets, no cloud: **all data stays on the device.** The barcode scanner uses ZXing (Apache-2.0) – natively in the Android APK and as a locally bundled JavaScript library in Safari/Firefox – see [third-party notices](THIRD_PARTY_NOTICES.md).
 
-**Current version: 1.4.2** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.4.2) · [Changelog](CHANGELOG.md)
+**Current version: 1.4.3** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.4.3) · [Changelog](CHANGELOG.md)
 
 Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
@@ -47,7 +47,7 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
 | **Diary** | Breakfast / lunch / dinner / snacks, daily ring, macro bars, edit & delete entries, browse days, streak |
 | **Food search** | Over 200 local foods (offline, reference values per 100 g) + Open Food Facts on request |
 | **Barcode** | Camera scan in the APK (native ZXing scanner), in Chrome (`BarcodeDetector`) and in Safari/Firefox (ZXing JS), or type the number → Open Food Facts |
-| **AI tracking** | Photo **or** text → Gemini estimates ingredients, grams, calories & macros. Every item editable, individual items can be deselected |
+| **AI tracking** | Photo **or** text → Gemini estimates ingredients, grams, calories & macros. Every item editable, individual items can be deselected. Own key, free-tier models only |
 | **Custom foods** | With nutrition values per 100 g + optional serving, stored permanently |
 | **Recipes** | Your own recipes with ingredients and nutrition per 100 g, servings, tags and preparation; add a serving to the diary, JSON import/export |
 | **Water** | Free input in **ml or liters**, quick values (+250 ml … +1 l), daily progress, goal based on weight |
@@ -206,8 +206,8 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
 - **System reminder (APK):** Optional and off by default. A daily Android
   notification at your chosen time; the in-app reminder remains the fallback in
   the PWA.
-- Gemini key stored locally or used via the server proxy; load the model list
-  directly from the Google API.
+- Free-tier models only, one own key per person (no server proxy); the model
+  list is deliberately limited to free models.
 
 ---
 
@@ -311,21 +311,23 @@ If the app should be free for everyone, the PWA is the direct route: no App Stor
 
 ## Setting up AI (Google Gemini)
 
-1. Create a key: <https://aistudio.google.com/apikey> (the free tier is enough for testing).
-2. In the app: **Profile → Connect Gemini** → paste the key → save.
-3. Model: the default is `gemini-3.8-flash`. Next to the model field, **"Load"** asks Google which models your key can actually use and fills in the best available one.
+Everyone uses their **own key** – there is no shared server key.
 
-> **Important:** Model names become outdated. Older models such as `gemini-2.5-flash` are blocked for **new** API keys ("model not found"). In that case the app automatically switches to an enabled model; alternatively, tap "Load" in the settings and choose a model from the list.
+1. Create a key: <https://aistudio.google.com/apikey> (free).
+2. In the app: **Profile → Connect Gemini** → paste the key → save.
+3. Choose a model: the app only offers **models with a free tier** –
+   `gemini-3.8-flash` (default), `gemini-3.6-flash`, `gemini-3.5-flash-lite`
+   and `gemini-3.1-flash-lite`. Paid models are deliberately not selectable.
+
+> **Important:** Stay on the free tier. If the limit is reached, the app says
+> “Limit reached” – wait a moment instead of choosing a paid model. If a model
+> is not enabled for your key, the app automatically switches to another
+> **free** model from the list.
 
 Without a key, AI estimation runs in **demo mode**: it looks up the named foods in the local database and clearly marks the result as a demo. This is only intended for trying out the interface.
 
-**Keep the key secret?** If the server is started with the key, it stays on the computer and the app uses it through a proxy:
-
-```powershell
-$env:GEMINI_API_KEY="AIza…"; npm start
-```
-
-The app detects this automatically (Profile → "Server proxy: available"). On a phone without a running server, the key is stored locally – that's fine for personal use, but any device with access can read it.
+The key is stored **only on the device** and sent directly to Google. Anyone
+with access to the device can read it – use your own, unshared key.
 
 ---
 
@@ -480,6 +482,7 @@ public/
     recipes.js          Recipe model, nutrition math, JSON import/export
     i18n.js             Language switching (dictionary, patterns, DOM translation)
     ai.js               Gemini calls, image resizing, demo mode
+    models.js           allowed free-tier models (fixed list)
     ui.js               Sheets (with back button), toasts, charts, icons
     pause.js            Pause mode (today, several days, open end)
     checkin.js          Hunger/satiety check per meal

@@ -94,7 +94,7 @@ Updates mit demselben Schlüssel). Ein Backup liegt im Projekt-ZIP.
 | Punkt | APK |
 |---|---|
 | Offline | ✅ alles lokal in der APK, auch ohne Netz |
-| KI-Schätzung | ✅ direkt zu Google mit deinem Key (kein Server-Proxy) |
+| KI-Schätzung | ✅ direkt zu Google mit deinem eigenen Key (kein Server-Proxy), nur Free-Tier-Modelle |
 | Key-Speicherung | auf dem Gerät (Profil → KI-Tracking) |
 | Barcode-Scan | ✅ nativer ZXing-Scanner (Kamera, offline) – zusätzlich bleibt die Nummer eintippbar |
 | Schrittzähler | ✅ Gerätesensor (`TYPE_STEP_COUNTER`) – trägt Schritte aus der Zeit mit geschlossener App beim nächsten Öffnen nach |

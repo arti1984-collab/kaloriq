@@ -354,15 +354,15 @@ const EN = {
   'Aktiv': 'Active',
   'verbunden': 'connected',
   'nicht aktiv': 'not active',
-  'Server-Proxy': 'Server proxy',
-  'Läuft die App ohne Server (z. B. installiert), wird der Key direkt auf dem Gerät gespeichert und an Google gesendet.':
-    'Without a server (e.g. installed app), the key is stored on the device and sent directly to Google.',
+  'Jeder nutzt seinen eigenen Key – es gibt keinen geteilten Server-Key. Der Key bleibt auf diesem Gerät und geht nur an Google.':
+    'Everyone uses their own key – there is no shared server key. The key stays on this device and only goes to Google.',
+  'Nur Modelle mit kostenlosem Free-Tier. Bezahlte Modelle sind bewusst nicht wählbar.':
+    'Only models with a free tier. Paid models are deliberately not selectable.',
+  'Google Gemini · Free-Tier': 'Google Gemini · free tier',
+  'Demo-Modus ohne Key': 'Demo mode without key',
   'Der Key wird nur lokal gespeichert. Wer Zugriff aufs Gerät hat, kann ihn lesen – nutze am besten einen eigenen, nicht geteilten Key.':
     'The key is stored only on this device. Anyone with access can read it – use your own, unshared key.',
   'Kostenlos unter aistudio.google.com/apikey erstellen.': 'Create one for free at aistudio.google.com/apikey.',
-  'Tippe auf „Laden“ – dann erscheint hier eine echte Auswahlliste mit allen Modellen deines Keys.':
-    'Tap “Load” to see every model your key can use.',
-  'z. B. gemini-3.8-flash': 'e.g. gemini-3.8-flash',
   'Google Gemini': 'Google Gemini',
   'Auf dem Handy installieren': 'Install on phone',
   'Als App mit eigenem Icon': 'As an app with its own icon',
@@ -473,10 +473,11 @@ const EN = {
   'Die KI hat keine Antwort geliefert. Bitte erneut versuchen.': 'The AI returned no answer. Please try again.',
   'Antwort konnte nicht gelesen werden. Bitte erneut versuchen.': 'The response could not be read. Please try again.',
   'Keine Lebensmittel erkannt. Bitte Beschreibung ergänzen.': 'No foods detected. Please add a description.',
-  'Dieses Modell ist für deinen Key nicht freigeschaltet. Bitte im Profil unter „KI-Tracking“ → „Modelle laden“ ein verfügbares Modell auswählen.':
-    'This model is not enabled for your key. Pick an available model in Profile → “AI tracking” → “Load models”.',
+  'Dieses Modell ist für deinen Key nicht freigeschaltet. Bitte im Profil unter „KI-Tracking“ ein anderes Free-Tier-Modell wählen.':
+    'This model is not enabled for your key. Pick another free-tier model in Profile → “AI tracking”.',
   'Der API-Key ist ungültig. Bitte im Profil prüfen.': 'The API key is invalid. Please check it in your profile.',
-  'Zugriff verweigert. Key-Rechte oder Abrechnung prüfen.': 'Access denied. Check the key permissions or billing.',
+  'Zugriff verweigert. Bitte einen eigenen Key verwenden und ein Free-Tier-Modell wählen.':
+    'Access denied. Use your own key and a free-tier model.',
   'Modell nicht gefunden.': 'Model not found.',
   'Limit erreicht. Bitte kurz warten (Free-Tier: Anfragen pro Minute).':
     'Limit reached. Please wait a moment (free tier: requests per minute).',
@@ -1185,6 +1186,7 @@ const RULES = [
   [/^Beim Öffnen ab (\d{2}:\d{2}) · kein Push$/, 'On open from $1 · no push'],
   [/^Erinnerung ab (\d{2}:\d{2})$/, 'Reminder from $1'],
   [/^System-Erinnerung ab (\d{2}:\d{2})$/, 'System reminder from $1'],
+  [/^Aktiv · (.+)$/, 'Active · $1'],
   [/^Version ([\d.]+) · aktuell$/, 'Version $1 · up to date'],
   [/^Version ([\d.]+) · ([\d.]+) verfügbar$/, 'Version $1 · $2 available'],
   [/^Version ([\d.]+) · was ist neu\?$/, "Version $1 · what's new?"],

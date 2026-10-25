@@ -5,7 +5,7 @@ import {
   store, addEntries, todayKey, MEALS, recentFoods, isFavoriteFood, toggleFavoriteFood, rememberFood,
 } from '../store.js';
 import { searchLocal, searchRemote, lookupBarcode, foodEmoji, customFoodFromInput } from '../foods.js';
-import { estimate, prepareImage, detectProxy } from '../ai.js';
+import { estimate, prepareImage } from '../ai.js';
 import { esc, fmt, icon, toast, openSheet, haptic } from '../ui.js';
 import { tr } from '../i18n.js';
 

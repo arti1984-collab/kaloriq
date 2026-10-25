@@ -7,7 +7,6 @@ import {
 } from './store.js';
 import { $, icon, setActiveTab, toast, toastAction, downloadFile } from './ui.js';
 import { setLang, applyI18n, watchI18n } from './i18n.js';
-import { detectProxy } from './ai.js';
 import { resumeSteps } from './steps.js';
 import { renderOnboarding } from './views/onboarding.js';
 import { renderDiary } from './views/diary.js';
@@ -214,7 +213,6 @@ async function boot() {
     }
   });
 
-  detectProxy();
   render();
   resumeSteps();
   initWidget();

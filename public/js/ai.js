@@ -1,63 +1,43 @@
 /* ============================================================
    Kaloriq – KI-Schätzung (Google Gemini, Vision + Text)
-   Der API-Key kann entweder in der App liegen (direkt) oder
-   über den lokalen Server-Proxy (/api/ai) genutzt werden.
+   Jede Person nutzt ihren eigenen API-Key. Es gibt bewusst keinen
+   Server-Proxy und keine geteilten Keys. Anfragen laufen direkt an
+   Google; erlaubt sind nur Modelle mit kostenlosem Free-Tier.
    ============================================================ */
 import { LOCAL_FOODS, norm } from './foods.js';
 import { store } from './store.js';
 import { getLang } from './i18n.js';
+import { FREE_MODELS, DEFAULT_MODEL, isFreeModel, normalizeModel } from './models.js';
 
-/** Reihenfolge: erstes Modell aus dieser Liste, das der Key wirklich anbietet. */
-export const MODEL_PREFERENCE = [
-  'gemini-3.8-flash',
-  'gemini-3.6-flash',
-  'gemini-3.5-flash-lite',
-  'gemini-3.1-flash-lite',
-  'gemini-flash-latest',
-  'gemini-2.5-flash',
-  'gemini-2.5-flash-lite',
-];
+/** Reihenfolge der erlaubten Free-Tier-Modelle. */
+export const MODEL_PREFERENCE = FREE_MODELS.map((m) => m.id);
 
-const DEFAULT_MODEL = MODEL_PREFERENCE[0];
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-
-let proxyAvailable = null;
 
 /** Filtert Modelle heraus, die keine Mahlzeiten analysieren können (Bild-, Audio-, Embedding-Modelle). */
 const NOT_CHAT = /(image|imagen|tts|live|transcribe|embedding|robotics|veo|lyria|deep-research|antigravity|computer-use|omni)/i;
 
 /**
- * Fragt beim Anbieter ab, welche Modelle dieser Key nutzen darf.
- * Das ist die einzige verlässliche Quelle – hartkodierte Modellnamen
- * veralten, sobald Google Zugänge umstellt.
+ * Fragt beim Anbieter ab, welche der erlaubten Free-Tier-Modelle dieser
+ * Key tatsächlich nutzen darf. Bezahlte Modelle werden nie zurückgegeben.
  */
-export async function listModels({ apiKey = '', useProxy = false } = {}) {
-  let payload;
+export async function listModels({ apiKey = '' } = {}) {
+  if (!apiKey) throw new Error('Bitte zuerst den API-Key eingeben.');
+  const res = await fetch(`${API_BASE}?pageSize=200`, {
+    headers: { Accept: 'application/json', 'x-goog-api-key': apiKey },
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(friendlyError(res.status, body?.error?.message));
 
-  if (useProxy) {
-    const res = await fetch('/api/ai/models', { headers: { Accept: 'application/json' } });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(body?.error || 'Modellliste konnte nicht geladen werden.');
-    payload = body;
-  } else {
-    if (!apiKey) throw new Error('Bitte zuerst den API-Key eingeben.');
-    const res = await fetch(`${API_BASE}?pageSize=200`, {
-      headers: { Accept: 'application/json', 'x-goog-api-key': apiKey },
-    });
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(friendlyError(res.status, body?.error?.message));
-    payload = {
-      models: (body.models || []).map((m) => ({
-        id: String(m.name || '').replace(/^models\//, ''),
-        label: m.displayName || '',
-        description: m.description || '',
-        methods: m.supportedGenerationMethods || [],
-      })),
-    };
-  }
+  const available = (body.models || []).map((m) => ({
+    id: String(m.name || '').replace(/^models\//, ''),
+    label: m.displayName || '',
+    description: m.description || '',
+    methods: m.supportedGenerationMethods || [],
+  }));
 
-  const models = (payload.models || [])
-    .filter((m) => m.id && /^gemini-/.test(m.id))
+  const models = available
+    .filter((m) => isFreeModel(m.id))
     .filter((m) => (Array.isArray(m.methods) ? m.methods.includes('generateContent') : true))
     .filter((m) => !NOT_CHAT.test(m.id));
 
@@ -69,7 +49,7 @@ export async function listModels({ apiKey = '', useProxy = false } = {}) {
   return models.sort((a, b) => rank(a.id) - rank(b.id) || a.id.localeCompare(b.id));
 }
 
-/** Wählt das beste verfügbare Modell (Präferenzliste, sonst erstes). */
+/** Wählt das beste verfügbare Free-Tier-Modell (Präferenzliste, sonst erstes). */
 export function pickModel(models = []) {
   if (!models.length) return null;
   for (const wanted of MODEL_PREFERENCE) {
@@ -77,25 +57,6 @@ export function pickModel(models = []) {
     if (hit) return hit.id;
   }
   return models[0].id;
-}
-
-/** Prüft einmalig, ob der lokale Server einen Key hinterlegt hat. */
-export async function detectProxy() {
-  if (proxyAvailable !== null) return proxyAvailable;
-  try {
-    const res = await fetch('/api/ai/config', { headers: { Accept: 'application/json' } });
-    if (res.ok) {
-      const data = await res.json();
-      proxyAvailable = Boolean(data.proxy);
-    } else proxyAvailable = false;
-  } catch {
-    proxyAvailable = false;
-  }
-  return proxyAvailable;
-}
-
-export function proxyStatus() {
-  return proxyAvailable;
 }
 
 const SCHEMA = {
@@ -185,7 +146,7 @@ function normalizeItems(raw) {
 function friendlyError(status, message) {
   const m = String(message || '');
   if (status === 400 && /API key/i.test(m)) return 'Der API-Key ist ungültig. Bitte im Profil prüfen.';
-  if (status === 403) return 'Zugriff verweigert. Key-Rechte oder Abrechnung prüfen.';
+  if (status === 403) return 'Zugriff verweigert. Bitte einen eigenen Key verwenden und ein Free-Tier-Modell wählen.';
   if (status === 404) return 'Modell nicht gefunden.';
   if (status === 429) return 'Limit erreicht. Bitte kurz warten (Free-Tier: Anfragen pro Minute).';
   if (status === 413) return 'Bild zu groß. Bitte ein kleineres Foto verwenden.';
@@ -198,9 +159,8 @@ function friendlyError(status, message) {
  */
 export async function estimate({ text = '', imageBase64 = '', imageMime = 'image/jpeg', settings, mealHint = '' }) {
   const apiKey = (settings?.apiKey || '').trim();
-  const useProxy = settings?.useProxy !== false && (await detectProxy());
 
-  if (!useProxy && !apiKey) {
+  if (!apiKey) {
     return demoEstimate(text);
   }
 
@@ -221,19 +181,11 @@ export async function estimate({ text = '', imageBase64 = '', imageMime = 'image
   const call = async (model) => {
     let res;
     try {
-      if (useProxy) {
-        res = await fetch('/api/ai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...payload, model }),
-        });
-      } else {
-        res = await fetch(`${API_BASE}/${encodeURIComponent(model)}:generateContent`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-          body: JSON.stringify(payload),
-        });
-      }
+      res = await fetch(`${API_BASE}/${encodeURIComponent(model)}:generateContent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+        body: JSON.stringify(payload),
+      });
     } catch {
       throw new Error('Keine Verbindung zur KI. Internet prüfen.');
     }
@@ -265,20 +217,20 @@ export async function estimate({ text = '', imageBase64 = '', imageMime = 'image
     return { items, notes: parsed.notes || '', demo: false, model };
   };
 
-  const configured = String(settings?.model || '').trim() || DEFAULT_MODEL;
+  const configured = normalizeModel(String(settings?.model || '').trim() || DEFAULT_MODEL);
 
   try {
     return await call(configured);
   } catch (err) {
-    // Veralteter oder für diesen Key gesperrter Modellname (typisch: 2.5er-Modelle
-    // für neue Keys): verfügbare Modelle erfragen und einmal mit dem besten wiederholen.
+    // Modell für diesen Key nicht verfügbar: die erlaubten Free-Tier-Modelle
+    // abfragen und einmal mit dem besten verfügbaren wiederholen.
     const modelMissing = err.status === 404
       || (err.status === 400 && /not found|not supported|not available|does not exist|unsupported/i.test(err.detail || ''));
     if (!modelMissing) throw err;
 
     let models = [];
     try {
-      models = await listModels({ apiKey, useProxy });
+      models = await listModels({ apiKey });
     } catch { /* Liste nicht abrufbar – dann bleibt nur der Hinweis */ }
 
     const best = pickModel(models);
@@ -287,7 +239,7 @@ export async function estimate({ text = '', imageBase64 = '', imageMime = 'image
       return call(best);
     }
 
-    throw new Error('Dieses Modell ist für deinen Key nicht freigeschaltet. Bitte im Profil unter „KI-Tracking“ → „Modelle laden“ ein verfügbares Modell auswählen.');
+    throw new Error('Dieses Modell ist für deinen Key nicht freigeschaltet. Bitte im Profil unter „KI-Tracking“ ein anderes Free-Tier-Modell wählen.');
   }
 }
 

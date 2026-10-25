@@ -6,7 +6,8 @@ import { ACTIVITY, GOALS, MACRO_PRESETS, computeTargets, projection, round1, bmi
 import {
   esc, fmt, icon, toast, openSheet, confirmDialog, downloadFile, haptic, copyText,
 } from '../ui.js';
-import { estimate, detectProxy, proxyStatus, listModels, pickModel } from '../ai.js';
+import { estimate } from '../ai.js';
+import { FREE_MODELS, DEFAULT_MODEL, normalizeModel } from '../models.js';
 import { APP_VERSION } from '../version.js';
 import { getLang, setLang, locale, tr } from '../i18n.js';
 import { openPauseSheet, pauseStateLabel } from '../pause.js';
@@ -20,7 +21,7 @@ export function renderProfile(root) {
   const p = state.profile;
   const t = state.targets;
   const proj = projection(p);
-  const aiConfigured = Boolean(state.settings.apiKey) || proxyStatus();
+  const aiConfigured = Boolean(state.settings.apiKey);
   const gentle = Boolean(state.settings.gentleMode);
   const pause = activePause();
   const paused = Boolean(pause);
@@ -835,19 +836,13 @@ function openGraceSheet(root) {
 
 function openAiSettings(root) {
   const s = { ...store.get().settings };
+  const model = normalizeModel(s.model);
   const body = document.createElement('div');
   body.innerHTML = `
-    <div class="card" style="padding:14px;margin-bottom:14px">
-      <div class="hstack" style="justify-content:space-between">
-        <span class="small" style="font-weight:620">Server-Proxy</span>
-        <span class="pill ${proxyStatus() ? '' : 'neutral'}">${proxyStatus() ? 'verfügbar' : 'nicht aktiv'}</span>
-      </div>
-      <p class="tiny muted" style="margin-top:6px">
-        ${proxyStatus()
-          ? 'Der lokale Server hat einen Key – Anfragen laufen über ihn, der Key bleibt auf dem Rechner.'
-          : 'Läuft die App ohne Server (z. B. installiert), wird der Key direkt auf dem Gerät gespeichert und an Google gesendet.'}
-      </p>
-    </div>
+    <p class="small muted" style="margin-top:0">
+      Jeder nutzt seinen eigenen Key – es gibt keinen geteilten Server-Key.
+      Der Key bleibt auf diesem Gerät und geht nur an Google.
+    </p>
 
     <div class="field">
       <label for="ai-key">Gemini API-Key</label>
@@ -858,14 +853,12 @@ function openAiSettings(root) {
 
     <div class="field">
       <label for="ai-model">Modell</label>
-      <div class="hstack" style="gap:8px;align-items:stretch">
-        <select class="select grow" id="ai-model">
-          <option value="${esc(s.model || 'gemini-3.8-flash')}" selected>${esc(s.model || 'gemini-3.8-flash')}</option>
-        </select>
-        <button class="btn btn-sm" type="button" data-models>Laden</button>
-      </div>
-      <input class="input" id="ai-model-manual" placeholder="z. B. gemini-3.8-flash" spellcheck="false" autocomplete="off" style="margin-top:8px;display:none">
-      <span class="hint" data-model-hint>Tippe auf „Laden“ – dann erscheint hier eine echte Auswahlliste mit allen Modellen deines Keys.</span>
+      <select class="select" id="ai-model">
+        ${FREE_MODELS.map((m) => `
+          <option value="${esc(m.id)}"${m.id === model ? ' selected' : ''}>${esc(m.label)}</option>
+        `).join('')}
+      </select>
+      <span class="hint">Nur Modelle mit kostenlosem Free-Tier. Bezahlte Modelle sind bewusst nicht wählbar.</span>
     </div>
 
     <div class="hstack" style="justify-content:space-between;padding:12px 0">
@@ -880,7 +873,7 @@ function openAiSettings(root) {
 
   const sheet = openSheet({
     title: 'KI-Tracking',
-    subtitle: 'Google Gemini',
+    subtitle: 'Google Gemini · Free-Tier',
     body,
     footer: `
       <button class="btn" data-del>Key löschen</button>
@@ -890,6 +883,7 @@ function openAiSettings(root) {
   });
 
   const keyInput = body.querySelector('#ai-key');
+  const modelSelect = body.querySelector('#ai-model');
   const showBtn = body.querySelector('[data-show]');
   showBtn.addEventListener('click', () => {
     const on = keyInput.type === 'password';
@@ -903,94 +897,10 @@ function openAiSettings(root) {
     toast('Key entfernt');
   });
 
-  const modelSelect = body.querySelector('#ai-model');
-  const manualInput = body.querySelector('#ai-model-manual');
-  const modelHint = body.querySelector('[data-model-hint]');
-  const loadBtn = body.querySelector('[data-models]');
-  const MANUAL = '__manual';
-  const modelCache = { key: '', at: 0, models: [] };
-
-  const currentModel = () => (modelSelect.value === MANUAL ? manualInput.value.trim() : modelSelect.value);
-
-  modelSelect.addEventListener('change', () => {
-    const manual = modelSelect.value === MANUAL;
-    manualInput.style.display = manual ? '' : 'none';
-    if (manual) manualInput.focus();
-  });
-
-  /** Baut die Auswahlliste: aktuelles/empfohlenes Modell oben, Rest darunter. */
-  function fillModels(models) {
-    const current = modelSelect.value && modelSelect.value !== MANUAL ? modelSelect.value : '';
-    const known = models.some((m) => m.id === current);
-    const best = pickModel(models);
-    const options = [];
-
-    if (current && !known) {
-      options.push(`<option value="${esc(current)}">${esc(current)} (gespeichert)</option>`);
-    }
-    for (const m of models) {
-      const label = m.label && m.label !== m.id ? `${m.id} · ${m.label}` : m.id;
-      options.push(`<option value="${esc(m.id)}">${esc(label)}</option>`);
-    }
-    options.push(`<option value="${MANUAL}">Anderes Modell eintippen…</option>`);
-
-    modelSelect.innerHTML = options.join('');
-    modelSelect.value = known ? current : best;
-    if (modelSelect.value === MANUAL) manualInput.style.display = '';
-  }
-
-  async function loadModels({ force = false, silent = false } = {}) {
-    if (loadBtn.disabled) return;
-    await detectProxy();
-    const apiKey = keyInput.value.trim();
-    const useProxy = proxyStatus();
-    const cacheKey = `${useProxy ? 'proxy' : 'key'}:${apiKey}`;
-    const fresh = modelCache.key === cacheKey && Date.now() - modelCache.at < 10 * 60 * 1000;
-
-    if (!force && fresh && modelCache.models.length) {
-      fillModels(modelCache.models);
-      modelHint.innerHTML = `${modelCache.models.length} Modelle verfügbar · empfohlen: <b>${esc(pickModel(modelCache.models))}</b>`;
-      return;
-    }
-
-    const label = loadBtn.textContent;
-    loadBtn.disabled = true;
-    if (!silent) {
-      loadBtn.textContent = '…';
-      modelHint.textContent = 'Frage verfügbare Modelle ab…';
-    }
-
-    try {
-      if (!apiKey && !useProxy) throw new Error('Bitte zuerst den API-Key eingeben.');
-      const models = await listModels({ apiKey, useProxy });
-      if (!models.length) throw new Error('Der Key liefert keine nutzbaren Gemini-Modelle.');
-      modelCache.key = cacheKey;
-      modelCache.at = Date.now();
-      modelCache.models = models;
-      fillModels(models);
-      modelHint.innerHTML = `${models.length} Modelle verfügbar · empfohlen: <b>${esc(pickModel(models))}</b>`;
-    } catch (err) {
-      if (!silent) modelHint.textContent = err.message || 'Modellliste nicht abrufbar.';
-    } finally {
-      loadBtn.disabled = false;
-      loadBtn.textContent = label;
-    }
-  }
-
-  loadBtn.addEventListener('click', () => loadModels({ force: true }));
-
-  // Beim Öffnen direkt laden, wenn ein Key (oder Proxy) vorhanden ist.
-  if (keyInput.value.trim() || proxyStatus()) loadModels({ silent: true });
-
   sheet.foot?.querySelector('[data-save]')?.addEventListener('click', () => {
-    const model = currentModel();
-    if (!model) {
-      toast('Bitte ein Modell auswählen oder eintippen', 'err');
-      manualInput.focus();
-      return;
-    }
-    store.saveSettings({ apiKey: keyInput.value.trim(), model });
-    toast(`Gespeichert · ${model}`);
+    const selected = normalizeModel(modelSelect.value || DEFAULT_MODEL);
+    store.saveSettings({ apiKey: keyInput.value.trim(), model: selected });
+    toast(keyInput.value.trim() ? `Gespeichert · ${selected}` : 'Demo-Modus ohne Key');
     sheet.close();
     renderProfile(root);
   });
@@ -1000,7 +910,6 @@ async function testAi(btn) {
   const original = btn.innerHTML;
   btn.innerHTML = `<span class="grow"><span class="t">Teste…</span><span class="s">Anfrage an Gemini</span></span><span class="spinner" style="color:var(--accent)"></span>`;
   try {
-    await detectProxy();
     const res = await estimate({ text: 'Ein mittelgroßer Apfel', settings: store.get().settings, mealHint: 'Snack' });
     if (res.demo) {
       toast('Demo-Modus – kein Key hinterlegt', 'err');

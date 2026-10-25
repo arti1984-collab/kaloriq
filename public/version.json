@@ -1,15 +1,15 @@
 {
-  "version": "1.4.2",
+  "version": "1.4.3",
   "date": "2026-10-25",
   "notes": [
-    "Update-Hinweis: Die App meldet sich, wenn eine neue Version bereitsteht – mit einer kurzen Liste der Neuerungen.",
-    "Ein Tipp auf „Jetzt aktualisieren“ lädt die neue Version. Deine Einträge und Einstellungen bleiben erhalten.",
-    "In der Android-APK führt der Hinweis direkt zur neuen APK; im Profil lässt sich die Prüfung jederzeit manuell starten."
+    "KI-Modelle: Es lassen sich nur noch Modelle mit kostenlosem Free-Tier wählen – bezahlte Modelle sind entfernt.",
+    "Jeder nutzt den eigenen Gemini-Key. Der geteilte Server-Proxy ist entfallen; der Key bleibt auf dem Gerät.",
+    "Ohne Key bleibt der Demo-Modus. Vorhandene Keys, Einträge und Einstellungen bleiben erhalten."
   ],
   "notes_en": [
-    "Update notice: the app tells you when a new version is ready – including a short list of what's new.",
-    "Tap “Update now” to load the new version. Your entries and settings stay intact.",
-    "In the Android APK the notice links straight to the new APK; you can also start the check manually in the profile."
+    "AI models: only models with a free tier can be selected – paid models are removed.",
+    "Everyone uses their own Gemini key. The shared server proxy is gone; the key stays on the device.",
+    "Without a key, demo mode remains. Existing keys, entries and settings are kept."
   ],
   "release": "https://github.com/arti1984-collab/kaloriq/releases/latest"
 }

@@ -48,6 +48,34 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.4.3] – 25.10.2026
+
+### Geändert
+
+- **Nur Free-Tier-Modelle:** Die Modellauswahl ist fest auf kostenlose
+  Gemini-Modelle begrenzt (`gemini-3.8-flash`, `gemini-3.6-flash`,
+  `gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`). Bezahlte Modelle werden
+  nicht mehr angeboten oder geladen.
+- **Kein geteilter Key:** Der Server-Proxy und die Option „Server-Proxy" sind
+  entfernt. Jede Person trägt ihren eigenen Key ein; Anfragen gehen direkt von
+  ihrem Gerät an Google. `server.mjs` liefert nur noch die statische App.
+- **Modelle laden entfällt:** Statt aller Key-Modelle zeigt die App eine feste,
+  kostenlose Auswahl. Die automatische Modell-Ermittlung bei einem gesperrten
+  Modell bleibt – sie wählt jetzt ausschließlich Free-Tier-Modelle.
+- **Migration:** Gespeicherte, nicht freie Modellnamen (z. B. `gemini-2.5-flash`)
+  werden beim Start auf `gemini-3.8-flash` zurückgesetzt. Alte Proxy-Flags
+  werden entfernt; Key, Einträge und Einstellungen bleiben erhalten.
+
+### Getestet
+
+- Modellauswahl zeigt nur die vier Free-Tier-Modelle, ohne „Laden" und ohne
+  manuelles Eingabefeld; kein Proxy-Aufruf mehr.
+- Direkter Aufruf mit eigenem Key (Header `x-goog-api-key`), Demo-Modus ohne Key.
+- Fallback bei gesperrtem Modell wählt aus einer Liste mit bezahlten Modellen
+  nur ein kostenloses; Deutsch und Englisch vollständig.
+
+---
+
 ## [1.4.2] – 25.10.2026
 
 ### Behoben
