@@ -26,8 +26,16 @@ Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 |---|---|
 | [![Fasting](docs/screenshots/fasten.png?v=1.4.0)](docs/screenshots/fasten.png) | [![Profile](docs/screenshots/profil.png?v=1.4.0)](docs/screenshots/profil.png) |
 
-All images are in [`docs/screenshots/`](docs/screenshots/) – as individual views and
-as a 2×2 montage (`uebersicht.png`).
+### New in 1.4.0
+
+| Health Connect | Gentle reminder | Quick log |
+|---|---|---|
+| [![Health Connect](docs/screenshots/health-connect.png?v=1.4.0)](docs/screenshots/health-connect.png) | [![Gentle reminder](docs/screenshots/erinnerung.png?v=1.4.0)](docs/screenshots/erinnerung.png) | [![Quick log](docs/screenshots/schnell-eintrag.png?v=1.4.0)](docs/screenshots/schnell-eintrag.png) |
+
+Health Connect and the daily system reminder are part of the Android APK; quick logging is available in both the PWA and the APK.
+
+All images are in [`docs/screenshots/`](docs/screenshots/) – as individual views, as a
+2×2 montage (`uebersicht.png`) and with the 1.4.0 feature screens.
 
 ---
 

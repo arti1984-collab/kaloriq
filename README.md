@@ -26,8 +26,16 @@ Folge Kaloriq auf [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 |---|---|
 | [![Fasten](docs/screenshots/fasten.png?v=1.4.0)](docs/screenshots/fasten.png) | [![Profil](docs/screenshots/profil.png?v=1.4.0)](docs/screenshots/profil.png) |
 
-Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzelansicht und
-als 2×2-Montage (`uebersicht.png`).
+### Neu in 1.4.0
+
+| Health Connect | Sanfte Erinnerung | Schnell eintragen |
+|---|---|---|
+| [![Health Connect](docs/screenshots/health-connect.png?v=1.4.0)](docs/screenshots/health-connect.png) | [![Sanfte Erinnerung](docs/screenshots/erinnerung.png?v=1.4.0)](docs/screenshots/erinnerung.png) | [![Schnell eintragen](docs/screenshots/schnell-eintrag.png?v=1.4.0)](docs/screenshots/schnell-eintrag.png) |
+
+Health Connect und die tägliche System-Erinnerung gehören zur Android-APK; „Schnell eintragen“ gibt es in PWA und APK.
+
+Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzelansicht, als
+2×2-Montage (`uebersicht.png`) und mit den Ansichten der 1.4.0-Funktionen.
 
 ---
 
