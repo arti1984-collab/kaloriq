@@ -34,6 +34,12 @@ Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
 Health Connect and the daily system reminder are part of the Android APK; quick logging is available in both the PWA and the APK.
 
+### Video
+
+[![Video: Kaloriq in 17 seconds](docs/video/poster.png)](docs/video/kaloriq.mp4)
+
+17-second tour through diary, progress, fasting and profile – with the GitHub link at the end (1080×1920, no sound).
+
 All images are in [`docs/screenshots/`](docs/screenshots/) – as individual views, as a
 2×2 montage (`uebersicht.png`) and with the 1.4.0 feature screens.
 

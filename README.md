@@ -34,6 +34,12 @@ Folge Kaloriq auf [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
 Health Connect und die tägliche System-Erinnerung gehören zur Android-APK; „Schnell eintragen“ gibt es in PWA und APK.
 
+### Video
+
+[![Video: Kaloriq in 17 Sekunden](docs/video/poster.png)](docs/video/kaloriq.mp4)
+
+17 Sekunden Rundgang durch Tagebuch, Fortschritt, Fasten und Profil – mit GitHub-Link am Ende (1080×1920, ohne Ton).
+
 Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzelansicht, als
 2×2-Montage (`uebersicht.png`) und mit den Ansichten der 1.4.0-Funktionen.
 
