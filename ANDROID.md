@@ -70,6 +70,11 @@ adb install -r Kaloriq-<Version>.apk
   Wiederherstellung.
 - **Update über die alte Version installieren** (gleiche `applicationId`,
   gleicher Signaturschlüssel) → **Daten bleiben erhalten**.
+- **Update-Hinweis:** Die App vergleicht beim Start (und alle sechs Stunden) die
+  eigene Version mit `version.json` auf der Web-Adresse. Findet sie eine neuere,
+  zeigt sie einen Banner mit den Neuerungen und einem Link zur Release-Seite
+  („APK holen“). Im Profil gibt es dafür die Zeile **App-Update**.
+  Voraussetzung ist eine Internetverbindung; offline bleibt der Hinweis aus.
 - **Deinstallieren löscht die App-Daten.** Vorher: Profil → Daten exportieren
   (JSON) oder Sicherungen prüfen.
 
@@ -99,6 +104,7 @@ Updates mit demselben Schlüssel). Ein Backup liegt im Projekt-ZIP.
 | Kamera/Fotos | ✅ über den Android-Dateiauswahl-Dialog |
 | Installation | ✅ eigenes Icon, Vollbild, kein Browser |
 | Updates | ✅ APK drüber installieren, Daten bleiben |
+| Update-Hinweis | ✅ Banner + „Was ist neu“ mit Link zur neuen APK (bei bestehender Internetverbindung) |
 
 ---
 

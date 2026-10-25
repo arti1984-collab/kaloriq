@@ -13,6 +13,7 @@ import { openPauseSheet, pauseStateLabel } from '../pause.js';
 import { exportEntriesCsv, exportDaysCsv } from '../csv.js';
 import { healthAvailable, healthHasPermissions, requestHealthPermissions, readHealthToday } from '../health.js';
 import { scheduleSystemReminder, systemRemindersAvailable } from '../reminders.js';
+import { getUpdateState, checkForUpdate, openUpdateSheet } from '../update.js';
 
 export function renderProfile(root) {
   const state = store.get();
@@ -46,6 +47,10 @@ export function renderProfile(root) {
   const backupSub = backups.length
     ? `Letzte: ${new Date(lastBackup).toLocaleDateString(locale(), { day: 'numeric', month: 'short' })} · ${backups.length} ${backups.length === 1 ? 'Stand' : 'Stände'}`
     : 'Automatisch alle 12 Std. – noch keine vorhanden';
+  const updateState = getUpdateState();
+  const updateSub = updateState.available
+    ? `Version ${APP_VERSION} · ${updateState.latest} verfügbar`
+    : `Version ${APP_VERSION} · aktuell`;
 
   root.innerHTML = `
     <header class="topbar">
@@ -216,6 +221,10 @@ export function renderProfile(root) {
 
     <div class="section-title">App</div>
     <section class="card flush">
+      <button class="row" data-update>
+        <span class="grow"><span class="t">App-Update</span><span class="s">${updateSub}</span></span>
+        ${updateState.available ? '<span class="pill">Neu</span>' : icon('refresh', 'chev')}
+      </button>
       <button class="row" data-lang>
         <span class="grow"><span class="t">Sprache</span><span class="s">${getLang() === 'en' ? 'English' : 'Deutsch'}</span></span>
         ${icon('chev', 'chev')}
@@ -321,6 +330,23 @@ export function renderProfile(root) {
   root.querySelector('[data-backups]').addEventListener('click', () => openBackups(root));
   root.querySelector('[data-reset]').addEventListener('click', resetAll);
   root.querySelector('[data-install]').addEventListener('click', installApp);
+  root.querySelector('[data-update]').addEventListener('click', async (event) => {
+    const btn = event.currentTarget;
+    if (getUpdateState().available) {
+      openUpdateSheet();
+      return;
+    }
+    btn.disabled = true;
+    try {
+      const info = await checkForUpdate({ manual: true });
+      if (info && getUpdateState().available) {
+        openUpdateSheet(info);
+        renderProfile(root);
+      }
+    } finally {
+      btn.disabled = false;
+    }
+  });
   root.querySelector('[data-lang]').addEventListener('click', () => openLanguage(root));
   root.querySelector('[data-feedback]').addEventListener('click', openFeedbackSheet);
 }

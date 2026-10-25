@@ -16,11 +16,18 @@ Das Skript aktualisiert gemeinsam:
 - `package.json` → `version`
 - `public/js/version.js` → `APP_VERSION` (Anzeige unter **Profil**)
 - `public/sw.js` → `kaloriq-vN` (Cache-Name, erzwingt frisches App-Shell)
+- `public/version.json` → `version` + `date` (Grundlage für den Update-Hinweis)
 - `android-app/android/app/build.gradle` → `versionName` + `versionCode` (falls vorhanden)
 - `dist\` → Upload-Paket wird direkt neu gebaut
 
 Niemals die Nummern einzeln von Hand ändern – sonst laufen App-Anzeige und
 Service-Worker-Cache auseinander.
+
+**Update-Hinweis pflegen:** Vor jedem Release in `public/version.json` unter
+`notes` (Deutsch) und `notes_en` (Englisch) eintragen, was neu ist. Die Datei
+wird ausgeliefert und von der bereits installierten App gelesen – nur so kann
+sie ihre Neuerungen anzeigen. `release` zeigt auf die Release-Seite.
+`npm run bump` setzt Version und Datum, überschreibt die Notizen aber nicht.
 
 ## 2. Daten nie löschen
 

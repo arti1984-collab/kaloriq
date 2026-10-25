@@ -230,6 +230,11 @@ function defaultState() {
       reminderEnabled: false,
       reminderTime: '18:00',
       reminderDismissedAt: '',
+      // Update-Hinweis: Zeitpunkt der letzten Prüfung, zuletzt gemeldete
+      // neue Version (überlebt einen Neustart) und weggetippte Version.
+      updateCheckedAt: 0,
+      updateKnown: null,
+      updateDismissedVersion: '',
       // Letzter Stand des Geräte-Schrittsensors (kumulativ seit Neustart).
       // { date: 'YYYY-MM-DD', value: number, ts: number } oder null.
       stepCounter: null,

@@ -1,5 +1,5 @@
 /* Kaloriq Service Worker – App-Shell offline verfuegbar. */
-const VERSION = 'kaloriq-v33';
+const VERSION = 'kaloriq-v34';
 const SHELL = [
   '/',
   '/index.html',
@@ -21,6 +21,7 @@ const SHELL = [
   '/js/health.js',
   '/js/widget.js',
   '/js/reminders.js',
+  '/js/update.js',
   '/js/views/onboarding.js',
   '/js/views/diary.js',
   '/js/views/add.js',
@@ -56,6 +57,9 @@ self.addEventListener('fetch', (event) => {
   // Externe APIs (Gemini, Open Food Facts) nie cachen.
   if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
 
+  // Versionsdatei immer live holen – daran hängt der Update-Hinweis.
+  if (url.pathname === '/version.json') return;
+
   event.respondWith(serve(request));
 });
 
@@ -81,7 +85,9 @@ async function serve(request) {
   };
 
   try {
-    const response = await fetch(request);
+    // Revalidieren statt aus dem HTTP-Cache bedienen: so kommen neue
+    // Versionen sofort an, offline greift weiterhin der Cache unten.
+    const response = await fetch(request, { cache: 'no-cache' });
     if (response && response.ok) {
       cache.put(request, response.clone()).catch(() => {});
       return response;

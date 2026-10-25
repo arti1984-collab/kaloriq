@@ -6,7 +6,7 @@ Kalorien-, Makro- und Fasten-Tracker mit KI-Foto-Erkennung – als installierbar
 
 Eigenständige Implementierung der Funktionen bekannter Kalorien-Tracker. Keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.** Für den Barcode-Scanner wird ZXing (Apache-2.0) verwendet – nativ in der Android-APK und als lokal mitgelieferte JavaScript-Bibliothek in Safari/Firefox – siehe [Drittanbieter-Hinweise](THIRD_PARTY_NOTICES.md).
 
-**Aktuelle Version: 1.4.0** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.4.0) · [Changelog](CHANGELOG.md)
+**Aktuelle Version: 1.4.1** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.4.1) · [Changelog](CHANGELOG.md)
 
 Folge Kaloriq auf [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
@@ -64,7 +64,7 @@ Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzel
 | **Schnellzugriff** | Zuletzt/Favoriten, Gestern kopieren, Duplizieren, Mahlzeit verschieben, Löschen rückgängig |
 | **Trackingsstil** | Genau / Grob / Überblick – passend zu Alltag und Drucklevel |
 | **Wochenrückblick** | Tage, kleine Erfolge, Check-ins und Wasser – ohne Kaloriendruck |
-| **CSV & Feedback** | CSV-Export, In-App-Feedback, Backup-Erinnerung und Update-Hinweis |
+| **CSV & Feedback** | CSV-Export, In-App-Feedback, Backup-Erinnerung und Update-Hinweis mit Neuerungen |
 | **Health Connect** | Schritte und Gewicht aus Android Health importieren (APK) |
 | **Android-Widget** | Kalorien, Wasser und Schritte auf dem Home-Bildschirm, inkl. Schnellaktionen |
 | **System-Erinnerung** | Tägliche Benachrichtigung, optional und standardmäßig aus (APK) |
@@ -200,8 +200,12 @@ Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzel
 - **Backup-Status und sanfte Erinnerung:** Die letzte Sicherung ist sichtbar;
   nach 14 Tagen erinnert Kaloriq einmal täglich ans Sichern.
 - **Feedback & Hilfe** direkt im Profil: Problem oder Idee über GitHub melden,
-  inklusive Version, Gerät und Sprache. Dazu ein Update-Hinweis, wenn eine neue
-  App-Version bereitsteht.
+  inklusive Version, Gerät und Sprache.
+- **Update-Hinweis:** Kaloriq prüft beim Start und alle sechs Stunden, ob eine
+  neue Version bereitsteht. Ein ruhiger Hinweis über der Navigation nennt die
+  Neuerungen; ein Tipp aktualisiert die PWA. In der APK führt er direkt zur
+  neuen APK. Im Profil lässt sich die Prüfung jederzeit manuell starten –
+  Einträge und Einstellungen bleiben bei jedem Update erhalten.
 - **Android-Widget (APK):** Zeigt Kalorien, Wasser und Schritte auf dem
   Home-Bildschirm. Die Buttons „+ Wasser“ und „Schnell“ öffnen die App direkt
   im passenden Flow.

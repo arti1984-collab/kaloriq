@@ -21,6 +21,9 @@ const HEADERS = `/manifest.webmanifest
 /sw.js
   Cache-Control: no-cache
 
+/version.json
+  Cache-Control: no-cache
+
 /index.html
   Cache-Control: no-cache
 `;

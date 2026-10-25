@@ -8,7 +8,11 @@
  *   1. package.json
  *   2. public/js/version.js        (Anzeige in der App)
  *   3. public/sw.js               (Cache-Name kaloriq-vN)
- *   4. dist\                      (Upload-Paket, wird neu gebaut)
+ *   4. public/version.json        (Update-Hinweis: Version + Datum)
+ *   5. dist\                      (Upload-Paket, wird neu gebaut)
+ *
+ * Die Neuerungen in public/version.json (`notes`) beschreiben die jeweils
+ * neue Version und werden vor dem Release von Hand gepflegt.
  */
 import { readFile, writeFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
@@ -21,6 +25,7 @@ const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const PKG = path.join(ROOT, 'package.json');
 const VER = path.join(ROOT, 'public', 'js', 'version.js');
 const SW = path.join(ROOT, 'public', 'sw.js');
+const VERSION_JSON = path.join(ROOT, 'public', 'version.json');
 
 const arg = (process.argv[2] || '').trim();
 
@@ -64,6 +69,20 @@ await writeFile(
 console.log('');
 console.log(`  Version: ${current} → ${next}`);
 console.log(`  Service-Worker-Cache: kaloriq-v${swNext}`);
+
+// version.json für den Update-Hinweis: Version und Datum mitziehen.
+try {
+  const raw = JSON.parse(await readFile(VERSION_JSON, 'utf8'));
+  raw.version = next;
+  raw.date = new Date().toISOString().slice(0, 10);
+  await writeFile(VERSION_JSON, JSON.stringify(raw, null, 2) + '\n', 'utf8');
+  console.log(`  Update-Hinweis: version.json auf ${next} gesetzt`);
+  if (!Array.isArray(raw.notes) || !raw.notes.length) {
+    console.warn('  Hinweis: public/version.json hat keine "notes" für diese Version.');
+  }
+} catch {
+  /* keine version.json vorhanden – überspringen */
+}
 
 // Android-APK mit derselben Version (versionName + versionCode)
 const GRADLE = path.join(ROOT, 'android-app', 'android', 'app', 'build.gradle');

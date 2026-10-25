@@ -731,6 +731,22 @@ const EN = {
     'The app could not start completely. Your saved data stays on the device. Reload the page or save it as JSON first.',
   'Daten als JSON sichern': 'Save data as JSON',
 
+  // Update-Hinweis
+  'Update verfügbar': 'Update available',
+  'Was ist neu': "What's new",
+  'Jetzt aktualisieren': 'Update now',
+  'Später': 'Later',
+  'APK holen': 'Get APK',
+  'Neu': 'New',
+  'App-Update': 'App update',
+  'Du bist auf dem neuesten Stand': 'You are up to date',
+  'Update-Prüfung nicht möglich': 'Update check not possible',
+  'Offline – Update-Prüfung nicht möglich': 'Offline – update check not possible',
+  'Nach dem Update kannst du die neuen Funktionen direkt nutzen. Deine Einträge und Einstellungen bleiben erhalten.':
+    'After updating you can use the new features right away. Your entries and settings stay intact.',
+  'Die neue APK lässt sich einfach über die App installieren. Deine Einträge und Einstellungen bleiben erhalten.':
+    'The new APK installs right over the app. Your entries and settings stay intact.',
+
   // Feedback
   'Feedback & Hilfe': 'Feedback & help',
   'Problem melden oder Idee vorschlagen': 'Report a problem or suggest an idea',
@@ -1169,6 +1185,10 @@ const RULES = [
   [/^Beim Öffnen ab (\d{2}:\d{2}) · kein Push$/, 'On open from $1 · no push'],
   [/^Erinnerung ab (\d{2}:\d{2})$/, 'Reminder from $1'],
   [/^System-Erinnerung ab (\d{2}:\d{2})$/, 'System reminder from $1'],
+  [/^Version ([\d.]+) · aktuell$/, 'Version $1 · up to date'],
+  [/^Version ([\d.]+) · ([\d.]+) verfügbar$/, 'Version $1 · $2 available'],
+  [/^Version ([\d.]+) · was ist neu\?$/, "Version $1 · what's new?"],
+  [/^Installiert: ([\d.]+) · Neu: ([\d.]+)$/, 'Installed: $1 · New: $2'],
   [/^(.+) werden in Kaloriq übernommen\. Vorhandene Tageswerte werden überschrieben\.$/,
     '$1 will be imported into Kaloriq. Existing daily values will be overwritten.'],
 ];

@@ -6,7 +6,7 @@ Calorie, macro and fasting tracker with AI photo recognition – as an installab
 
 An independent implementation of the features of well-known calorie trackers. No third-party brands or assets, no cloud: **all data stays on the device.** The barcode scanner uses ZXing (Apache-2.0) – natively in the Android APK and as a locally bundled JavaScript library in Safari/Firefox – see [third-party notices](THIRD_PARTY_NOTICES.md).
 
-**Current version: 1.4.0** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.4.0) · [Changelog](CHANGELOG.md)
+**Current version: 1.4.1** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.4.1) · [Changelog](CHANGELOG.md)
 
 Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
@@ -64,7 +64,7 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
 | **Quick access** | Recent/favorites, copy yesterday, duplicate, move meal, undo delete |
 | **Tracking style** | Precise / rough / overview – matching your day and pressure level |
 | **Weekly review** | Days, small wins, check-ins and water – without calorie judgement |
-| **CSV & feedback** | CSV export, in-app feedback, backup reminder and update notice |
+| **CSV & feedback** | CSV export, in-app feedback, backup reminder and update notice with release notes |
 | **Health Connect** | Import steps and weight from Android Health (APK) |
 | **Android widget** | Calories, water and steps on the home screen, including quick actions |
 | **System reminder** | Daily notification, optional and off by default (APK) |
@@ -195,8 +195,12 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
 - **Backup status and gentle reminder:** the last backup is visible; after
   14 days Kaloriq reminds you once a day to back up.
 - **Feedback & help** directly in the profile: report a problem or idea via
-  GitHub, including version, device and language. Plus an update notice when a
-  new app version is ready.
+  GitHub, including version, device and language.
+- **Update notice:** Kaloriq checks at launch and every six hours whether a new
+  version is available. A calm banner above the tab bar lists what's new; one
+  tap updates the PWA. In the APK it links straight to the new APK. You can also
+  start the check manually in the profile – entries and settings always survive
+  an update.
 - **Android widget (APK):** Shows calories, water and steps on the home screen.
   The “+ Water” and “Quick” buttons open the app in the matching flow.
 - **System reminder (APK):** Optional and off by default. A daily Android

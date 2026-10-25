@@ -18,6 +18,7 @@ import { renderRecipes } from './views/recipes.js';
 import { openAiSheet, openQuickLogSheet, openAddSheet } from './views/add.js';
 import { initWidget } from './widget.js';
 import { initReminders } from './reminders.js';
+import { initUpdateNotice, applyUpdate } from './update.js';
 
 const TABS = [
   { id: 'diary', label: 'Tagebuch', icon: 'book' },
@@ -156,7 +157,17 @@ function handleActionParam() {
   }
 }
 
+/** Nach einem Update-Reload die Cache-Umgehung (?v=…) wieder aus der Adresse nehmen. */
+function cleanUpdateParam() {
+  const params = new URLSearchParams(location.search);
+  if (!params.has('v')) return;
+  params.delete('v');
+  const query = params.toString();
+  history.replaceState(null, '', location.pathname + (query ? `?${query}` : '') + location.hash);
+}
+
 async function boot() {
+  cleanUpdateParam();
   // Zuerst die IndexedDB-Zweitkopie prüfen, den Start aber nicht blockieren.
   const hydration = hydrateFromDurable().catch(() => false);
   await Promise.race([
@@ -176,6 +187,9 @@ async function boot() {
     paintTabbar();
     render();
   });
+
+  // Update-Prüfung meldet ein Ergebnis: Profilzeile „App-Update“ auffrischen.
+  window.addEventListener('kaloriq:update', () => render());
 
   $('#fab').addEventListener('click', () => openAiSheet());
 
@@ -205,6 +219,7 @@ async function boot() {
   resumeSteps();
   initWidget();
   initReminders();
+  initUpdateNotice();
 
   // Persistenten Speicher anfordern (iOS ab 15.2) und bei Bedarf nach dem
   // ersten Tippen erneut versuchen, falls der Browser eine Geste verlangt.
@@ -222,10 +237,10 @@ async function boot() {
     let hadController = Boolean(navigator.serviceWorker.controller);
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (!hadController) { hadController = true; return; }
-      toastAction('Neue Version verfügbar', 'Neu laden', () => location.reload(), 8000);
+      toastAction('Neue Version verfügbar', 'Neu laden', () => { void applyUpdate(); }, 8000);
     });
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
+      navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(() => {});
     });
   }
 

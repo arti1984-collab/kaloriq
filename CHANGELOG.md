@@ -22,6 +22,7 @@ demselben Quellstand gebaut. Jede Änderung durchläuft denselben Ablauf:
    - `package.json` → `version`
    - `public/js/version.js` → `APP_VERSION` (Anzeige unter **Profil**)
    - `public/sw.js` → Cache-Name (`kaloriq-vN`), damit die App-Shell frisch lädt
+   - `public/version.json` → Version + Datum für den Update-Hinweis
    - `android-app/android/app/build.gradle` → `versionName` + `versionCode`
    - `dist/` → Upload-Paket wird direkt neu gebaut
 3. **Testen** – Desktop (Chrome/Edge/Safari), Android-PWA und die installierte
@@ -44,6 +45,44 @@ falls `localStorage` fehlt, beschädigt oder älter ist. Vor Import und
 Zurücksetzen wird automatisch ein Snapshot angelegt; zusätzlich existieren
 automatische Sicherungen (alle 12 Stunden, maximal drei Stände, ebenfalls in
 IndexedDB gespiegelt) und der JSON-Export.
+
+---
+
+## [1.4.1] – 25.10.2026
+
+### Hinzugefügt
+
+- **Update-Hinweis:** Die App prüft beim Start und alle sechs Stunden
+  `version.json` und meldet sich mit einem ruhigen Banner über der Navigation,
+  sobald eine neue Version bereitsteht. Das Banner nennt die Neuerungen und
+  lässt sich wegtippen.
+- **Was ist neu:** Ein Tipp auf den Hinweis öffnet ein Sheet mit den
+  Neuerungen der neuen Version (aus `public/version.json`) und dem Hinweis,
+  dass Einträge und Einstellungen erhalten bleiben.
+- **PWA-Update per Tipp:** „Jetzt aktualisieren“ lädt die neue Version über
+  eine cachefreie Adresse; danach räumt die App den Parameter wieder aus der
+  URL. In der APK führt der Hinweis direkt zur neuen APK.
+- **Manuelle Prüfung im Profil:** Neue Zeile „App-Update“ mit installierter
+  Version, verfügbarer Version und Status „aktuell“ bzw. „Neu“.
+
+### Geändert
+
+- **Service Worker:** Shell-Dateien werden mit `cache: 'no-cache'`
+  revalidiert, damit Updates sofort ankommen; `version.json` wird nie
+  gecacht. Registrierung mit `updateViaCache: 'none'`.
+- **Update-Status bleibt erhalten:** Die zuletzt gemeldete Version liegt in den
+  Einstellungen (`updateKnown`), damit der Hinweis einen Neustart übersteht,
+  bis er weggetippt oder installiert wurde.
+- **Versionierung:** `npm run bump` pflegt jetzt auch `public/version.json`
+  (Version + Datum); die Neuerungen werden vor dem Release eingetragen.
+
+### Getestet
+
+- Banner, Details-Sheet, „Später“ (bleibt weg), manuelle Prüfung und der
+  „aktuell“-Fall in Deutsch und Englisch; APK-Variante mit Release-Link.
+- Keine Konsolenfehler; `?v=…` wird nach dem Update-Reload entfernt.
+- **Hinweis:** Der Update-Hinweis greift ab 1.4.1. Bereits installierte
+  1.4.0-APKs müssen einmal manuell aktualisiert werden.
 
 ---
 

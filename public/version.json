@@ -1,0 +1,15 @@
+{
+  "version": "1.4.1",
+  "date": "2026-10-25",
+  "notes": [
+    "Update-Hinweis: Die App meldet sich, wenn eine neue Version bereitsteht – mit einer kurzen Liste der Neuerungen.",
+    "Ein Tipp auf „Jetzt aktualisieren“ lädt die neue Version. Deine Einträge und Einstellungen bleiben erhalten.",
+    "In der Android-APK führt der Hinweis direkt zur neuen APK; im Profil lässt sich die Prüfung jederzeit manuell starten."
+  ],
+  "notes_en": [
+    "Update notice: the app tells you when a new version is ready – including a short list of what's new.",
+    "Tap “Update now” to load the new version. Your entries and settings stay intact.",
+    "In the Android APK the notice links straight to the new APK; you can also start the check manually in the profile."
+  ],
+  "release": "https://github.com/arti1984-collab/kaloriq/releases/latest"
+}
