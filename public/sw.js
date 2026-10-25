@@ -1,5 +1,5 @@
 /* Kaloriq Service Worker – App-Shell offline verfuegbar. */
-const VERSION = 'kaloriq-v34';
+const VERSION = 'kaloriq-v35';
 const SHELL = [
   '/',
   '/index.html',
@@ -58,7 +58,9 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
 
   // Versionsdatei immer live holen – daran hängt der Update-Hinweis.
-  if (url.pathname === '/version.json') return;
+  // (Bewusst ohne führenden Schrägstrich, damit der Pages-Build den Pfad
+  // nicht umschreibt und der Vergleich auch im Unterpfad stimmt.)
+  if (url.pathname.endsWith('version.json')) return;
 
   event.respondWith(serve(request));
 });

@@ -56,9 +56,11 @@ sw = sw.replace(/'(\/(?!api\/)[^']*)'/g, (_, value) =>
 await writeFile(swPath, sw, 'utf8');
 
 // Service Worker wird relativ zum Dokument registriert (GitHub-Unterpfad).
+// Die Quelle nutzt bereits './sw.js'; ältere Schreibweisen werden weiterhin
+// umgeschrieben.
 const appPath = path.join(OUT, 'js', 'app.js');
 let app = await readFile(appPath, 'utf8');
-app = app.replace(/register\('\/sw\.js'\)/g, "register('./sw.js')");
+app = app.replace(/register\('\/sw\.js'/g, "register('./sw.js'");
 await writeFile(appPath, app, 'utf8');
 
 // GitHub Pages soll die Dateien unverändert ausliefern.

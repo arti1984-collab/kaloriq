@@ -74,8 +74,12 @@ function notesOf(value) {
 }
 
 async function loadLatest() {
-  const base = isNativeApp() ? WEB_BASE : '';
-  const response = await fetch(`${base}/version.json?t=${Date.now()}`, { cache: 'no-store' });
+  // Relativ zur App-Adresse auflösen – so stimmt der Pfad auch im
+  // GitHub-Pages-Unterpfad. Die APK holt die Datei von der Web-Adresse.
+  const target = isNativeApp()
+    ? `${WEB_BASE}/version.json?t=${Date.now()}`
+    : new URL(`version.json?t=${Date.now()}`, document.baseURI).toString();
+  const response = await fetch(target, { cache: 'no-store' });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const data = await response.json();
   if (!data || !data.version) throw new Error('Ungültige Versionsdatei');

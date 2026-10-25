@@ -48,6 +48,25 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.4.2] – 25.10.2026
+
+### Behoben
+
+- **GitHub Pages:** Der Service Worker wurde im Unterpfad `/kaloriq/` nicht
+  mehr registriert, weil die Registrierung mit zusätzlichen Optionen am
+  Pages-Build vorbeilief. Jetzt wird `./sw.js` relativ registriert (funktioniert
+  an der Domain-Wurzel und im Unterpfad).
+- **Versionsdatei im Unterpfad:** `version.json` wurde als `/version.json`
+  geladen und lief auf GitHub Pages ins Leere. Die Adresse wird jetzt relativ
+  zur App aufgelöst; die APK nutzt weiterhin die feste Web-Adresse.
+- **Service Worker:** Die Ausnahme für `version.json` erkennt den Pfad jetzt
+  unabhängig vom Unterpfad (der Pages-Build schreibt Pfadliterale um).
+
+> 1.4.1 war nur kurz als Web-Stand online und wurde nicht als APK
+> veröffentlicht. Release-Stand ist 1.4.2.
+
+---
+
 ## [1.4.1] – 25.10.2026
 
 ### Hinzugefügt

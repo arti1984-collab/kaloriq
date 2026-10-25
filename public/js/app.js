@@ -240,7 +240,9 @@ async function boot() {
       toastAction('Neue Version verfügbar', 'Neu laden', () => { void applyUpdate(); }, 8000);
     });
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(() => {});
+      // Relativ registrieren: funktioniert an der Domain-Wurzel und im
+      // GitHub-Pages-Unterpfad (/kaloriq/).
+      navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).catch(() => {});
     });
   }
 
