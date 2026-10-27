@@ -48,6 +48,42 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.4.4] – 27.10.2026
+
+### Behoben
+
+- **Health Connect ist jetzt immer sichtbar (APK):** Bisher wurde die Zeile
+  ausgeblendet, wenn Health Connect fehlte oder ein Update brauchte – das wirkte
+  wie „funktioniert nicht“. Jetzt zeigt sie den Status und bietet direkt
+  „Health Connect installieren/öffnen“ an.
+- **Status und Rechte einzeln:** Das Sheet zeigt, ob Health Connect verfügbar
+  ist und ob Schritte und Gewicht gelesen werden dürfen. Fehlermeldungen werden
+  als Detailzeile angezeigt.
+- **Teilweise Rechte blockieren nichts mehr:** Schritte und Gewicht werden
+  getrennt gelesen und importiert. Fehlt eine Berechtigung, bleibt der andere
+  Wert nutzbar.
+- **Leere Daten werden erklärt:** Health Connect enthält nur Werte, die andere
+  Apps (z. B. Google Fit oder Samsung Health) hineinschreiben. Kaloriq sagt das
+  jetzt deutlich und verweist auf den eingebauten Schrittzähler, der unabhängig
+  davon direkt am Gerät zählt.
+
+### Geändert
+
+- Neue Brückenfunktionen `status()` und `openSettings()`; `readToday()` liefert
+  Schritte und Gewicht samt Fehlerliste getrennt.
+- Health-Connect-Zeile im Profil zeigt „verbinden“, wenn noch keine
+  Berechtigung erteilt ist.
+
+### Getestet
+
+- Zustände „verfügbar“, „Update nötig“ und „nicht installiert“ in Deutsch und
+  Englisch; teilweise erteilte Berechtigungen; Import mit Daten und ohne Daten;
+  Öffnen/Installieren-Button.
+- **Hinweis:** Die echte Verbindung zu Health Connect und die Berechtigungs-
+  dialoge lassen sich nur auf einem Android-Gerät abschließend prüfen.
+
+---
+
 ## [1.4.3] – 25.10.2026
 
 ### Geändert

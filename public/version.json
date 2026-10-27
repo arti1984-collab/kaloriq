@@ -1,15 +1,15 @@
 {
-  "version": "1.4.3",
-  "date": "2026-10-25",
+  "version": "1.4.4",
+  "date": "2026-10-27",
   "notes": [
-    "KI-Modelle: Es lassen sich nur noch Modelle mit kostenlosem Free-Tier wählen – bezahlte Modelle sind entfernt.",
-    "Jeder nutzt den eigenen Gemini-Key. Der geteilte Server-Proxy ist entfallen; der Key bleibt auf dem Gerät.",
-    "Ohne Key bleibt der Demo-Modus. Vorhandene Keys, Einträge und Einstellungen bleiben erhalten."
+    "Health Connect zeigt jetzt Status und Berechtigungen einzeln an – inklusive Installieren oder Öffnen direkt aus der App.",
+    "Schritte und Gewicht werden getrennt importiert: Fehlt eine Berechtigung, bleibt der andere Wert nutzbar.",
+    "Klarer Hinweis, wenn Health Connect leer ist: Dort schreiben nur andere Apps (z. B. Google Fit) Daten hinein – der Schrittzähler von Kaloriq zählt unabhängig davon."
   ],
   "notes_en": [
-    "AI models: only models with a free tier can be selected – paid models are removed.",
-    "Everyone uses their own Gemini key. The shared server proxy is gone; the key stays on the device.",
-    "Without a key, demo mode remains. Existing keys, entries and settings are kept."
+    "Health Connect now shows status and permissions separately – including installing or opening it right from the app.",
+    "Steps and weight are imported independently: if one permission is missing, the other value still works.",
+    "Clear hint when Health Connect is empty: only other apps (e.g. Google Fit) write data there – Kaloriq’s step counter counts independently."
   ],
   "release": "https://github.com/arti1984-collab/kaloriq/releases/latest"
 }

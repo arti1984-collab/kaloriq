@@ -12,7 +12,7 @@ import { APP_VERSION } from '../version.js';
 import { getLang, setLang, locale, tr } from '../i18n.js';
 import { openPauseSheet, pauseStateLabel } from '../pause.js';
 import { exportEntriesCsv, exportDaysCsv } from '../csv.js';
-import { healthAvailable, healthHasPermissions, requestHealthPermissions, readHealthToday } from '../health.js';
+import { healthBridgePresent, healthStatus, requestHealthPermissions, readHealthToday, openHealthSettings } from '../health.js';
 import { scheduleSystemReminder, systemRemindersAvailable } from '../reminders.js';
 import { getUpdateState, checkForUpdate, openUpdateSheet } from '../update.js';
 
@@ -31,7 +31,17 @@ export function renderProfile(root) {
   const trackingStyle = state.settings.trackingStyle || 'precise';
   const reminderOn = Boolean(state.settings.reminderEnabled);
   const reminderTime = state.settings.reminderTime || '18:00';
-  const healthOn = healthAvailable();
+  const healthOn = healthBridgePresent();
+  const healthState = healthOn ? healthStatus() : null;
+  const healthSub = !healthOn
+    ? ''
+    : healthState?.sdk === 'available'
+      ? (healthState.steps || healthState.weight)
+        ? 'Schritte und Gewicht aus Android Health importieren'
+        : 'Verbinden, um Schritte und Gewicht zu importieren'
+      : healthState?.sdk === 'update_required'
+        ? 'App aktualisieren, um Daten zu lesen'
+        : 'Zum Import aus Android Health installieren';
   const systemReminder = systemRemindersAvailable();
   const styleText = trackingStyle === 'rough'
     ? 'Grob · Handportionen und Schnell-Eintrag'
@@ -126,9 +136,11 @@ export function renderProfile(root) {
       ${healthOn ? `<button class="row" data-health>
         <span class="grow">
           <span class="t">Health Connect</span>
-          <span class="s">Schritte und Gewicht aus Android Health importieren</span>
+          <span class="s">${healthSub}</span>
         </span>
-        ${icon('chev', 'chev')}
+        ${healthState?.sdk === 'available' && !(healthState.steps || healthState.weight)
+          ? '<span class="pill neutral">verbinden</span>'
+          : icon('chev', 'chev')}
       </button>` : ''}
       <button class="row" data-gentle role="switch" aria-checked="${gentle}" aria-label="Sanfter Modus">
         <span class="grow">
@@ -630,48 +642,118 @@ function openHealthSheet(root) {
   const body = document.createElement('div');
   body.innerHTML = `
     <p class="small muted" style="margin-bottom:14px">Health Connect liest heute Schritte und das zuletzt eingetragene Gewicht aus Android Health. Kaloriq schreibt keine Daten zurück.</p>
+
     <div class="card" style="padding:14px;margin-bottom:14px">
       <div class="hstack" style="justify-content:space-between">
-        <span class="small" style="font-weight:620">Status</span>
+        <span class="small" style="font-weight:620">Health Connect</span>
         <span class="pill neutral" data-health-status>–</span>
       </div>
-      <p class="tiny muted" style="margin-top:6px">Berechtigungen: Schritte lesen, Gewicht lesen.</p>
+      <div class="hstack" style="justify-content:space-between;margin-top:10px">
+        <span class="small">Schritte lesen</span>
+        <span class="pill neutral" data-health-steps>–</span>
+      </div>
+      <div class="hstack" style="justify-content:space-between;margin-top:6px">
+        <span class="small">Gewicht lesen</span>
+        <span class="pill neutral" data-health-weight>–</span>
+      </div>
+      <p class="tiny muted" data-health-detail style="margin-top:8px"></p>
     </div>
+
     <div class="vstack">
+      <button class="btn btn-block" data-health-open>Health Connect öffnen</button>
       <button class="btn btn-block" data-health-permission>Berechtigung erteilen</button>
-      <button class="btn btn-primary btn-block" data-health-import>Heute importieren</button>
+      <button class="btn btn-primary btn-block" data-health-import>Daten importieren</button>
     </div>
-    <p class="tiny muted" style="margin-top:14px">Apple Health ist in der Android-App und in der PWA technisch nicht erreichbar. Dafür wäre eine native iOS-App mit HealthKit nötig.</p>`;
-  const sheet = openSheet({ title: 'Health Connect', body });
 
-  const status = body.querySelector('[data-health-status]');
+    <p class="tiny muted" style="margin-top:14px">
+      Health Connect enthält nur Daten, die andere Apps (z. B. Google Fit oder Samsung Health)
+      dorthin schreiben. Der Schrittzähler von Kaloriq zählt unabhängig davon direkt am Gerät.
+    </p>
+    <p class="tiny muted" style="margin-top:10px">Apple Health ist in der Android-App und in der PWA technisch nicht erreichbar. Dafür wäre eine native iOS-App mit HealthKit nötig.</p>`;
+
+  let repaintTimer = 0;
+  const sheet = openSheet({
+    title: 'Health Connect',
+    subtitle: 'Android Health',
+    body,
+    onClose: () => clearInterval(repaintTimer),
+  });
+
+  const statusEl = body.querySelector('[data-health-status]');
+  const stepsEl = body.querySelector('[data-health-steps]');
+  const weightEl = body.querySelector('[data-health-weight]');
+  const detailEl = body.querySelector('[data-health-detail]');
+  const permBtn = body.querySelector('[data-health-permission]');
+  const importBtn = body.querySelector('[data-health-import]');
+  const openBtn = body.querySelector('[data-health-open]');
+
   const paint = () => {
-    const ok = healthHasPermissions();
-    status.textContent = ok ? 'Berechtigung erteilt' : 'Noch nicht verbunden';
-    status.className = `pill ${ok ? '' : 'neutral'}`;
-  };
-  paint();
+    const s = healthStatus();
+    const labels = {
+      available: 'verfügbar',
+      update_required: 'Update nötig',
+      unavailable: 'nicht installiert',
+      error: 'Status unklar',
+    };
+    statusEl.textContent = tr(labels[s.sdk] || 'unbekannt');
+    statusEl.className = `pill ${s.sdk === 'available' ? '' : 'warn'}`;
 
-  body.querySelector('[data-health-permission]')?.addEventListener('click', async () => {
+    const mark = (el, ok) => {
+      el.textContent = ok ? tr('erteilt') : tr('fehlt');
+      el.className = `pill ${ok ? '' : 'neutral'}`;
+    };
+    mark(stepsEl, s.steps);
+    mark(weightEl, s.weight);
+
+    const anyPermission = s.steps || s.weight;
+    permBtn.textContent = tr(s.steps || s.weight ? 'Berechtigungen prüfen' : 'Berechtigungen erteilen');
+    permBtn.disabled = s.sdk !== 'available';
+    importBtn.disabled = s.sdk !== 'available' || !anyPermission;
+    openBtn.textContent = s.sdk === 'available' ? tr('Health Connect öffnen') : tr('Health Connect installieren');
+
+    detailEl.textContent = s.error
+      ? `Details: ${s.error}`
+      : s.sdk === 'update_required'
+        ? tr('Bitte die Health-Connect-App im Play Store aktualisieren.')
+        : s.sdk === 'unavailable'
+          ? tr('Bitte Health Connect aus dem Play Store installieren (Android 13 und älter).')
+          : anyPermission
+            ? tr('Berechtigungen können jederzeit in Health Connect widerrufen werden.')
+            : tr('Noch keine Berechtigung erteilt.');
+  };
+
+  paint();
+  repaintTimer = setInterval(paint, 2500);
+
+  permBtn?.addEventListener('click', async () => {
     try {
-      const granted = await requestHealthPermissions();
-      toast(granted ? 'Health Connect verbunden' : 'Berechtigung nicht erteilt', granted ? 'ok' : 'err');
+      const result = await requestHealthPermissions();
+      if (result.granted) toast('Health Connect verbunden');
+      else if (result.steps || result.weight) toast('Teilweise verbunden – Import ist möglich');
+      else toast('Berechtigung nicht erteilt', 'err');
       paint();
+      renderProfile(root);
     } catch (err) {
       toast(err.message || 'Berechtigung fehlgeschlagen', 'err');
     }
   });
 
-  body.querySelector('[data-health-import]')?.addEventListener('click', async () => {
+  openBtn?.addEventListener('click', () => openHealthSettings());
+
+  importBtn?.addEventListener('click', async () => {
     try {
       const data = await readHealthToday();
       const steps = Math.max(0, Math.round(Number(data.steps) || 0));
       const weight = Number(data.weight);
       const hasWeight = Number.isFinite(weight) && weight > 0;
+
       if (!steps && !hasWeight) {
-        toast('Keine Health-Connect-Daten gefunden', 'err');
+        const suffix = data.errors.length ? ` (${data.errors[0]})` : '';
+        toast('Keine Health-Connect-Daten gefunden – dort schreiben nur andere Apps hinein', 'err');
+        detailEl.textContent = tr('Keine Werte gefunden. Prüfe, ob eine App wie Google Fit oder Samsung Health Daten an Health Connect schreibt.') + suffix;
         return;
       }
+
       const parts = [];
       if (steps) parts.push(`${fmt(steps)} ${tr('Schritte')}`);
       if (hasWeight) parts.push(`${fmt(weight, 1)} kg ${tr('Gewicht')}`);

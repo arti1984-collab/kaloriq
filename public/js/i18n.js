@@ -811,6 +811,39 @@ const EN = {
   'Health Connect ist auf diesem Gerät nicht verfügbar.': 'Health Connect is not available on this device.',
   'Health Connect konnte nicht gelesen werden.': 'Health Connect could not be read.',
   'Zeitüberschreitung bei Health Connect.': 'Health Connect timed out.',
+
+  // Health Connect – Status & Diagnose
+  'Android Health': 'Android Health',
+  'Verbinden, um Schritte und Gewicht zu importieren': 'Connect to import steps and weight',
+  'App aktualisieren, um Daten zu lesen': 'Update the app to read data',
+  'Zum Import aus Android Health installieren': 'Install to import from Android Health',
+  'Health Connect installieren': 'Install Health Connect',
+  'Health Connect öffnen': 'Open Health Connect',
+  'Schritte lesen': 'Read steps',
+  'Gewicht lesen': 'Read weight',
+  'verfügbar': 'available',
+  'Update nötig': 'update required',
+  'nicht installiert': 'not installed',
+  'Status unklar': 'status unclear',
+  'unbekannt': 'unknown',
+  'erteilt': 'granted',
+  'fehlt': 'missing',
+  'verbinden': 'connect',
+  'Berechtigungen prüfen': 'Check permissions',
+  'Daten importieren': 'Import data',
+  'Bitte die Health-Connect-App im Play Store aktualisieren.': 'Please update the Health Connect app in the Play Store.',
+  'Bitte Health Connect aus dem Play Store installieren (Android 13 und älter).':
+    'Please install Health Connect from the Play Store (Android 13 and older).',
+  'Berechtigungen können jederzeit in Health Connect widerrufen werden.':
+    'Permissions can be revoked in Health Connect at any time.',
+  'Noch keine Berechtigung erteilt.': 'No permission granted yet.',
+  'Keine Werte gefunden. Prüfe, ob eine App wie Google Fit oder Samsung Health Daten an Health Connect schreibt.':
+    'No values found. Check whether an app such as Google Fit or Samsung Health writes data to Health Connect.',
+  'Teilweise verbunden – Import ist möglich': 'Partly connected – import is possible',
+  'Health Connect enthält nur Daten, die andere Apps (z. B. Google Fit oder Samsung Health) dorthin schreiben. Der Schrittzähler von Kaloriq zählt unabhängig davon direkt am Gerät.':
+    'Health Connect only contains data that other apps (e.g. Google Fit or Samsung Health) write to it. Kaloriq’s step counter counts directly on the device, independently of that.',
+  'Keine Health-Connect-Daten gefunden – dort schreiben nur andere Apps hinein':
+    'No Health Connect data found – only other apps write data there',
 };
 
 /* ---------------- Lebensmittel (Datenbanknamen) ---------------- */

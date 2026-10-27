@@ -106,6 +106,18 @@ Updates mit demselben Schlüssel). Ein Backup liegt im Projekt-ZIP.
 | Updates | ✅ APK drüber installieren, Daten bleiben |
 | Update-Hinweis | ✅ Banner + „Was ist neu“ mit Link zur neuen APK (bei bestehender Internetverbindung) |
 
+### Health Connect – was zu beachten ist
+
+- Die App zeigt im Profil **Status und Berechtigungen** getrennt an und kann
+  Health Connect direkt **öffnen oder installieren**.
+- Health Connect enthält **nur Daten, die andere Apps** (z. B. Google Fit oder
+  Samsung Health) dorthin schreiben. Auf einem frischen Gerät ist es oft leer –
+  dann meldet Kaloriq „Keine Daten gefunden“.
+- Der **eingebaute Schrittzähler** von Kaloriq zählt unabhängig davon direkt am
+  Gerät (Gerätesensor) und funktioniert auch ohne Health Connect.
+- Schritte und Gewicht werden **getrennt** gelesen: Fehlt eine Berechtigung,
+  bleibt der andere Wert importierbar.
+
 ---
 
 ## Aufbau

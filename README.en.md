@@ -6,7 +6,7 @@ Calorie, macro and fasting tracker with AI photo recognition – as an installab
 
 An independent implementation of the features of well-known calorie trackers. No third-party brands or assets, no cloud: **all data stays on the device.** The barcode scanner uses ZXing (Apache-2.0) – natively in the Android APK and as a locally bundled JavaScript library in Safari/Firefox – see [third-party notices](THIRD_PARTY_NOTICES.md).
 
-**Current version: 1.4.3** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.4.3) · [Changelog](CHANGELOG.md)
+**Current version: 1.4.4** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.4.4) · [Changelog](CHANGELOG.md)
 
 Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
@@ -139,7 +139,14 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
   Steps can be entered manually at any time.
 - **Health Connect (APK):** Optionally imports today’s steps and the latest
   weight from Android Health. Kaloriq only reads; no health data is written
-  back.
+  back. The app shows status and permissions separately and can open or install
+  Health Connect directly.
+- **Important about Health Connect:** it only contains data that other apps
+  (e.g. Google Fit or Samsung Health) write to it. On a fresh device it is often
+  empty – Kaloriq then says “No data found” and points to the built-in step
+  counter, which counts directly on the device independently of Health Connect.
+  Requirements: Android 8+ and – up to Android 13 – the Health Connect app from
+  the Play Store.
 
 ### Progress & weight
 

@@ -6,7 +6,7 @@ Kalorien-, Makro- und Fasten-Tracker mit KI-Foto-Erkennung – als installierbar
 
 Eigenständige Implementierung der Funktionen bekannter Kalorien-Tracker. Keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.** Für den Barcode-Scanner wird ZXing (Apache-2.0) verwendet – nativ in der Android-APK und als lokal mitgelieferte JavaScript-Bibliothek in Safari/Firefox – siehe [Drittanbieter-Hinweise](THIRD_PARTY_NOTICES.md).
 
-**Aktuelle Version: 1.4.3** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.4.3) · [Changelog](CHANGELOG.md)
+**Aktuelle Version: 1.4.4** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.4.4) · [Changelog](CHANGELOG.md)
 
 Folge Kaloriq auf [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
@@ -142,7 +142,15 @@ Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzel
   zugänglich. Schritte lassen sich jederzeit manuell eintragen.
 - **Health Connect (APK):** Importiert auf Wunsch die heutigen Schritte und das
   zuletzt eingetragene Gewicht aus Android Health. Kaloriq liest nur; es werden
-  keine Gesundheitsdaten zurückgeschrieben.
+  keine Gesundheitsdaten zurückgeschrieben. Die App zeigt Status und
+  Berechtigungen einzeln an und kann Health Connect direkt öffnen oder
+  installieren.
+- **Wichtig zu Health Connect:** Dort stehen nur Daten, die andere Apps
+  (z. B. Google Fit oder Samsung Health) hineinschreiben. Auf einem frischen
+  Gerät ist Health Connect oft leer – dann meldet Kaloriq „Keine Daten
+  gefunden“ und verweist auf den eingebauten Schrittzähler, der unabhängig
+  davon direkt am Gerät zählt. Voraussetzung: Android 8+ und – bis Android 13 –
+  die Health-Connect-App aus dem Play Store.
 
 ### Fortschritt & Gewicht
 
