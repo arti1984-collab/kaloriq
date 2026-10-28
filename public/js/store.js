@@ -190,6 +190,10 @@ function defaultState() {
     customFoods: [],
     favorites: [],
     recipes: [],
+    // Wochenplan: { 'YYYY-MM-DD': { breakfast: [{id, recipeId, portions}], … } }
+    mealPlan: {},
+    // Einkaufslisten: { 'YYYY-MM-DD' (Montag): { checked: {key: true}, extra: [{id, name, amount, checked}] } }
+    shopping: {},
     settings: {
       apiKey: '',
       model: DEFAULT_MODEL,
@@ -258,6 +262,8 @@ function migrate(raw) {
     customFoods: Array.isArray(raw.customFoods) ? raw.customFoods : [],
     favorites: Array.isArray(raw.favorites) ? raw.favorites : [],
     recipes: Array.isArray(raw.recipes) ? raw.recipes : [],
+    mealPlan: raw.mealPlan && typeof raw.mealPlan === 'object' ? raw.mealPlan : {},
+    shopping: raw.shopping && typeof raw.shopping === 'object' ? raw.shopping : {},
   };
 
   // Pausen-Historie normalisieren. Die frühere Gentle-Pause (boolean) wird
@@ -1036,4 +1042,140 @@ export function restoreBackup(at) {
   if (!hit || !hit.data) throw new Error('Sicherung nicht gefunden.');
   store.replace(JSON.parse(hit.data));
   return true;
+}
+
+/* ---------- Wochenplan ---------- */
+
+export const PLAN_MEALS = ['breakfast', 'lunch', 'dinner', 'snack'];
+
+/** Plan eines Tages mit allen vier Mahlzeiten (immer vollständig). */
+export function planFor(dateKeyValue) {
+  const out = { breakfast: [], lunch: [], dinner: [], snack: [] };
+  const day = state.mealPlan?.[dateKeyValue];
+  if (!day || typeof day !== 'object') return out;
+  for (const meal of PLAN_MEALS) {
+    out[meal] = (Array.isArray(day[meal]) ? day[meal] : [])
+      .filter((entry) => entry && typeof entry.recipeId === 'string' && entry.recipeId)
+      .map((entry) => ({
+        id: String(entry.id || ''),
+        recipeId: entry.recipeId,
+        portions: round1(Math.max(0.1, Number(entry.portions) || 1)),
+      }));
+  }
+  return out;
+}
+
+export function addPlanEntry(dateKeyValue, meal, recipeId, portions = 1) {
+  if (!PLAN_MEALS.includes(meal)) throw new Error('Unbekannte Mahlzeit');
+  return store.set((s) => {
+    if (!s.mealPlan) s.mealPlan = {};
+    const day = s.mealPlan[dateKeyValue] || (s.mealPlan[dateKeyValue] = {});
+    if (!Array.isArray(day[meal])) day[meal] = [];
+    const entry = {
+      id: newEntryId(),
+      recipeId,
+      portions: round1(Math.max(0.1, Number(portions) || 1)),
+    };
+    day[meal].push(entry);
+    return entry;
+  }, 'plan');
+}
+
+export function updatePlanEntry(dateKeyValue, meal, id, patch = {}) {
+  return store.set((s) => {
+    const list = s.mealPlan?.[dateKeyValue]?.[meal];
+    if (!Array.isArray(list)) return null;
+    const entry = list.find((item) => item.id === id);
+    if (!entry) return null;
+    if (patch.portions !== undefined) {
+      entry.portions = round1(Math.max(0.1, Number(patch.portions) || 1));
+    }
+    return entry;
+  }, 'plan');
+}
+
+export function removePlanEntry(dateKeyValue, meal, id) {
+  return store.set((s) => {
+    const list = s.mealPlan?.[dateKeyValue]?.[meal];
+    if (!Array.isArray(list)) return false;
+    s.mealPlan[dateKeyValue][meal] = list.filter((item) => item.id !== id);
+    return true;
+  }, 'plan');
+}
+
+/* ---------- Einkaufsliste ---------- */
+
+function shoppingBucket(s, weekKey) {
+  if (!s.shopping) s.shopping = {};
+  if (!s.shopping[weekKey] || typeof s.shopping[weekKey] !== 'object') {
+    s.shopping[weekKey] = {};
+  }
+  const bucket = s.shopping[weekKey];
+  if (!bucket.checked || typeof bucket.checked !== 'object') bucket.checked = {};
+  if (!Array.isArray(bucket.extra)) bucket.extra = [];
+  return bucket;
+}
+
+export function shoppingFor(weekKey) {
+  const raw = state.shopping?.[weekKey];
+  return {
+    checked: raw?.checked && typeof raw.checked === 'object' ? raw.checked : {},
+    extra: Array.isArray(raw?.extra)
+      ? raw.extra
+        .map((item) => ({
+          id: String(item?.id || ''),
+          name: String(item?.name || '').trim(),
+          amount: String(item?.amount || '').trim(),
+          checked: Boolean(item?.checked),
+        }))
+        .filter((item) => item.id && item.name)
+      : [],
+  };
+}
+
+export function setShoppingChecked(weekKey, key, checked) {
+  return store.set((s) => {
+    const bucket = shoppingBucket(s, weekKey);
+    if (checked) bucket.checked[key] = true;
+    else delete bucket.checked[key];
+    return checked;
+  }, 'shopping');
+}
+
+export function clearShoppingChecked(weekKey) {
+  return store.set((s) => {
+    shoppingBucket(s, weekKey).checked = {};
+  }, 'shopping');
+}
+
+export function addShoppingExtra(weekKey, { name = '', amount = '' } = {}) {
+  const cleanName = String(name || '').trim().slice(0, 120);
+  if (!cleanName) return null;
+  return store.set((s) => {
+    const bucket = shoppingBucket(s, weekKey);
+    const item = {
+      id: newEntryId(),
+      name: cleanName,
+      amount: String(amount || '').trim().slice(0, 40),
+      checked: false,
+    };
+    bucket.extra.push(item);
+    return item;
+  }, 'shopping');
+}
+
+export function toggleShoppingExtra(weekKey, id) {
+  return store.set((s) => {
+    const bucket = shoppingBucket(s, weekKey);
+    const item = bucket.extra.find((entry) => entry.id === id);
+    if (item) item.checked = !item.checked;
+    return item || null;
+  }, 'shopping');
+}
+
+export function removeShoppingExtra(weekKey, id) {
+  return store.set((s) => {
+    const bucket = shoppingBucket(s, weekKey);
+    bucket.extra = bucket.extra.filter((entry) => entry.id !== id);
+  }, 'shopping');
 }

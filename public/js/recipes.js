@@ -136,6 +136,16 @@ export function saveRecipe(draft) {
 export function deleteRecipe(id) {
   store.set((state) => {
     if (Array.isArray(state.recipes)) state.recipes = state.recipes.filter((recipe) => recipe.id !== id);
+    // Geplante Einträge dieses Rezepts entfernen, damit keine Leichen bleiben.
+    if (state.mealPlan && typeof state.mealPlan === 'object') {
+      for (const meals of Object.values(state.mealPlan)) {
+        if (!meals || typeof meals !== 'object') continue;
+        for (const meal of Object.keys(meals)) {
+          if (!Array.isArray(meals[meal])) continue;
+          meals[meal] = meals[meal].filter((entry) => entry?.recipeId !== id);
+        }
+      }
+    }
   }, 'recipes');
 }
 

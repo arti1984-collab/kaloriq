@@ -58,6 +58,9 @@ const PATHS = {
   pause: '<path d="M9 5v14M15 5v14"/>',
   stop: '<rect x="6" y="6" width="12" height="12" rx="2"/>',
   star: '<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.2 1 5.9-5.2-2.7-5.2 2.7 1-5.9L3.5 9.7l5.9-.9z"/>',
+  calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/><path d="M8 14h3M13 14h3"/>',
+  share: '<circle cx="6" cy="12" r="2.4"/><circle cx="17" cy="6" r="2.4"/><circle cx="17" cy="18" r="2.4"/><path d="M8.2 10.8l6.6-3.6M8.2 13.2l6.6 3.6"/>',
+  cart: '<circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/><path d="M3 4h2l2.2 10.2h10.4L20 7H6"/>',
 };
 
 export function icon(name, cls = '') {

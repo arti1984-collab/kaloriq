@@ -261,6 +261,13 @@ export function renderProfile(root) {
         </span>
         ${icon('bowl', 'chev')}
       </button>
+      <button class="row" data-plan>
+        <span class="grow">
+          <span class="t">Wochenplan &amp; Einkauf</span>
+          <span class="s">Rezepte auf Tage legen, Zutaten bündeln</span>
+        </span>
+        ${icon('calendar', 'chev')}
+      </button>
       <button class="row" data-export>
         <span class="grow"><span class="t">Daten exportieren</span><span class="s">JSON-Backup</span></span>
         ${icon('download', 'chev')}
@@ -333,6 +340,9 @@ export function renderProfile(root) {
   root.querySelector('[data-aitest]').addEventListener('click', (e) => testAi(e.currentTarget));
   root.querySelector('[data-recipes]').addEventListener('click', () => {
     location.hash = '#/recipes';
+  });
+  root.querySelector('[data-plan]').addEventListener('click', () => {
+    location.hash = '#/plan';
   });
   root.querySelector('[data-export]').addEventListener('click', () => {
     downloadFile(`kaloriq-backup-${todayKey()}.json`, exportJson());

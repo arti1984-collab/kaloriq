@@ -48,6 +48,44 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.5.0] – 28.10.2026
+
+### Hinzugefügt
+
+- **Wochenplan:** Rezepte lassen sich pro Tag und Mahlzeit (Frühstück, Mittag,
+  Abend, Snacks) einplanen. Portionen sind pro Eintrag einstellbar; die
+  geplanten Kalorien stehen pro Tag in der Kopfzeile.
+- **Ins Tagebuch:** Ein geplantes Rezept wird mit einem Tipp als Eintrag in den
+  Tag übernommen – mit der gewählten Portionszahl.
+- **Einkaufsliste:** Alle Zutaten der Woche werden automatisch
+  zusammengerechnet (gleiche Namen addiert, Gramm zu Kilogramm), nach
+  Kategorien gruppiert und pro Woche abhakbar gespeichert. Eigene Artikel wie
+  „Spülmittel“ lassen sich ergänzen und löschen.
+- **Teilen:** Die offene Einkaufsliste geht als Text über die Systemfreigabe
+  oder in die Zwischenablage.
+- **Einstiege:** Profil → „Wochenplan & Einkauf“, das Kalender-Symbol im
+  Tagebuch und der Kopf der Rezeptansicht.
+
+### Geändert
+
+- Neue Module `public/js/plan.js` (Datum, Kategorien, Summierung) und
+  `public/js/views/mealplan.js`; beide stehen im Service-Worker-Cache.
+- Beim Löschen eines Rezepts werden auch seine geplanten Einträge entfernt,
+  damit keine unsichtbaren Leichen bleiben.
+- Eigene Artikel und Häkchen liegen pro Woche im Zustand
+  (`shopping['YYYY-MM-DD']`), der Plan in `mealPlan`; Migration ergänzt nur
+  fehlende Felder.
+
+### Getestet
+
+- Planen, Portionen ändern, Entfernen und „Ins Tagebuch“ inklusive
+  Nährwertübernahme.
+- Einkaufsliste mit mehreren Rezepten: Summierung, Kategorien, Häkchen,
+  Fortschritt, eigene Artikel, Haken zurücksetzen, Teilen-Text.
+- Deutsch und Englisch, keine Konsolenfehler.
+
+---
+
 ## [1.4.4] – 27.10.2026
 
 ### Behoben

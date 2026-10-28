@@ -6,7 +6,7 @@ Kalorien-, Makro- und Fasten-Tracker mit KI-Foto-Erkennung – als installierbar
 
 Eigenständige Implementierung der Funktionen bekannter Kalorien-Tracker. Keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.** Für den Barcode-Scanner wird ZXing (Apache-2.0) verwendet – nativ in der Android-APK und als lokal mitgelieferte JavaScript-Bibliothek in Safari/Firefox – siehe [Drittanbieter-Hinweise](THIRD_PARTY_NOTICES.md).
 
-**Aktuelle Version: 1.4.4** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.4.4) · [Changelog](CHANGELOG.md)
+**Aktuelle Version: 1.5.0** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.5.0) · [Changelog](CHANGELOG.md)
 
 Folge Kaloriq auf [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
@@ -56,6 +56,7 @@ Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzel
 | **KI-Tracking** | Foto **oder** Text → Gemini schätzt Bestandteile, Gramm, Kalorien & Makros. Jede Position editierbar, einzelne Positionen abwählbar. Eigener Key, nur Free-Tier-Modelle |
 | **Eigene Lebensmittel** | Mit Nährwerten pro 100 g + optionaler Portion, dauerhaft gespeichert |
 | **Rezepte** | Eigene Rezepte mit Zutaten und Nährwerten pro 100 g, Portionen, Tags und Zubereitung; Portion ins Tagebuch, JSON-Import/-Export |
+| **Wochenplan** | Rezepte auf Tage und Mahlzeiten legen; daraus automatisch eine Einkaufsliste (nach Kategorien, abhakbar, teilbar) |
 | **Wasser** | Freie Eingabe in **ml oder Litern**, Schnellwerte (+250 ml … +1 l), Tagesfortschritt, Ziel aus Gewicht |
 | **Schritte** | Schrittzähler über den Gerätesensor (APK: zählt auch bei geschlossener App nach), Tagesziel, manuelle Korrektur, Speicherung pro Tag |
 | **Gewicht** | Eingabe, Verlaufskurve, Zielgewicht, BMI, Prognose bis zum Ziel |
@@ -117,6 +118,21 @@ Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzel
 - Rezepte bleiben lokal und werden mit den automatischen Sicherungen
   gespeichert. Export und Import als `kaloriq-recipes`-JSON zum Sichern oder
   Teilen; eine Community-Datenbank oder Cloud-Synchronisierung gibt es nicht.
+
+### Wochenplan & Einkauf
+
+- **Wochenplan:** Rezepte per Tipp auf einen Tag und eine Mahlzeit legen
+  (Frühstück, Mittag, Abend, Snacks). Portionen lassen sich pro Eintrag
+  anpassen; die geplanten Kalorien pro Tag stehen in der Kopfzeile.
+- **Ins Tagebuch:** Ein geplantes Rezept wandert mit einem Tipp als Eintrag in
+  den Tag – mit der gewählten Portionszahl.
+- **Einkaufsliste:** Alle Zutaten der Woche werden zusammengerechnet (gleiche
+  Namen addiert, Gramm zu kg), nach Kategorien sortiert und pro Woche
+  abhakbar gespeichert. Eigene Artikel (z. B. Spülmittel) lassen sich ergänzen.
+- **Teilen:** Die offene Liste geht als Text über die Systemfreigabe oder in die
+  Zwischenablage.
+- **Einstieg:** Profil → „Wochenplan & Einkauf“, das Kalender-Symbol im Tagebuch
+  oder oben in den Rezepten. Alles bleibt lokal.
 
 ### Wasser
 

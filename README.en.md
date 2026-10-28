@@ -6,7 +6,7 @@ Calorie, macro and fasting tracker with AI photo recognition – as an installab
 
 An independent implementation of the features of well-known calorie trackers. No third-party brands or assets, no cloud: **all data stays on the device.** The barcode scanner uses ZXing (Apache-2.0) – natively in the Android APK and as a locally bundled JavaScript library in Safari/Firefox – see [third-party notices](THIRD_PARTY_NOTICES.md).
 
-**Current version: 1.4.4** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.4.4) · [Changelog](CHANGELOG.md)
+**Current version: 1.5.0** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.5.0) · [Changelog](CHANGELOG.md)
 
 Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
@@ -56,6 +56,7 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
 | **AI tracking** | Photo **or** text → Gemini estimates ingredients, grams, calories & macros. Every item editable, individual items can be deselected. Own key, free-tier models only |
 | **Custom foods** | With nutrition values per 100 g + optional serving, stored permanently |
 | **Recipes** | Your own recipes with ingredients and nutrition per 100 g, servings, tags and preparation; add a serving to the diary, JSON import/export |
+| **Meal plan** | Plan recipes across days and meals; automatically builds a shopping list (grouped, tickable, shareable) |
 | **Water** | Free input in **ml or liters**, quick values (+250 ml … +1 l), daily progress, goal based on weight |
 | **Steps** | Step counter via the device sensor (APK: also counts while the app is closed), daily goal, manual correction, stored per day |
 | **Weight** | Input, history chart, target weight, BMI, forecast to goal |
@@ -115,6 +116,21 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
 - Recipes stay local and are included in the automatic backups. Export and
   import as `kaloriq-recipes` JSON for backup or sharing; there is no community
   database or cloud sync.
+
+### Meal plan & shopping
+
+- **Meal plan:** tap a day and a meal (breakfast, lunch, dinner, snacks) to add a
+  recipe. Portions can be adjusted per entry; planned calories per day are shown
+  in the header.
+- **Add to diary:** a planned recipe becomes a diary entry with one tap, using
+  the selected number of servings.
+- **Shopping list:** all ingredients for the week are summed up (same names
+  merged, grams converted to kg), grouped by category and stored per week with
+  ticks. You can add your own items (e.g. dish soap).
+- **Share:** the open list goes out as text via the system share sheet or the
+  clipboard.
+- **Where:** profile → “Meal plan & shopping”, the calendar icon in the diary, or
+  the top of the recipes view. Everything stays local.
 
 ### Water
 

@@ -234,6 +234,7 @@ export function renderDiary(root) {
         <h1>Tagebuch</h1>
         <div class="sub">${headerSub}</div>
       </div>
+      <button class="icon-btn" data-plan aria-label="Wochenplan">${icon('calendar')}</button>
       <button class="icon-btn" data-recipes aria-label="Rezepte">${icon('bowl')}</button>
       <button class="icon-btn" data-today aria-label="Zu heute springen">${icon('refresh')}</button>
     </header>
@@ -322,6 +323,9 @@ export function renderDiary(root) {
   `;
 
   // Navigation
+  root.querySelector('[data-plan]')?.addEventListener('click', () => {
+    location.hash = '#/plan';
+  });
   root.querySelector('[data-recipes]')?.addEventListener('click', () => {
     location.hash = '#/recipes';
   });

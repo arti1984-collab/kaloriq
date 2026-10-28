@@ -34,6 +34,7 @@ export function renderRecipes(root) {
         <h1>Rezepte</h1>
         <div class="sub">${countText} · lokal gespeichert</div>
       </div>
+      <button class="icon-btn" data-plan aria-label="Wochenplan">${icon('calendar')}</button>
       <button class="icon-btn" data-import aria-label="Rezepte importieren">${icon('upload')}</button>
       <button class="icon-btn" data-export aria-label="Alle Rezepte exportieren">${icon('download')}</button>
       <button class="icon-btn" data-new aria-label="Neues Rezept">${icon('plus')}</button>
@@ -93,6 +94,9 @@ export function renderRecipes(root) {
     location.hash = '#/diary';
   });
   root.querySelector('[data-new]').addEventListener('click', () => openRecipeEditor());
+  root.querySelector('[data-plan]')?.addEventListener('click', () => {
+    location.hash = '#/plan';
+  });
   root.querySelector('[data-export]').addEventListener('click', exportAll);
   root.querySelector('[data-import]').addEventListener('click', importRecipes);
   search.addEventListener('input', () => {

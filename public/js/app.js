@@ -14,6 +14,7 @@ import { renderProgress } from './views/progress.js';
 import { renderFasting } from './views/fasting.js';
 import { renderProfile } from './views/profile.js';
 import { renderRecipes } from './views/recipes.js';
+import { renderMealPlan } from './views/mealplan.js';
 import { openAiSheet, openQuickLogSheet, openAddSheet } from './views/add.js';
 import { initWidget } from './widget.js';
 import { initReminders } from './reminders.js';
@@ -32,6 +33,7 @@ const VIEWS = {
   fasting: renderFasting,
   profile: renderProfile,
   recipes: renderRecipes,
+  plan: renderMealPlan,
 };
 
 let currentTab = 'diary';
