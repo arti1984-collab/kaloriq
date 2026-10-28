@@ -200,7 +200,10 @@ async function boot() {
       setLang(state.settings.lang || 'de');
       paintTabbar();
     }
-    if (reason === 'onboarding') requestPersistentStorage();
+    if (reason === 'onboarding') {
+      requestPersistentStorage();
+      initUpdateNotice();
+    }
     // Schritte aktualisieren sich live über `kaloriq:steps` in der
     // Tagebuch-Ansicht. Ein vollständiger Re-Render bei jedem Sensor-Update
     // würde die Oberfläche nur unnötig alle paar hundert Millisekunden

@@ -815,6 +815,18 @@ input[type="range"]::-moz-range-thumb {
   transition: color .15s;
 }
 .tab svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.85; stroke-linecap: round; stroke-linejoin: round; }
+.tab[data-tab="profile"] { position: relative; }
+body[data-update-ready="1"] .tab[data-tab="profile"]::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: calc(50% + 12px);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--card);
+}
 .tab[aria-current="page"] { color: var(--accent-strong); }
 .tab:active { transform: scale(.96); }
 .tab.spacer, .tab.gap { flex: 0 0 68px; pointer-events: none; visibility: hidden; }
@@ -1270,7 +1282,7 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
   position: fixed;
   left: 50%;
   bottom: calc(var(--tabbar-h) + var(--safe-b) + 12px);
-  z-index: 190;
+  z-index: 95;
   width: min(94vw, 520px);
   display: flex;
   align-items: center;

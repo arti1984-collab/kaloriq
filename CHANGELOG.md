@@ -48,6 +48,39 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.6.1] – 28.10.2026
+
+### Geändert
+
+- **Update-Prüfung viel früher:** statt nach 2,4 Sekunden jetzt **250 ms nach
+  dem Start**. Zusätzlich bei jeder Rückkehr in die App (max. alle zwei
+  Minuten), alle zwölf Minuten im Vordergrund und sofort nach dem Wieder-
+  verbinden. Die alte sechsstündige Sperre entfällt.
+- **Service Worker wird mitgeprüft:** Jede Prüfung stößt `registration.update()`
+  an; ein wartender Worker wird per `SKIP_WAITING` sofort aktiviert. Der
+  Service Worker versteht dafür jetzt die Nachricht.
+- **Punkt am Profil-Tab:** Ein kleiner grüner Punkt zeigt ein verfügbares
+  Update, auch wenn der Banner weggetippt wurde. Das Profil zeigt weiterhin
+  „Version X · Y verfügbar“ und „Neu“.
+- **Banner überdeckt keine Sheets mehr** (z-index unter dem Backdrop).
+- **Onboarding:** Nach dem Abschluss wird die Prüfung direkt gestartet, nicht
+  erst beim nächsten App-Start.
+
+### Getestet
+
+- Banner erscheint ca. **0,5 s** nach dem Start bei simulierter neuer Version.
+- Wegtippen bleibt pro Version gespeichert; der Punkt bleibt als Erinnerung.
+- Reload innerhalb der Sperrzeit zeigt die bekannte Version sofort, ohne
+  erneuten Netzaufruf.
+- Manuelle Prüfung im Profil, „aktuell“-Fall, Deutsch/Englisch, keine
+  Konsolenfehler.
+
+> **Hinweis:** Schneller wird es ab 1.6.1. Bereits installierte 1.6.0-Versionen
+> prüfen noch mit dem alten Rhythmus – einmal aktualisieren, danach greift das
+> neue Verhalten.
+
+---
+
 ## [1.6.0] – 28.10.2026
 
 ### Hinzugefügt

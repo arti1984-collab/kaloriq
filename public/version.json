@@ -1,15 +1,15 @@
 {
-  "version": "1.6.0",
+  "version": "1.6.1",
   "date": "2026-10-28",
   "notes": [
-    "Wochenplan ist jetzt ein eigener Tab unten – der Foto-Button wandert nach unten rechts.",
-    "Monatsrückblick als Bild: Tage, Ø Kalorien, Serie, Gewicht und Kalorienverlauf – speichern oder direkt teilen.",
-    "Alles bleibt lokal: Die Karte enthält nur Zahlen, keine Lebensmittel oder Notizen."
+    "Update-Prüfung jetzt direkt beim Start (nach 250 ms), bei jeder Rückkehr in die App und alle zwölf Minuten.",
+    "Der Service Worker wird mit geprüft und ein wartendes Update sofort aktiviert – „Jetzt aktualisieren“ lädt die neue Version.",
+    "Ein kleiner Punkt am Profil-Tab zeigt ein verfügbares Update, auch wenn der Banner weggetippt wurde."
   ],
   "notes_en": [
-    "The meal plan is now its own tab at the bottom – the photo button moves to the bottom right.",
-    "Monthly recap as an image: days, avg. calories, streak, weight and calorie chart – save or share directly.",
-    "Everything stays local: the card contains only numbers, no foods or notes."
+    "Update check now runs right at launch (after 250 ms), whenever you return to the app, and every twelve minutes.",
+    "The service worker is checked as well and a waiting update activates immediately – “Update now” loads the new version.",
+    "A small dot on the profile tab marks an available update, even if the banner was dismissed."
   ],
   "release": "https://github.com/arti1984-collab/kaloriq/releases/latest"
 }

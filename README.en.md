@@ -6,7 +6,7 @@ Calorie, macro and fasting tracker with AI photo recognition – as an installab
 
 An independent implementation of the features of well-known calorie trackers. No third-party brands or assets, no cloud: **all data stays on the device.** The barcode scanner uses ZXing (Apache-2.0) – natively in the Android APK and as a locally bundled JavaScript library in Safari/Firefox – see [third-party notices](THIRD_PARTY_NOTICES.md).
 
-**Current version: 1.6.0** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.6.0) · [Changelog](CHANGELOG.md)
+**Current version: 1.6.1** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.6.1) · [Changelog](CHANGELOG.md)
 
 Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
@@ -232,11 +232,11 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
   14 days Kaloriq reminds you once a day to back up.
 - **Feedback & help** directly in the profile: report a problem or idea via
   GitHub, including version, device and language.
-- **Update notice:** Kaloriq checks at launch and every six hours whether a new
-  version is available. A calm banner above the tab bar lists what's new; one
-  tap updates the PWA. In the APK it links straight to the new APK. You can also
-  start the check manually in the profile – entries and settings always survive
-  an update.
+- **Update notice:** Kaloriq checks right at launch (after 250 ms), whenever you
+  return to the app, and every twelve minutes. A calm banner above the tab bar
+  lists what's new; a dot on the profile tab marks an available update. One tap
+  updates the PWA; in the APK it links to the new APK. You can also start the
+  check manually in the profile – entries and settings always survive an update.
 - **Android widget (APK):** Shows calories, water and steps on the home screen.
   The “+ Water” and “Quick” buttons open the app in the matching flow.
 - **System reminder (APK):** Optional and off by default. A daily Android

@@ -14,7 +14,13 @@ import { openSheet, toast, icon, esc } from './ui.js';
 import { getLang } from './i18n.js';
 import { APP_VERSION } from './version.js';
 
-const CHECK_INTERVAL = 6 * 60 * 60 * 1000; // 6 Stunden
+const STARTUP_DELAY = 250;
+const GATES = {
+  startup: 45 * 1000, // verhindert Doppel-Checks bei schnellen Reloads
+  visible: 2 * 60 * 1000,
+  poll: 12 * 60 * 1000,
+  default: 12 * 60 * 1000,
+};
 const WEB_BASE = 'https://arti1984-collab.github.io/kaloriq';
 const FALLBACK_RELEASE = 'https://github.com/arti1984-collab/kaloriq/releases/latest';
 const TRUSTED_PREFIXES = [
@@ -25,6 +31,7 @@ const TRUSTED_PREFIXES = [
 let latest = null;
 let checking = null;
 let bannerEl = null;
+let started = false;
 
 /* ---------------- Helfer ---------------- */
 
@@ -108,23 +115,46 @@ export function getUpdateState() {
 
 /* ---------------- Prüfen ---------------- */
 
+/** Stößt im Hintergrund auch die Service-Worker-Prüfung an. */
+async function nudgeServiceWorker() {
+  if (!('serviceWorker' in navigator) || isNativeApp()) return;
+  try {
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (!registration) return;
+    if (registration.waiting) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+    await registration.update?.();
+  } catch {
+    /* Service Worker ist optional. */
+  }
+}
+
+function paintUpdateFlag(available) {
+  if (available) document.body.dataset.updateReady = '1';
+  else delete document.body.dataset.updateReady;
+}
+
 /**
  * Fragt die neueste Version ab. `manual` umgeht das Zeitintervall und
  * meldet das Ergebnis auch dann, wenn alles aktuell ist.
+ * `reason` steuert das Intervall: startup, visible, poll, default.
  */
-export function checkForUpdate({ manual = false, force = false } = {}) {
+export function checkForUpdate({ manual = false, force = false, reason = 'default' } = {}) {
   if (!navigator.onLine) {
     if (manual) toast('Offline – Update-Prüfung nicht möglich', 'err');
     return Promise.resolve(null);
   }
   const settings = store.get().settings;
   const last = Number(settings.updateCheckedAt) || 0;
-  if (!force && !manual && Date.now() - last < CHECK_INTERVAL) {
+  const gate = manual || force ? 0 : (GATES[reason] ?? GATES.default);
+  if (Date.now() - last < gate) {
     return Promise.resolve(latest);
   }
   if (checking) return checking;
 
   checking = (async () => {
+    void nudgeServiceWorker();
     try {
       const info = await loadLatest();
       latest = info;
@@ -133,6 +163,7 @@ export function checkForUpdate({ manual = false, force = false } = {}) {
         updateCheckedAt: Date.now(),
         updateKnown: newer ? info : null,
       });
+      paintUpdateFlag(newer);
       const dismissed = store.get().settings.updateDismissedVersion;
       if (newer) {
         if (dismissed !== info.version) showUpdateBanner(info);
@@ -268,6 +299,11 @@ export async function applyUpdate() {
   }
   try {
     const registration = await navigator.serviceWorker?.getRegistration?.();
+    if (registration?.waiting) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      // Kurz Zeit geben, damit der neue Worker übernehmen kann.
+      await new Promise((resolve) => setTimeout(resolve, 120));
+    }
     await registration?.update?.();
   } catch {
     /* Ohne Service Worker einfach neu laden. */
@@ -280,23 +316,36 @@ export async function applyUpdate() {
 
 /* ---------------- Start ---------------- */
 
-/** Nach dem Start aufrufen – prüft leise im Hintergrund. */
+/** Nach dem Start aufrufen – prüft sofort und danach regelmäßig. */
 export function initUpdateNotice() {
   if (!store.get().onboarded) return;
 
-  // Bereits gemeldete Version sofort übernehmen (überlebt einen Neustart),
-  // auch wenn die nächste Netzprüfung erst später fällig ist.
+  // Bereits gemeldete Version sofort übernehmen (überlebt einen Neustart).
   const settings = store.get().settings;
   const known = settings.updateKnown;
   if (known?.version && isNewerVersion(known.version, APP_VERSION)) {
     latest = known;
+    paintUpdateFlag(true);
     if (settings.updateDismissedVersion !== known.version) showUpdateBanner(known);
     window.dispatchEvent(new CustomEvent('kaloriq:update', { detail: known }));
   }
 
-  setTimeout(() => { void checkForUpdate(); }, 2400);
+  if (started) return;
+  started = true;
+
+  // Kurz nach dem Start prüfen, damit der Hinweis schnell erscheint.
+  setTimeout(() => { void checkForUpdate({ reason: 'startup' }); }, STARTUP_DELAY);
+
+  // Bei jeder Rückkehr in die App (max. alle 2 Minuten).
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') void checkForUpdate();
+    if (document.visibilityState === 'visible') void checkForUpdate({ reason: 'visible' });
   });
-  window.addEventListener('online', () => void checkForUpdate());
+
+  // Solange die App offen ist, regelmäßig nachsehen.
+  setInterval(() => {
+    if (document.visibilityState === 'visible') void checkForUpdate({ reason: 'poll' });
+  }, GATES.poll);
+
+  // Nach einer Unterbrechung der Verbindung sofort prüfen.
+  window.addEventListener('online', () => void checkForUpdate({ force: true }));
 }
