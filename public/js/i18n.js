@@ -902,6 +902,26 @@ const EN = {
   'Sonstiges': 'Other',
   'Erstellt mit Kaloriq': 'Created with Kaloriq',
   'Alles erledigt 🎉': 'All done 🎉',
+
+  // Monatsrückblick
+  'Monatsrückblick': 'Monthly recap',
+  'Monatsrückblick teilen': 'Share monthly recap',
+  'Als Bild teilen': 'Share as image',
+  'Vorheriger Monat': 'Previous month',
+  'Nächster Monat': 'Next month',
+  'Nur Zahlen aus deinem Gerät – keine Lebensmittel oder Notizen.':
+    'Only numbers from your device – no foods or notes.',
+  'Bild gespeichert': 'Image saved',
+  'Bild konnte nicht erstellt werden.': 'Image could not be created.',
+  'Noch keine Daten': 'No data yet',
+  'Längste Serie': 'Longest streak',
+  'unverändert': 'unchanged',
+  'Tag getrackt': 'day tracked',
+  'Sobald du trackst, entsteht hier dein Rückblick.': 'Your recap appears here once you start tracking.',
+  'Trag ein paar Tage ein – dann gibt es hier': 'Log a few days – then you will see',
+  'Kalorien, Gewicht und kleine Erfolge zu sehen.': 'calories, weight and small wins here.',
+  'Kalorien pro Tag': 'Calories per day',
+  'Ø Kalorien': 'Avg. calories',
 };
 
 /* ---------------- Lebensmittel (Datenbanknamen) ---------------- */

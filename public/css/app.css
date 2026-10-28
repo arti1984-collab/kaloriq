@@ -821,9 +821,8 @@ input[type="range"]::-moz-range-thumb {
 
 .fab {
   position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: calc(var(--safe-b) + 20px);
+  right: 18px;
+  bottom: calc(var(--safe-b) + 82px);
   z-index: 45;
   width: 58px; height: 58px;
   display: grid;
@@ -836,7 +835,7 @@ input[type="range"]::-moz-range-thumb {
   cursor: pointer;
   transition: transform .15s var(--ease);
 }
-.fab:active { transform: translateX(-50%) scale(.93); }
+.fab:active { transform: scale(.93); }
 .fab svg { width: 27px; height: 27px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
 body[data-tab="diary"] .fab,
@@ -1510,6 +1509,21 @@ body.update-open .toast-root { bottom: calc(var(--tabbar-h) + var(--safe-b) + 10
 .shop-check svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
 .shop-del { width: 32px; height: 32px; color: var(--muted); }
 .shop-del svg { width: 16px; height: 16px; }
+
+/* ---------- Teilen-Karte ---------- */
+
+.share-preview {
+  padding: 10px;
+  border-radius: 20px;
+  background: var(--bg-2);
+}
+.share-preview canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+}
 
 @media (min-width: 620px) {
   .view, .topbar { padding-left: 20px; padding-right: 20px; }

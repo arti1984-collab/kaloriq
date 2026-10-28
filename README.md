@@ -6,7 +6,7 @@ Kalorien-, Makro- und Fasten-Tracker mit KI-Foto-Erkennung – als installierbar
 
 Eigenständige Implementierung der Funktionen bekannter Kalorien-Tracker. Keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.** Für den Barcode-Scanner wird ZXing (Apache-2.0) verwendet – nativ in der Android-APK und als lokal mitgelieferte JavaScript-Bibliothek in Safari/Firefox – siehe [Drittanbieter-Hinweise](THIRD_PARTY_NOTICES.md).
 
-**Aktuelle Version: 1.5.0** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.5.0) · [Changelog](CHANGELOG.md)
+**Aktuelle Version: 1.6.0** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.6.0) · [Changelog](CHANGELOG.md)
 
 Folge Kaloriq auf [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
@@ -61,6 +61,7 @@ Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzel
 | **Schritte** | Schrittzähler über den Gerätesensor (APK: zählt auch bei geschlossener App nach), Tagesziel, manuelle Korrektur, Speicherung pro Tag |
 | **Gewicht** | Eingabe, Verlaufskurve, Zielgewicht, BMI, Prognose bis zum Ziel |
 | **Woche** | Ø Kalorien, Balkendiagramm pro Tag, Makro-Durchschnitt, Tageshistorie |
+| **Teilen** | Monatsrückblick als Bild (1080×1350) mit Zahlen, Gewicht und Kalorienverlauf – speichern oder teilen |
 | **Fasten** | 14:10 / 16:8 / 18:6 / 20:4 / 24 h, Live-Timer, Verlauf der letzten 7 Tage |
 | **Daten** | JSON-Export/-Import, automatische Sicherungen, IndexedDB-Zweitkopie, Zurücksetzen |
 | **Wohlbefinden** | Sanfter Modus mit Pause, **Minimalmodus** (ohne Ring, Ziel und Makros) und **Flexbereich** ±5–15 % – weniger Perfektionsdruck, keine roten Zahlen |
@@ -131,8 +132,9 @@ Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzel
   abhakbar gespeichert. Eigene Artikel (z. B. Spülmittel) lassen sich ergänzen.
 - **Teilen:** Die offene Liste geht als Text über die Systemfreigabe oder in die
   Zwischenablage.
-- **Einstieg:** Profil → „Wochenplan & Einkauf“, das Kalender-Symbol im Tagebuch
-  oder oben in den Rezepten. Alles bleibt lokal.
+- **Einstieg:** eigener Tab **Plan** in der Navigation, zusätzlich Profil →
+  „Wochenplan & Einkauf“, das Kalender-Symbol im Tagebuch und oben in den
+  Rezepten. Alles bleibt lokal.
 
 ### Wasser
 
@@ -178,6 +180,12 @@ Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzel
   Tageshistorie mit Einträgen und Wasser.
 - **Wochenrückblick ohne Druck:** Tage mit Einträgen, kleine Erfolge,
   Check-ins und Wasser-Tage auf einen Blick – ohne Kalorienbewertung.
+- **Monatsrückblick als Bild:** Das Teilen-Symbol im Fortschritt erzeugt eine
+  Karte (1080×1350) mit Tagen, Ø Kalorien, Wasser-Tagen, kleinen Erfolgen,
+  längster Serie, Gewicht samt Veränderung und dem Kalorienverlauf des Monats.
+  Monate lassen sich durchblättern, die Karte speichern oder über die
+  Systemfreigabe teilen. Sie enthält nur Zahlen – keine Lebensmittel oder
+  Notizen.
 
 ### Fasten
 

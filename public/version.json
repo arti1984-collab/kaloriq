@@ -1,15 +1,15 @@
 {
-  "version": "1.5.0",
+  "version": "1.6.0",
   "date": "2026-10-28",
   "notes": [
-    "Wochenplan: Rezepte auf Tage und Mahlzeiten legen – mit Portionen, Tageskalorien und „Ins Tagebuch“.",
-    "Einkaufsliste entsteht automatisch aus dem Plan: Zutaten zusammengerechnet, nach Kategorien sortiert, pro Woche abhakbar und teilbar.",
-    "Einstieg über Profil → Wochenplan & Einkauf, das Kalender-Symbol im Tagebuch oder oben in den Rezepten."
+    "Wochenplan ist jetzt ein eigener Tab unten – der Foto-Button wandert nach unten rechts.",
+    "Monatsrückblick als Bild: Tage, Ø Kalorien, Serie, Gewicht und Kalorienverlauf – speichern oder direkt teilen.",
+    "Alles bleibt lokal: Die Karte enthält nur Zahlen, keine Lebensmittel oder Notizen."
   ],
   "notes_en": [
-    "Meal plan: schedule recipes across days and meals – with servings, daily calories and “add to diary”.",
-    "The shopping list is built automatically from the plan: ingredients summed up, grouped by category, tickable per week and shareable.",
-    "Open it via Profile → Meal plan & shopping, the calendar icon in the diary, or the top of the recipes view."
+    "The meal plan is now its own tab at the bottom – the photo button moves to the bottom right.",
+    "Monthly recap as an image: days, avg. calories, streak, weight and calorie chart – save or share directly.",
+    "Everything stays local: the card contains only numbers, no foods or notes."
   ],
   "release": "https://github.com/arti1984-collab/kaloriq/releases/latest"
 }

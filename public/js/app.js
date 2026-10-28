@@ -23,6 +23,7 @@ import { initUpdateNotice, applyUpdate } from './update.js';
 const TABS = [
   { id: 'diary', label: 'Tagebuch', icon: 'book' },
   { id: 'progress', label: 'Fortschritt', icon: 'chart' },
+  { id: 'plan', label: 'Plan', icon: 'calendar' },
   { id: 'fasting', label: 'Fasten', icon: 'timer' },
   { id: 'profile', label: 'Profil', icon: 'user' },
 ];
@@ -45,7 +46,7 @@ function paintTabbar() {
     <button class="tab" type="button" data-tab="${t.id}" aria-label="${t.label}">
       ${icon(t.icon)}<span>${t.label}</span>
     </button>`;
-  bar.innerHTML = [makeTab(TABS[0]), makeTab(TABS[1]), '<span class="tab gap"></span>', makeTab(TABS[2]), makeTab(TABS[3])].join('');
+  bar.innerHTML = TABS.map(makeTab).join('');
   bar.querySelectorAll('.tab[data-tab]').forEach((btn) => {
     btn.addEventListener('click', () => navigate(btn.dataset.tab));
   });

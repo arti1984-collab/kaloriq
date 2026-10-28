@@ -3,9 +3,10 @@
    ============================================================ */
 import { store, todayKey, setWeight, weightSeries, weekSummary, streak, series, activePause, endPause } from '../store.js';
 import { bmi, bmiCategory, projection, round1, flexStatus } from '../calc.js';
-import { esc, fmt, icon, toast, openSheet, lineChart, weekBars, macroRow, haptic } from '../ui.js';
-import { locale } from '../i18n.js';
+import { esc, fmt, icon, toast, openSheet, lineChart, weekBars, macroRow, haptic, downloadFile } from '../ui.js';
+import { locale, tr } from '../i18n.js';
 import { openPauseSheet, pauseStateLabel } from '../pause.js';
+import { monthKeyOf, shiftMonth, buildMonthStats, drawShareCard, cardBlob } from '../sharecard.js';
 
 export function renderProgress(root) {
   const state = store.get();
@@ -52,6 +53,7 @@ export function renderProgress(root) {
         <h1>Fortschritt</h1>
         <div class="sub">${headerSub}</div>
       </div>
+      <button class="icon-btn" data-share-card aria-label="${esc(tr('Monatsrückblick teilen'))}">${icon('share')}</button>
     </header>
 
     ${paused ? `<section class="card gentle-card gentle-pause">
@@ -160,6 +162,7 @@ export function renderProgress(root) {
   `;
 
   root.querySelector('[data-weight]').addEventListener('click', openWeightSheet);
+  root.querySelector('[data-share-card]')?.addEventListener('click', openShareCard);
   root.querySelector('[data-pause-end]')?.addEventListener('click', () => {
     endPause();
     toast('Pause beendet');
@@ -195,6 +198,82 @@ function shortLabel(key) {
     const [, m, d] = key.split('-');
     return `${Number(d)}.${Number(m)}.`;
   }
+}
+
+function openShareCard() {
+  let month = monthKeyOf();
+  const body = document.createElement('div');
+  body.innerHTML = `
+    <div class="share-preview"><canvas data-card width="1080" height="1350"></canvas></div>
+    <div class="datenav" style="margin:14px 0 0">
+      <button class="icon-btn" data-prev-month aria-label="${esc(tr('Vorheriger Monat'))}">${icon('left')}</button>
+      <button class="day" data-month-label style="border:0;background:none;cursor:default">–</button>
+      <button class="icon-btn" data-next-month aria-label="${esc(tr('Nächster Monat'))}">${icon('right')}</button>
+    </div>
+    <p class="tiny muted center" style="margin:14px 10px 0">
+      ${esc(tr('Nur Zahlen aus deinem Gerät – keine Lebensmittel oder Notizen.'))}
+    </p>`;
+
+  const canvas = body.querySelector('[data-card]');
+  const label = body.querySelector('[data-month-label]');
+  let stats = buildMonthStats(month);
+
+  const paint = () => {
+    stats = buildMonthStats(month);
+    label.textContent = stats.label;
+    drawShareCard(canvas, stats);
+  };
+  paint();
+
+  const sheet = openSheet({
+    title: tr('Monatsrückblick'),
+    subtitle: tr('Als Bild teilen'),
+    body,
+    footer: `
+      <button class="btn" type="button" data-save-card>${esc(tr('Speichern'))}</button>
+      <button class="btn btn-primary grow" type="button" data-share-card-img>${esc(tr('Teilen'))}</button>`,
+    tall: true,
+  });
+
+  body.querySelector('[data-prev-month]')?.addEventListener('click', () => {
+    month = shiftMonth(month, -1);
+    paint();
+  });
+  body.querySelector('[data-next-month]')?.addEventListener('click', () => {
+    month = shiftMonth(month, 1);
+    paint();
+  });
+
+  const saveBlob = async () => {
+    const blob = await cardBlob(stats);
+    downloadFile(`kaloriq-${stats.monthKey}.png`, blob, 'image/png');
+    return blob;
+  };
+
+  sheet.foot?.querySelector('[data-save-card]')?.addEventListener('click', async () => {
+    try {
+      await saveBlob();
+      toast(tr('Bild gespeichert'));
+    } catch (err) {
+      toast(err.message || tr('Bild konnte nicht erstellt werden.'), 'err');
+    }
+  });
+
+  sheet.foot?.querySelector('[data-share-card-img]')?.addEventListener('click', async () => {
+    try {
+      const blob = await cardBlob(stats);
+      const file = new File([blob], `kaloriq-${stats.monthKey}.png`, { type: 'image/png' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: tr('Monatsrückblick') });
+        return;
+      }
+      downloadFile(file.name, blob, 'image/png');
+      toast(tr('Bild gespeichert'));
+    } catch (err) {
+      if (err?.name === 'AbortError') return;
+      toast(err.message || tr('Teilen nicht möglich'), 'err');
+    }
+  });
 }
 
 function openWeightSheet() {

@@ -48,6 +48,36 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.6.0] – 28.10.2026
+
+### Hinzugefügt
+
+- **Wochenplan als Tab:** Der Plan ist jetzt der fünfte Eintrag in der
+  Tabbar (Tagebuch, Fortschritt, Plan, Fasten, Profil). Der Foto-Button
+  (KI-Tracking) sitzt dafür unten rechts über der Tabbar.
+- **Monatsrückblick als Bild:** Im Fortschritt öffnet das Teilen-Symbol eine
+  Karte (1080×1350) mit Tagen, Ø Kalorien, Wasser-Tagen, kleinen Erfolgen,
+  längster Serie des Monats, Gewicht inkl. Veränderung und dem Kalorienverlauf.
+  Monate lassen sich durchblättern; die Karte wird gespeichert oder über die
+  Systemfreigabe geteilt.
+- **Datenschutz der Karte:** Sie enthält nur zusammengefasste Zahlen – keine
+  Lebensmittelnamen, Notizen oder Profildaten.
+
+### Geändert
+
+- Tabbar ohne Lücken-Spacer; fünf gleichmäßige Tabs. Der FAB ist von der Mitte
+  nach unten rechts gewandert, damit „Plan“ frei bleibt.
+- Neues Modul `public/js/sharecard.js` (Statistik + Canvas) im SW-Cache.
+- Fortschritt-Kopf hat jetzt ein Teilen-Symbol.
+
+### Getestet
+
+- Tab-Wechsel inklusive Plan; FAB-Position auf dem Tagebuch.
+- Monatskarte mit Daten und ohne Daten, Monatswechsel, Speichern und
+  Teilen-Fallback, Deutsch und Englisch, keine Konsolenfehler.
+
+---
+
 ## [1.5.0] – 28.10.2026
 
 ### Hinzugefügt

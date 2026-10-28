@@ -6,7 +6,7 @@ Calorie, macro and fasting tracker with AI photo recognition – as an installab
 
 An independent implementation of the features of well-known calorie trackers. No third-party brands or assets, no cloud: **all data stays on the device.** The barcode scanner uses ZXing (Apache-2.0) – natively in the Android APK and as a locally bundled JavaScript library in Safari/Firefox – see [third-party notices](THIRD_PARTY_NOTICES.md).
 
-**Current version: 1.5.0** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.5.0) · [Changelog](CHANGELOG.md)
+**Current version: 1.6.0** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.6.0) · [Changelog](CHANGELOG.md)
 
 Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
@@ -61,6 +61,7 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
 | **Steps** | Step counter via the device sensor (APK: also counts while the app is closed), daily goal, manual correction, stored per day |
 | **Weight** | Input, history chart, target weight, BMI, forecast to goal |
 | **Week** | Average calories, bar chart per day, macro average, daily history |
+| **Sharing** | Monthly recap as an image (1080×1350) with numbers, weight and calorie chart – save or share |
 | **Fasting** | 14:10 / 16:8 / 18:6 / 20:4 / 24 h, live timer, history of the last 7 days |
 | **Data** | JSON export/import, automatic backups, IndexedDB second copy, reset |
 | **Wellbeing** | Gentle mode with pause, **minimal mode** (no ring, target or macros) and **flex range** ±5–15 % – less perfection pressure, no red numbers |
@@ -129,8 +130,9 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
   ticks. You can add your own items (e.g. dish soap).
 - **Share:** the open list goes out as text via the system share sheet or the
   clipboard.
-- **Where:** profile → “Meal plan & shopping”, the calendar icon in the diary, or
-  the top of the recipes view. Everything stays local.
+- **Where:** its own **Plan** tab in the navigation, plus profile → “Meal plan &
+  shopping”, the calendar icon in the diary and the top of the recipes view.
+  Everything stays local.
 
 ### Water
 
@@ -174,6 +176,11 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
   history with entries and water.
 - **Weekly review without pressure:** days logged, small wins, check-ins and
   water days at a glance – without calorie judgement.
+- **Monthly recap as an image:** the share icon in Progress creates a card
+  (1080×1350) with days, average calories, water days, small wins, the longest
+  streak, weight including change, and the month’s calorie chart. Switch months,
+  save the card or share it via the system share sheet. It contains only
+  numbers – no foods or notes.
 
 ### Fasting
 
