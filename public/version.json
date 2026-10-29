@@ -1,6 +1,6 @@
 {
-  "version": "1.6.1",
-  "date": "2026-10-28",
+  "version": "1.6.2",
+  "date": "2026-10-29",
   "notes": [
     "Update-Prüfung jetzt direkt beim Start (nach 250 ms), bei jeder Rückkehr in die App und alle zwölf Minuten.",
     "Der Service Worker wird mit geprüft und ein wartendes Update sofort aktiviert – „Jetzt aktualisieren“ lädt die neue Version.",
