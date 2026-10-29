@@ -26,7 +26,15 @@ Folge Kaloriq auf [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 |---|---|
 | [![Fasten](docs/screenshots/fasten.png?v=1.4.0)](docs/screenshots/fasten.png) | [![Profil](docs/screenshots/profil.png?v=1.4.0)](docs/screenshots/profil.png) |
 
-### Neu in 1.4.0
+### Neu in 1.9.0
+
+**Tag als Vorlage:** Im Tagebuch oben auf das Kopier-Symbol tippen, einen Tag aus
+den Vorschlägen wählen (oder ein Datum eintippen) – alle Einträge kommen mit
+Mengen und Nährwerten mit. Wasser lässt sich optional übernehmen. Die Kopien
+sind eigenständige Einträge; hat der Zieltag schon Einträge, fragt die App
+vorher nach.
+
+### 1.4.0: Health Connect, Erinnerung, Schnell eintragen
 
 | Health Connect | Sanfte Erinnerung | Schnell eintragen |
 |---|---|---|
@@ -89,6 +97,9 @@ Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzel
 - Vier Mahlzeiten (Frühstück, Mittag, Abend, Snacks), Einträge **bearbeiten,
   verschieben und löschen**, Tage vor- und zurückblättern, Tagesnotiz.
 - **Streak**: zählt Tage in Folge mit mindestens einem Eintrag.
+- **Tag als Vorlage:** Einen kompletten Tag kopieren – alle Einträge eines
+  früheren Tages mit Mengen und Nährwerten, Wasser optional. Die Kopien sind
+  eigenständig, ein Tag mit Einträgen wird vorher nachgefragt.
 - Lebensmittel hinzufügen über die lokale Datenbank (über 200 Lebensmittel,
   offline), Open-Food-Facts-Suche, **Barcode** (Kamera-Scan in APK, Chrome,
   Safari und Firefox; Nummer überall eintippbar), eigene Lebensmittel und
@@ -425,6 +436,13 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 | Version | Schwerpunkt |
 |---|---|
+| **1.9.0** | Kompletten Tag als Vorlage übernehmen (Wasser optional) |
+| **1.8.0** | Darstellung wählbar: Hell, Dunkel oder Automatisch |
+| **1.7.0** | Rezept-Import per URL von Kochseiten (JSON-LD, Vorschau) |
+| **1.6.1** | Update-Prüfung kurz nach dem Start und bei jeder Rückkehr |
+| **1.6.0** | Wochenplan als Tab, KI-Foto-Button über der Tabbar |
+| **1.5.0** | Wochenplan: Rezepte auf Tage und Mahlzeiten legen |
+| **1.4.4** | Health Connect immer sichtbar (APK) |
 | **1.4.0** | Health Connect, Android-Widget und System-Erinnerungen (APK) |
 | **1.3.0** | Schnellzugriff, Trackingsstil, Wochenrückblick, CSV/Feedback und Vertrauens-UX |
 | **1.2.14** | Lokale Lebensmittel-Datenbank auf 212 Einträge erweitert |

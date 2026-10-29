@@ -26,7 +26,14 @@ Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 |---|---|
 | [![Fasting](docs/screenshots/fasten.png?v=1.4.0)](docs/screenshots/fasten.png) | [![Profile](docs/screenshots/profil.png?v=1.4.0)](docs/screenshots/profil.png) |
 
-### New in 1.4.0
+### New in 1.9.0
+
+**Day as template:** Tap the copy icon at the top of the diary, pick one of the
+suggested days (or type a date) – all entries come over with their amounts and
+nutrition. Water can be included optionally. The copies are independent entries;
+if the target day already has entries the app asks first.
+
+### 1.4.0: Health Connect, reminder, quick log
 
 | Health Connect | Gentle reminder | Quick log |
 |---|---|---|
@@ -89,6 +96,9 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
 - Four meals (breakfast, lunch, dinner, snacks), **edit, move and delete**
   entries, browse days forwards and backwards, daily note.
 - **Streak**: counts consecutive days with at least one entry.
+- **Day as template:** Copy a whole day – all entries of an earlier day with
+  their amounts and nutrition, water optional. The copies are independent and a
+  day that already has entries asks first.
 - Add foods via the local database (over 200 foods, offline), Open Food Facts
   search, **barcode** (camera scan in the APK, Chrome, Safari and Firefox;
   the number can be typed anywhere), custom foods and favorites.
@@ -413,6 +423,13 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.9.0** | Copy a whole day as a template (water optional) |
+| **1.8.0** | Selectable appearance: light, dark or automatic |
+| **1.7.0** | Recipe import from a URL (JSON-LD, preview) |
+| **1.6.1** | Update check shortly after launch and on every return |
+| **1.6.0** | Meal plan as a tab, AI photo button above the tab bar |
+| **1.5.0** | Meal plan: recipes for days and meals |
+| **1.4.4** | Health Connect always visible (APK) |
 | **1.4.0** | Health Connect, Android widget and system reminders (APK) |
 | **1.3.0** | Quick access, tracking style, weekly review, CSV/feedback and trust UX |
 | **1.2.14** | Local food database expanded to 212 entries |
