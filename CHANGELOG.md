@@ -48,6 +48,43 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.9.0] – 29.10.2026
+
+### Hinzugefügt
+
+- **Tag als Vorlage:** Im Tagebuch öffnet das neue Kopier-Symbol oben ein Sheet
+  mit den letzten Tagen, die Einträge haben – neueste zuerst, mit Anzahl und
+  Kalorien. Ein anderes Datum lässt sich über ein Datumsfeld wählen.
+  „Wasser mitnehmen“ übernimmt die Trinkmenge, aber nur wenn der Zieltag noch
+  keine hat (keine Doppelzählung).
+- **`copyDayFrom()` in `store.js`:** legt alle Einträge des Quelltags mit neuen
+  IDs und `copiedFrom` an; Mahlzeit, Menge und Nährwerte bleiben gleich.
+  Die Kopien sind eigenständig – Änderungen am Zieltag berühren die Vorlage
+  nicht.
+- **Sicherheitsnetz:** Hat der Zieltag schon Einträge, fragt die App vor dem
+  Einfügen nach; leere oder unbekannte Quellen werden mit einem Hinweis
+  abgefangen, das Sheet bleibt dann offen.
+- Neues Kopier-Symbol in `ui.js`.
+
+### Geändert
+
+- `app.css`: `.topbar .sub` bleibt einzeilig (`nowrap` + Ellipsis), damit die
+  Kopfzeile mit vier Aktionen auf schmalen Geräten nicht umbricht.
+
+### Getestet
+
+- Vorlage von gestern nach heute: 3 Einträge (Frühstück + Mittag) landen mit
+  identischen Mengen und Nährwerten im Tagebuch, Kalorien und Makros im Ring
+  stimmen (1.786 kcal), Wasser wird auf 1.500 ml übernommen.
+- Zweites Kopieren auf denselben Tag: Rückfrage „Tag enthält schon Einträge“,
+  danach 6 Einträge; Wasser bleibt bei 1.500 ml und meldet „Wasser nicht
+  übernommen – hier schon erfasst“.
+- Leerer Verlauf: keine Vorschläge, Kopieren meldet „Dieser Tag hat keine
+  Einträge“; gleicher Tag meldet „Das ist bereits der angezeigte Tag“.
+- Keine Konsolenfehler, Sheets schließen sauber, bestehende Daten unverändert.
+
+---
+
 ## [1.8.0] – 29.10.2026
 
 ### Hinzugefügt

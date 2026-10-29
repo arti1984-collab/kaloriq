@@ -50,7 +50,7 @@ Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzel
 | Bereich | Umfang |
 |---|---|
 | **Onboarding** | Geschlecht, Alter, Größe, Gewicht, Zielgewicht, Aktivität, Ziel (ab-/zunehmen/halten), Tempo → Kalorien- und Makroplan (Mifflin-St Jeor + PAL) |
-| **Tagebuch** | Frühstück / Mittag / Abend / Snacks, Tagesring, Makro-Balken, Einträge bearbeiten & löschen, Tage blättern, Serie (Streak) |
+| **Tagebuch** | Frühstück / Mittag / Abend / Snacks, Tagesring, Makro-Balken, Einträge bearbeiten & löschen, Tage blättern, Serie (Streak), kompletten Tag als Vorlage übernehmen |
 | **Lebensmittelsuche** | Über 200 lokale Lebensmittel (offline, Richtwerte pro 100 g) + Open Food Facts auf Anfrage |
 | **Barcode** | Kamera-Scan in der APK (nativer ZXing-Scanner), in Chrome (`BarcodeDetector`) und in Safari/Firefox (ZXing JS) oder Nummer eintippen → Open Food Facts |
 | **KI-Tracking** | Foto **oder** Text → Gemini schätzt Bestandteile, Gramm, Kalorien & Makros. Jede Position editierbar, einzelne Positionen abwählbar. Eigener Key, nur Free-Tier-Modelle |

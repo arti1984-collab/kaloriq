@@ -738,6 +738,41 @@ export function copyMealFrom(dateK, mealId, fromKey = addDays(dateK, -1)) {
   return addEntries(dateK, mealId, entries).length;
 }
 
+/**
+ * Übernimmt einen kompletten Tag als Vorlage in einen anderen Tag.
+ * Die Einträge werden neu angelegt (eigene IDs, `copiedFrom` als Hinweis),
+ * Mahlzeiten, Mengen und Nährwerte bleiben unverändert.
+ * Wasser wird nur übernommen, wenn der Zieltag noch keine Menge hat –
+ * so wird nichts doppelt gezählt.
+ */
+export function copyDayFrom(dateK, fromKey, { water = false } = {}) {
+  const source = state.days[fromKey];
+  const entries = Array.isArray(source?.entries) ? source.entries : [];
+  if (!dateK || !fromKey || !entries.length) {
+    return { entries: 0, water: false, skippedWater: false };
+  }
+
+  const sourceWater = clamp(Math.round(Number(source.water) || 0), 0, 8000);
+  return store.set((s) => {
+    const day = s.days[dateK] || (s.days[dateK] = emptyDay(dateK));
+    const added = entries.map((entry) => {
+      const copy = {
+        ...entry,
+        id: newEntryId(),
+        createdAt: Date.now(),
+        copiedFrom: fromKey,
+      };
+      day.entries.push(copy);
+      return copy;
+    });
+
+    const skippedWater = water && sourceWater > 0 && (Number(day.water) || 0) > 0;
+    if (water && sourceWater > 0 && !skippedWater) day.water = sourceWater;
+
+    return { entries: added.length, water: water && sourceWater > 0 && !skippedWater, skippedWater };
+  }, 'entries');
+}
+
 /* ---------- Trackingsstil ---------- */
 
 /**

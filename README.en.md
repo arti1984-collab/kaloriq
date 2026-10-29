@@ -50,7 +50,7 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
 | Area | Scope |
 |---|---|
 | **Onboarding** | Sex, age, height, weight, target weight, activity level, goal (lose/maintain/gain), pace → calorie and macro plan (Mifflin-St Jeor + PAL) |
-| **Diary** | Breakfast / lunch / dinner / snacks, daily ring, macro bars, edit & delete entries, browse days, streak |
+| **Diary** | Breakfast / lunch / dinner / snacks, daily ring, macro bars, edit & delete entries, browse days, streak, copy a whole day as a template |
 | **Food search** | Over 200 local foods (offline, reference values per 100 g) + Open Food Facts on request |
 | **Barcode** | Camera scan in the APK (native ZXing scanner), in Chrome (`BarcodeDetector`) and in Safari/Firefox (ZXing JS), or type the number → Open Food Facts |
 | **AI tracking** | Photo **or** text → Gemini estimates ingredients, grams, calories & macros. Every item editable, individual items can be deselected. Own key, free-tier models only |

@@ -74,6 +74,7 @@ entfernt, damit sie nicht doppelt vorgeschlagen werden.
 
 ## Bereits umgesetzt (nicht mehr Teil der Liste)
 
+- **Tag als Vorlage** – Version 1.9.0 (kompletten Tag kopieren, Wasser optional)
 - **Darstellung hell/dunkel** – Version 1.8.0 (Hell, Dunkel, Automatisch)
 - **Rezept-Import per URL** – Version 1.7.0 (JSON-LD, Mengen-Heuristik, Vorschau)
 - **Wochenplan + Einkaufsliste** – Version 1.5.0 (Plan-Tab seit 1.6.0)
@@ -82,7 +83,6 @@ entfernt, damit sie nicht doppelt vorgeschlagen werden.
 ## Weitere Kandidaten (nicht in den Top 5)
 
 - Allergen-/Ernährungsfilter (vegetarisch, vegan, glutenfrei)
-- Kompletten Tag duplizieren / als Vorlage
 - Tablet-/Desktop-Layout mit zwei Spalten
 - Fasten-Timer im Android-Widget
 - Verschlüsselter Sync (WebDAV/Nextcloud, opt-in)

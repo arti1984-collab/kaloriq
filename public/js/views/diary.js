@@ -3,7 +3,7 @@
    ============================================================ */
 import {
   store, getDay, todayKey, addDays, dayLabel, shortDate,
-  totals, mealTotals, MEALS, entryMacros, removeEntry, updateEntry, addEntries, copyMealFrom,
+  totals, mealTotals, MEALS, entryMacros, removeEntry, updateEntry, addEntries, copyMealFrom, copyDayFrom,
   setWater, setSteps, streak, weekSummary, activePause, endPause,
 } from '../store.js';
 import { esc, fmt, icon, ring, macroRow, toast, toastAction, openSheet, confirmDialog, haptic } from '../ui.js';
@@ -234,6 +234,7 @@ export function renderDiary(root) {
         <h1>Tagebuch</h1>
         <div class="sub">${headerSub}</div>
       </div>
+      <button class="icon-btn" data-copy-day aria-label="Tag als Vorlage kopieren">${icon('copy')}</button>
       <button class="icon-btn" data-plan aria-label="Wochenplan">${icon('calendar')}</button>
       <button class="icon-btn" data-recipes aria-label="Rezepte">${icon('bowl')}</button>
       <button class="icon-btn" data-today aria-label="Zu heute springen">${icon('refresh')}</button>
@@ -323,6 +324,7 @@ export function renderDiary(root) {
   `;
 
   // Navigation
+  root.querySelector('[data-copy-day]')?.addEventListener('click', () => openCopyDaySheet(key));
   root.querySelector('[data-plan]')?.addEventListener('click', () => {
     location.hash = '#/plan';
   });
@@ -510,6 +512,111 @@ function openStepsSheet(key, root) {
     sheet.close();
     toast('Schritte gespeichert');
     renderDiary(root);
+  });
+}
+
+/* ---------------- Tag als Vorlage ---------------- */
+
+function openCopyDaySheet(key) {
+  const state = store.get();
+  const target = getDay(key);
+  const recent = [];
+  for (let i = 1; i <= 30 && recent.length < 5; i++) {
+    const k = addDays(key, -i);
+    const d = state.days[k];
+    if (!d || !Array.isArray(d.entries) || !d.entries.length) continue;
+    recent.push({ key: k, count: d.entries.length, kcal: totals(d).kcal });
+  }
+
+  const body = document.createElement('div');
+  body.innerHTML = `
+    <p class="small muted" style="margin-top:0">
+      Übernimmt alle Einträge eines Tages als Vorlage – Mengen und Nährwerte
+      bleiben gleich, die Kopien lassen sich danach einzeln ändern.
+    </p>
+    ${recent.length ? `
+      <div class="section-title" style="margin-top:0">Zuletzt</div>
+      <div class="card flush rows">
+        ${recent.map((r) => `
+          <button class="row" data-copy-src="${r.key}">
+            <span class="grow">
+              <span class="t">${esc(dayLabel(r.key))}${r.key === addDays(key, -1) ? '' : ` · ${shortDate(r.key)}`}</span>
+              <span class="s">${r.count} ${r.count === 1 ? 'Eintrag' : 'Einträge'} · ${fmt(r.kcal)} kcal</span>
+            </span>
+            ${icon('chev', 'chev')}
+          </button>`).join('')}
+      </div>` : ''}
+    <div class="field" style="margin-top:14px">
+      <label for="copy-day-date">Anderer Tag</label>
+      <input class="input" id="copy-day-date" type="date" max="${todayKey()}"
+        value="${recent[0]?.key || addDays(key, -1)}">
+    </div>
+    <button class="row" data-copy-water aria-pressed="false">
+      <span class="grow">
+        <span class="t">Wasser mitnehmen</span>
+        <span class="s">Nur wenn der Zieltag noch keine Menge hat</span>
+      </span>
+      <span class="switch" data-copy-water-switch aria-hidden="true" aria-checked="false" style="pointer-events:none"></span>
+    </button>
+    ${target.entries.length
+      ? '<p class="tiny muted">Dieser Tag enthält bereits Einträge – die Vorlage wird zusätzlich eingefügt.</p>'
+      : ''}
+  `;
+
+  const sheet = openSheet({
+    title: 'Tag als Vorlage',
+    subtitle: `${dayLabel(key)} · ${shortDate(key)}`,
+    body,
+    footer: '<button class="btn btn-primary btn-block" data-copy-run>Kopieren</button>',
+  });
+
+  const dateInput = body.querySelector('#copy-day-date');
+  const rows = [...body.querySelectorAll('[data-copy-src]')];
+  const mark = () => rows.forEach((row) => {
+    row.style.background = row.dataset.copySrc === dateInput.value ? 'var(--accent-soft)' : '';
+  });
+  rows.forEach((row) => row.addEventListener('click', () => {
+    dateInput.value = row.dataset.copySrc;
+    mark();
+    haptic();
+  }));
+  dateInput.addEventListener('change', mark);
+  mark();
+
+  let withWater = false;
+  const waterBtn = body.querySelector('[data-copy-water]');
+  waterBtn.addEventListener('click', () => {
+    withWater = !withWater;
+    waterBtn.setAttribute('aria-pressed', String(withWater));
+    body.querySelector('[data-copy-water-switch]').setAttribute('aria-checked', String(withWater));
+    haptic();
+  });
+
+  sheet.foot?.querySelector('[data-copy-run]')?.addEventListener('click', async () => {
+    const from = dateInput.value;
+    if (!from) { toast('Bitte einen Tag wählen', 'err'); return; }
+    if (from === key) { toast('Das ist bereits der angezeigte Tag', 'err'); return; }
+    const source = store.get().days[from];
+    if (!source || !Array.isArray(source.entries) || !source.entries.length) {
+      toast('Dieser Tag hat keine Einträge', 'err');
+      return;
+    }
+    if (target.entries.length) {
+      const ok = await confirmDialog({
+        title: 'Tag enthält schon Einträge',
+        message: `${target.entries.length} Einträge bleiben erhalten – die Vorlage aus ${dayLabel(from)} wird zusätzlich eingefügt.`,
+        confirmLabel: 'Trotzdem kopieren',
+      });
+      if (!ok) return;
+    }
+
+    const result = copyDayFrom(key, from, { water: withWater });
+    sheet.close();
+    if (result.entries) {
+      toast(`${result.entries} ${result.entries === 1 ? 'Eintrag' : 'Einträge'} aus ${dayLabel(from)} übernommen`);
+    }
+    if (result.skippedWater) toast('Wasser nicht übernommen – hier schon erfasst', 'err');
+    haptic();
   });
 }
 

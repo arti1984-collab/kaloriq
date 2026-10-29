@@ -162,6 +162,10 @@ svg { display: block; }
   font-weight: 500;
   color: var(--muted);
   letter-spacing: 0;
+  /* Bei vier Aktionen in der Leiste bleibt eine Zeile: lieber kürzen als umbrechen. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .icon-btn {

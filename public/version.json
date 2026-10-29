@@ -1,17 +1,17 @@
 {
-  "version": "1.8.0",
+  "version": "1.9.0",
   "date": "2026-10-29",
   "notes": [
-    "Neu: manuelle Darstellung. Unter Profil → Darstellung wählst du Hell, Dunkel oder Automatisch (wie dein Gerät).",
-    "Die Wahl gilt sofort für die ganze App und bleibt gespeichert – auch die Statusleiste passt sich an.",
-    "Beim Start wird die Darstellung gesetzt, bevor die Oberfläche aufgebaut ist: kein weißes Aufblitzen im Dunkelmodus.",
-    "Die Rezept-Import-Funktion aus 1.7.0 bleibt unverändert enthalten."
+    "Neu: Tag als Vorlage. Im Tagebuch oben auf das Kopier-Symbol tippen und einen Tag auswählen – alle Einträge werden mit Mengen und Nährwerten übernommen.",
+    "Die letzten Tage mit Einträgen stehen direkt zur Auswahl, ein anderes Datum lässt sich eintippen. Wasser kann optional mitkommen.",
+    "Die Kopien sind eigenständige Einträge: einzeln ändern oder löschen ändert den Originaltag nicht. Ein Tag mit Einträgen wird vorher nachgefragt.",
+    "Die Darstellung aus 1.8.0 (Hell, Dunkel, Automatisch) bleibt unverändert enthalten."
   ],
   "notes_en": [
-    "New: manual appearance. Under Profile → Appearance choose Light, Dark or Automatic (follow your device).",
-    "The choice applies to the whole app immediately and is remembered – the status bar colour follows too.",
-    "The theme is applied before the interface is painted, so there is no white flash in dark mode.",
-    "The recipe import from 1.7.0 is still included."
+    "New: day as template. Tap the copy icon at the top of the diary and pick a day – all entries come over with their amounts and nutrition.",
+    "Recent days with entries are offered directly and any other date can be typed in. Water can be included optionally.",
+    "Copies are independent entries: editing or deleting one never changes the source day. A day that already has entries asks first.",
+    "The appearance setting from 1.8.0 (Light, Dark, Automatic) is still included."
   ],
   "release": "https://github.com/arti1984-collab/kaloriq/releases/latest"
 }
