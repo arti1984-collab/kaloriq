@@ -9,7 +9,7 @@ import {
 import { searchLocal, LOCAL_FOODS } from '../foods.js';
 import {
   addRecipeToDiary, deleteRecipe, exportRecipesJson, getRecipe, mergeRecipes,
-  parseRecipeFile, recipeTotals, saveRecipe, searchRecipes, toNumber,
+  parseRecipeFile, recipeTotals, saveRecipe, searchRecipes, toNumber, fetchRecipeFromUrl,
 } from '../recipes.js';
 
 let recipeQuery = '';
@@ -35,6 +35,7 @@ export function renderRecipes(root) {
         <div class="sub">${countText} · lokal gespeichert</div>
       </div>
       <button class="icon-btn" data-plan aria-label="Wochenplan">${icon('calendar')}</button>
+      <button class="icon-btn" data-import-url aria-label="URL importieren">${icon('link')}</button>
       <button class="icon-btn" data-import aria-label="Rezepte importieren">${icon('upload')}</button>
       <button class="icon-btn" data-export aria-label="Alle Rezepte exportieren">${icon('download')}</button>
       <button class="icon-btn" data-new aria-label="Neues Rezept">${icon('plus')}</button>
@@ -66,6 +67,7 @@ export function renderRecipes(root) {
           <span class="tiny">Lege dein erstes Rezept an oder importiere eine JSON-Datei.</span>
           <div class="chips" style="justify-content:center;margin-top:14px">
             <button class="btn btn-primary btn-sm" data-empty-new>${icon('plus')} Rezept anlegen</button>
+            <button class="btn btn-sm" data-empty-url>${icon('link')} Von URL importieren</button>
             <button class="btn btn-sm" data-empty-import>${icon('upload')} JSON importieren</button>
           </div>
         </div>`;
@@ -97,6 +99,7 @@ export function renderRecipes(root) {
   root.querySelector('[data-plan]')?.addEventListener('click', () => {
     location.hash = '#/plan';
   });
+  root.querySelector('[data-import-url]').addEventListener('click', importFromUrl);
   root.querySelector('[data-export]').addEventListener('click', exportAll);
   root.querySelector('[data-import]').addEventListener('click', importRecipes);
   search.addEventListener('input', () => {
@@ -108,6 +111,7 @@ export function renderRecipes(root) {
 
 function bindEmptyActions(scope) {
   scope.querySelector('[data-empty-new]')?.addEventListener('click', () => openRecipeEditor());
+  scope.querySelector('[data-empty-url]')?.addEventListener('click', importFromUrl);
   scope.querySelector('[data-empty-import]')?.addEventListener('click', importRecipes);
 }
 
@@ -558,6 +562,117 @@ function importRecipes() {
     }
   });
   input.click();
+}
+
+async function importFromUrl() {
+  const body = document.createElement('div');
+  body.innerHTML = `
+    <div class="field">
+      <label for="recipe-url">Rezept-URL (z. B. von einer Kochseite)</label>
+      <input class="input" id="recipe-url" type="url" inputmode="url" placeholder="https://..." autocomplete="off" enterkeyhint="go">
+    </div>
+    <p class="tiny muted" style="margin:-4px 4px 0">Titel, Zutaten, Mengen und Schritte werden aus den Rezeptdaten der Seite gelesen. Vor dem Speichern siehst du eine Vorschau.</p>
+    <div data-preview style="margin-top:16px"></div>
+  `;
+
+  const sheet = openSheet({
+    title: 'Von URL importieren',
+    subtitle: 'Rezeptdaten der Seite übernehmen',
+    body,
+    footer: '<button class="btn btn-primary btn-block" data-action>Rezept laden</button>',
+  });
+
+  const action = sheet.foot.querySelector('[data-action]');
+  const input = body.querySelector('#recipe-url');
+  const preview = body.querySelector('[data-preview]');
+  let fetched = null;
+  let busy = false;
+
+  const paintPreview = () => {
+    const known = fetched.ingredients.filter((ing) => (ing.per100?.kcal || 0) > 0).length;
+    const total = recipeTotals(fetched);
+    preview.innerHTML = `
+      <div class="card flush rows">
+        <div class="row static">
+          <span class="row-thumb">🍲</span>
+          <span class="grow">
+            <span class="t">${esc(fetched.title)}</span>
+            <span class="s">${fetched.ingredients.length} Zutaten · ${servingsText(fetched.servings)}${fetched.minutes ? ` · ${fetched.minutes} Min.` : ''}</span>
+          </span>
+        </div>
+      </div>
+      ${known ? `<div class="stat-grid" style="margin-top:10px">
+        ${stat('Kalorien', fmt(total.perServing.kcal), 'kcal')}
+        ${stat('Protein', fmt(total.perServing.protein), 'g')}
+        ${stat('Kohlenhydrate', fmt(total.perServing.carbs), 'g')}
+        ${stat('Fett', fmt(total.perServing.fat), 'g')}
+      </div>` : ''}
+      <p class="tiny muted" style="margin-top:10px">
+        ${known
+    ? `${known} von ${fetched.ingredients.length} Zutaten wurden mit Nährwerten aus deiner Datenbank ergänzt. Restliche Werte kannst du über „Anpassen“ nachtragen.`
+    : 'Für diese Zutaten wurden keine Nährwerte gefunden. Über „Anpassen“ kannst du sie ergänzen.'}
+      </p>
+    `;
+  };
+
+  action.addEventListener('click', async () => {
+    if (busy) return;
+    if (fetched) {
+      try {
+        saveRecipe(fetched);
+        sheet.close();
+        toast('Rezept importiert');
+      } catch (error) {
+        toast(error.message, 'err');
+      }
+      return;
+    }
+
+    const url = input.value.trim();
+    if (!url) {
+      toast('Bitte eine URL eingeben', 'err');
+      input.focus();
+      return;
+    }
+
+    busy = true;
+    action.disabled = true;
+    action.textContent = 'Lade …';
+    try {
+      fetched = await fetchRecipeFromUrl(url);
+      paintPreview();
+      sheet.foot.innerHTML = `
+        <button class="btn grow" data-adjust>${icon('pencil')} Anpassen</button>
+        <button class="btn btn-primary grow" data-save>${icon('check')} Speichern</button>
+      `;
+      sheet.foot.querySelector('[data-save]').addEventListener('click', () => {
+        try {
+          saveRecipe(fetched);
+          sheet.close();
+          toast('Rezept importiert');
+        } catch (error) {
+          toast(error.message, 'err');
+        }
+      });
+      sheet.foot.querySelector('[data-adjust]').addEventListener('click', () => {
+        sheet.close();
+        openRecipeEditor(fetched);
+      });
+    } catch (error) {
+      toast(error.message || 'Import fehlgeschlagen', 'err', 4200);
+      action.textContent = 'Rezept laden';
+    } finally {
+      busy = false;
+      action.disabled = false;
+    }
+  });
+
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      action.click();
+    }
+  });
 }
 
 function servingsText(value) {

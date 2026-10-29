@@ -1,15 +1,17 @@
 {
-  "version": "1.6.2",
+  "version": "1.7.0",
   "date": "2026-10-29",
   "notes": [
-    "Update-Prüfung jetzt direkt beim Start (nach 250 ms), bei jeder Rückkehr in die App und alle zwölf Minuten.",
-    "Der Service Worker wird mit geprüft und ein wartendes Update sofort aktiviert – „Jetzt aktualisieren“ lädt die neue Version.",
-    "Ein kleiner Punkt am Profil-Tab zeigt ein verfügbares Update, auch wenn der Banner weggetippt wurde."
+    "Neu: Rezept-Import per URL. Link-Symbol oben in den Rezepten antippen, Adresse einer Kochseite einfügen – Titel, Zutaten, Mengen, Portionen, Zeit und Schritte werden übernommen.",
+    "Vorschau vor dem Speichern: passende Zutaten bekommen Nährwerte aus deiner Datenbank, der Rest lässt sich über „Anpassen“ ergänzen.",
+    "Mengen wie „500 g“, „1 EL“, „½ TL“ oder „2 Tomaten“ werden automatisch in Gramm geschätzt.",
+    "In der Android-App lädt eine native Brücke die Seite, damit der Import auch bei Seiten ohne CORS-Freigabe klappt."
   ],
   "notes_en": [
-    "Update check now runs right at launch (after 250 ms), whenever you return to the app, and every twelve minutes.",
-    "The service worker is checked as well and a waiting update activates immediately – “Update now” loads the new version.",
-    "A small dot on the profile tab marks an available update, even if the banner was dismissed."
+    "New: recipe import from a URL. Tap the link icon in Recipes, paste a cooking site address – title, ingredients, amounts, servings, time and steps are imported.",
+    "Preview before saving: matching ingredients get nutrition from your database, the rest can be completed via “Adjust”.",
+    "Amounts such as “500 g”, “1 tbsp”, “½ tsp” or “2 tomatoes” are estimated in grams automatically.",
+    "In the Android app a native bridge loads the page, so import works even on sites without CORS."
   ],
   "release": "https://github.com/arti1984-collab/kaloriq/releases/latest"
 }

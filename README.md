@@ -55,7 +55,7 @@ Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzel
 | **Barcode** | Kamera-Scan in der APK (nativer ZXing-Scanner), in Chrome (`BarcodeDetector`) und in Safari/Firefox (ZXing JS) oder Nummer eintippen → Open Food Facts |
 | **KI-Tracking** | Foto **oder** Text → Gemini schätzt Bestandteile, Gramm, Kalorien & Makros. Jede Position editierbar, einzelne Positionen abwählbar. Eigener Key, nur Free-Tier-Modelle |
 | **Eigene Lebensmittel** | Mit Nährwerten pro 100 g + optionaler Portion, dauerhaft gespeichert |
-| **Rezepte** | Eigene Rezepte mit Zutaten und Nährwerten pro 100 g, Portionen, Tags und Zubereitung; Portion ins Tagebuch, JSON-Import/-Export |
+| **Rezepte** | Eigene Rezepte mit Zutaten und Nährwerten pro 100 g, Portionen, Tags und Zubereitung; Import per URL von Kochseiten, Portion ins Tagebuch, JSON-Import/-Export |
 | **Wochenplan** | Rezepte auf Tage und Mahlzeiten legen; daraus automatisch eine Einkaufsliste (nach Kategorien, abhakbar, teilbar) |
 | **Wasser** | Freie Eingabe in **ml oder Litern**, Schnellwerte (+250 ml … +1 l), Tagesfortschritt, Ziel aus Gewicht |
 | **Schritte** | Schrittzähler über den Gerätesensor (APK: zählt auch bei geschlossener App nach), Tagesziel, manuelle Korrektur, Speicherung pro Tag |
@@ -116,6 +116,11 @@ Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzel
   Tags und Zubereitung ergänzen.
 - Kalorien und Makros werden pro Portion und pro 100 g berechnet. Eine Portion
   lässt sich direkt als **ein** Eintrag ins Tagebuch übernehmen.
+- **Import per URL:** Link-Symbol im Rezept-Kopf → URL einer Kochseite einfügen.
+  Kaloriq liest Titel, Zutaten, Mengen, Portionen, Zeit und Schritte aus den
+  Rezeptdaten der Seite (JSON-LD/schema.org), ergänzt passende Nährwerte aus der
+  lokalen Datenbank und zeigt vor dem Speichern eine Vorschau. Mengen wie
+  `500 g`, `1 EL`, `½ TL` oder `2 Tomaten` werden in Gramm geschätzt.
 - Rezepte bleiben lokal und werden mit den automatischen Sicherungen
   gespeichert. Export und Import als `kaloriq-recipes`-JSON zum Sichern oder
   Teilen; eine Community-Datenbank oder Cloud-Synchronisierung gibt es nicht.

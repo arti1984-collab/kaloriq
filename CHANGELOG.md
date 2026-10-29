@@ -48,6 +48,47 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.7.0] – 29.10.2026
+
+### Hinzugefügt
+
+- **Rezept-Import per URL:** Im Rezept-Kopf gibt es jetzt ein Link-Symbol. URL
+  einer Rezeptseite einfügen, und Kaloriq liest die hinterlegten Rezeptdaten
+  (JSON-LD/schema.org): Titel, Zutaten, Portionen, Zeit, Tags und Schritte.
+  Vor dem Speichern erscheint eine Vorschau mit geschätzten Kalorien und Makros.
+- **Mengen-Heuristik:** Angaben wie `500 g`, `250 ml`, `1 EL`, `½ TL`,
+  `1 1/2 Tassen`, `2 Zehen`, `3 Scheiben` werden in Gramm übersetzt; bei Stück-
+  Angaben („2 Tomaten“) nutzt Kaloriq die haushaltsübliche Portionsgröße.
+- **Nährwerte aus der lokalen Datenbank:** Passende Zutaten werden automatisch
+  mit ihren Werten pro 100 g ergänzt (auch Pluralformen wie „Tomaten“ →
+  „Tomate“). Nicht erkannte Zutaten bleiben bei 0 und lassen sich über
+  **Anpassen** im Editor nachtragen.
+- **Native Fetch-Brücke (APK):** `FetchBridge.java` lädt die Seite am CORS-
+  Schutz des WebViews vorbei. Nur öffentliche Seiten, nur Lesen, nichts wird
+  gesendet oder gespeichert.
+
+### Geändert
+
+- Rezept-Kopf: neues Link-Symbol für den URL-Import; die JSON-Datei bleibt
+  über das Upload-Symbol erreichbar.
+- `recipes.js`: `parseIngredientString`, `matchLocalFood` und
+  `fetchRecipeFromUrl` sind exportiert und einzeln testbar.
+- Neue UI-Texte im Wörterbuch (Deutsch/Englisch), u. a. „Von URL importieren“,
+  „Anpassen“, „Speichern“.
+
+### Getestet
+
+- Import einer Testseite mit `@graph`: Titel, 6 Zutaten mit Gramm und Makros,
+  Portionen (2), Zeit (35 Min.), Tags und Schritte korrekt übernommen.
+- Mengen-Heuristik: `½ TL Salz` → 2,5 g, `1 1/2 Tassen Reis` → 300 g,
+  `0,5 l Milch` → 500 g, `2 Dosen Tomaten` → 800 g.
+- Fehlerfälle: Seite ohne JSON-LD, ungültige Domain, CORS-Block im Browser –
+  jeweils verständliche Meldung, kein Konsolenfehler.
+- „Anpassen“ öffnet den Editor mit allen Zutaten und Mengen; „Speichern“ legt
+  das Rezept lokal ab und zeigt es in der Liste.
+
+---
+
 ## [1.6.1] – 28.10.2026
 
 ### Geändert

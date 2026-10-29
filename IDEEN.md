@@ -70,10 +70,11 @@ entfernt, damit sie nicht doppelt vorgeschlagen werden.
   `{ name, grams }` umwandeln (Heuristik, editierbar), dann
   `normalizeRecipe`/`saveRecipe`. Nur auf Wunsch, kein Hintergrundabruf.
 - **Aufwand:** mittel
-- **Status:** offen
+- **Status:** umgesetzt in Version 1.7.0 (inkl. nativer Fetch-Brücke in der APK)
 
 ## Bereits umgesetzt (nicht mehr Teil der Liste)
 
+- **Rezept-Import per URL** – Version 1.7.0 (JSON-LD, Mengen-Heuristik, Vorschau)
 - **Wochenplan + Einkaufsliste** – Version 1.5.0 (Plan-Tab seit 1.6.0)
 - **Monatsrückblick als Bild** – Version 1.6.0
 

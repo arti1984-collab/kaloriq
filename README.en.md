@@ -55,7 +55,7 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
 | **Barcode** | Camera scan in the APK (native ZXing scanner), in Chrome (`BarcodeDetector`) and in Safari/Firefox (ZXing JS), or type the number → Open Food Facts |
 | **AI tracking** | Photo **or** text → Gemini estimates ingredients, grams, calories & macros. Every item editable, individual items can be deselected. Own key, free-tier models only |
 | **Custom foods** | With nutrition values per 100 g + optional serving, stored permanently |
-| **Recipes** | Your own recipes with ingredients and nutrition per 100 g, servings, tags and preparation; add a serving to the diary, JSON import/export |
+| **Recipes** | Your own recipes with ingredients and nutrition per 100 g, servings, tags and preparation; import from URL, add a serving to the diary, JSON import/export |
 | **Meal plan** | Plan recipes across days and meals; automatically builds a shopping list (grouped, tickable, shareable) |
 | **Water** | Free input in **ml or liters**, quick values (+250 ml … +1 l), daily progress, goal based on weight |
 | **Steps** | Step counter via the device sensor (APK: also counts while the app is closed), daily goal, manual correction, stored per day |
@@ -114,6 +114,11 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
   preparation steps.
 - Calories and macros are calculated per serving and per 100 g. A serving can
   be added to the diary as **one** entry.
+- **Import from URL:** link icon in the recipe header → paste the URL of a
+  cooking site. Kaloriq reads title, ingredients, amounts, servings, time and
+  steps from the page's recipe data (JSON-LD/schema.org), fills matching
+  nutrition from the local database and shows a preview before saving. Amounts
+  such as `500 g`, `1 tbsp`, `½ tsp` or `2 tomatoes` are estimated in grams.
 - Recipes stay local and are included in the automatic backups. Export and
   import as `kaloriq-recipes` JSON for backup or sharing; there is no community
   database or cloud sync.

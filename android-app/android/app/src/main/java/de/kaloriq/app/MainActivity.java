@@ -12,6 +12,7 @@ public class MainActivity extends BridgeActivity {
     private HealthConnectBridge healthConnect;
     private WidgetBridge widgetBridge;
     private ReminderBridge reminderBridge;
+    private FetchBridge fetchBridge;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -32,6 +33,9 @@ public class MainActivity extends BridgeActivity {
 
             reminderBridge = new ReminderBridge(this, getBridge().getWebView());
             getBridge().getWebView().addJavascriptInterface(reminderBridge, "AndroidReminders");
+
+            fetchBridge = new FetchBridge(getBridge().getWebView());
+            getBridge().getWebView().addJavascriptInterface(fetchBridge, "AndroidFetch");
 
             handleWidgetIntent(getIntent());
         }
@@ -109,6 +113,7 @@ public class MainActivity extends BridgeActivity {
         reminderBridge = null;
         widgetBridge = null;
         healthConnect = null;
+        fetchBridge = null;
         super.onDestroy();
     }
 }
