@@ -10,6 +10,7 @@ import { estimate } from '../ai.js';
 import { FREE_MODELS, DEFAULT_MODEL, normalizeModel } from '../models.js';
 import { APP_VERSION } from '../version.js';
 import { getLang, setLang, locale, tr } from '../i18n.js';
+import { applyTheme, normalizeTheme } from '../theme.js';
 import { openPauseSheet, pauseStateLabel } from '../pause.js';
 import { exportEntriesCsv, exportDaysCsv } from '../csv.js';
 import { healthBridgePresent, healthStatus, requestHealthPermissions, readHealthToday, openHealthSettings } from '../health.js';
@@ -238,6 +239,10 @@ export function renderProfile(root) {
         <span class="grow"><span class="t">App-Update</span><span class="s">${updateSub}</span></span>
         ${updateState.available ? '<span class="pill">Neu</span>' : icon('refresh', 'chev')}
       </button>
+      <button class="row" data-theme>
+        <span class="grow"><span class="t">Darstellung</span><span class="s">${themeLabel(state.settings.theme)}</span></span>
+        ${icon(normalizeTheme(state.settings.theme) === 'dark' ? 'moon' : normalizeTheme(state.settings.theme) === 'light' ? 'sun' : 'contrast', 'chev')}
+      </button>
       <button class="row" data-lang>
         <span class="grow"><span class="t">Sprache</span><span class="s">${getLang() === 'en' ? 'English' : 'Deutsch'}</span></span>
         ${icon('chev', 'chev')}
@@ -371,6 +376,7 @@ export function renderProfile(root) {
     }
   });
   root.querySelector('[data-lang]').addEventListener('click', () => openLanguage(root));
+  root.querySelector('[data-theme]')?.addEventListener('click', () => openTheme(root));
   root.querySelector('[data-feedback]').addEventListener('click', openFeedbackSheet);
 }
 
@@ -1014,6 +1020,51 @@ async function testAi(btn) {
   } finally {
     btn.innerHTML = original;
   }
+}
+
+/* ---------------- Darstellung ---------------- */
+
+function themeLabel(pref) {
+  const value = normalizeTheme(pref);
+  if (value === 'light') return 'Hell · immer helle Oberfläche';
+  if (value === 'dark') return 'Dunkel · immer dunkle Oberfläche';
+  return 'Automatisch · wie dein Gerät';
+}
+
+function openTheme(root) {
+  const current = normalizeTheme(store.get().settings.theme);
+  const item = (id, name, sub, iconName) => `
+    <button class="row" data-t="${id}">
+      <span class="grow"><span class="t">${name}</span><span class="s">${sub}</span></span>
+      ${current === id ? icon('check') : icon(iconName, 'chev')}
+    </button>`;
+
+  const body = document.createElement('div');
+  body.innerHTML = `
+    <p class="small muted" style="margin-top:0">
+      Gilt sofort für die ganze App – auch für Sheets und Diagramme.
+      „Automatisch“ folgt der hell/dunkel-Einstellung deines Geräts.
+    </p>
+    <div class="card flush rows">
+      ${item('auto', 'Automatisch', 'Wie dein Gerät', 'contrast')}
+      ${item('light', 'Hell', 'Immer helle Oberfläche', 'sun')}
+      ${item('dark', 'Dunkel', 'Immer dunkle Oberfläche, abends angenehmer', 'moon')}
+    </div>`;
+
+  const sheet = openSheet({ title: 'Darstellung', body });
+
+  body.querySelectorAll('[data-t]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const next = normalizeTheme(btn.dataset.t);
+      if (next === current) { sheet.close(); return; }
+      store.saveSettings({ theme: next });
+      applyTheme(next);
+      sheet.close();
+      haptic();
+      toast(next === 'auto' ? 'Darstellung: automatisch' : next === 'dark' ? 'Dunkle Darstellung' : 'Helle Darstellung');
+      renderProfile(root);
+    });
+  });
 }
 
 /* ---------------- Sprache ---------------- */

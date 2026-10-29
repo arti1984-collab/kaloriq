@@ -48,6 +48,43 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.8.0] – 29.10.2026
+
+### Hinzugefügt
+
+- **Darstellung wählbar:** Profil → Darstellung mit drei Optionen – **Hell**,
+  **Dunkel** und **Automatisch** (folgt der Systemeinstellung). Die Wahl liegt
+  in `settings.theme`, gilt sofort für alle Ansichten und bleibt nach einem
+  Neustart erhalten.
+- **Neues Modul `public/js/theme.js`:** setzt `data-theme` am `<html>`, pflegt
+  `color-scheme` und die Farbe der Statusleiste (`meta[name=theme-color]`) und
+  horcht bei „Automatisch“ auf Systemwechsel.
+- **Kein Aufblitzen:** Ein kurzes Inline-Skript in `index.html` liest die
+  gespeicherte Wahl vor dem Laden des CSS und setzt die Darstellung, bevor die
+  Oberfläche zum ersten Mal gezeichnet wird.
+
+### Geändert
+
+- `app.css`: Die dunklen Farben hängen nicht mehr an
+  `@media (prefers-color-scheme: dark)`, sondern an `:root[data-theme="dark"]`.
+  Zwei Sonderregeln (`.card`, `.ai-note`) wurden mit umgestellt.
+- `app.js` wendet die Darstellung beim Start und nach Sicherung/Import/Zurück-
+  setzen an (`hydrate`, `settings`, `replace`, `reset`).
+- Profilzeile „Darstellung“ zeigt die aktuelle Wahl mit passendem Symbol
+  (Sonne, Mond, Kontrast) und öffnet ein Auswahl-Sheet.
+- Neue Wörterbuch-Einträge für Deutsch und Englisch.
+
+### Getestet
+
+- Wechsel Hell → Dunkel → Automatisch: Hintergrund, Karten, Text und
+  Statusleistenfarbe ändern sich sofort; Profilzeile aktualisiert sich.
+- Nach Reload bleibt die Wahl erhalten (`settings.theme`), Start ohne
+  helles Aufblitzen im Dunkelmodus.
+- „Automatisch“ folgt der Systemeinstellung und reagiert auf deren Wechsel.
+- Keine Konsolenfehler; vorhandene Daten und Einstellungen unverändert.
+
+---
+
 ## [1.7.0] – 29.10.2026
 
 ### Hinzugefügt

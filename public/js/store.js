@@ -200,6 +200,8 @@ function defaultState() {
       keepScreenOn: false,
       haptics: true,
       lang: 'de',
+      // Darstellung: 'auto' (System), 'light' oder 'dark'.
+      theme: 'auto',
       stepGoal: 8000,
       stepsEnabled: false,
       // Sanfter Modus: Wochenrahmen statt Tagesdruck, keine roten Zahlen.
@@ -290,6 +292,7 @@ function migrate(raw) {
   if (!Array.isArray(settings.recentFoods)) settings.recentFoods = [];
   if (!['precise', 'rough', 'overview'].includes(settings.trackingStyle)) settings.trackingStyle = 'precise';
   if (!['g', 'hand'].includes(settings.portionMode)) settings.portionMode = 'g';
+  if (!['auto', 'light', 'dark'].includes(settings.theme)) settings.theme = 'auto';
   if (typeof settings.reminderEnabled !== 'boolean') settings.reminderEnabled = false;
   if (!/^\d{2}:\d{2}$/.test(settings.reminderTime || '')) settings.reminderTime = '18:00';
   // Nur Free-Tier-Modelle zulassen; alte oder bezahlte Namen fallen zurück.

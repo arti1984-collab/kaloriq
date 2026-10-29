@@ -12,7 +12,7 @@ Folge Kaloriq auf [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
 ![Kaloriq – Tagebuch, Fortschritt, Fasten und Profil](docs/screenshots/uebersicht.png?v=1.4.0)
 
-> Screenshots mit Demo-Daten im hellen Design. Die App folgt automatisch dem Systemdesign (hell/dunkel).
+> Screenshots mit Demo-Daten im hellen Design. Die Darstellung lässt sich unter Profil → Darstellung auf Hell, Dunkel oder Automatisch (System) stellen.
 
 ---
 
@@ -63,6 +63,7 @@ Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzel
 | **Woche** | Ø Kalorien, Balkendiagramm pro Tag, Makro-Durchschnitt, Tageshistorie |
 | **Teilen** | Monatsrückblick als Bild (1080×1350) mit Zahlen, Gewicht und Kalorienverlauf – speichern oder teilen |
 | **Fasten** | 14:10 / 16:8 / 18:6 / 20:4 / 24 h, Live-Timer, Verlauf der letzten 7 Tage |
+| **Darstellung** | Hell, Dunkel oder Automatisch (System) – sofort umschaltbar, ohne Neustart, ohne Aufblitzen beim Start |
 | **Daten** | JSON-Export/-Import, automatische Sicherungen, IndexedDB-Zweitkopie, Zurücksetzen |
 | **Wohlbefinden** | Sanfter Modus mit Pause, **Minimalmodus** (ohne Ring, Ziel und Makros) und **Flexbereich** ±5–15 % – weniger Perfektionsdruck, keine roten Zahlen |
 | **Gnaden-Tage** | 0–3 leere Tage pro Monat brechen die Serie nicht – automatisch, lokal, ohne Punkte |

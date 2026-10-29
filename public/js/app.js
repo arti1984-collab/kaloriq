@@ -8,6 +8,7 @@ import {
 import { $, icon, setActiveTab, toast, toastAction, downloadFile } from './ui.js';
 import { setLang, applyI18n, watchI18n } from './i18n.js';
 import { resumeSteps } from './steps.js';
+import { initTheme, applyTheme } from './theme.js';
 import { renderOnboarding } from './views/onboarding.js';
 import { renderDiary } from './views/diary.js';
 import { renderProgress } from './views/progress.js';
@@ -178,6 +179,7 @@ async function boot() {
   ]);
 
   setLang(store.get().settings.lang || 'de');
+  initTheme(() => store.get().settings.theme || 'auto');
   paintTabbar();
   watchI18n();
 
@@ -199,6 +201,10 @@ async function boot() {
     if (reason === 'hydrate') {
       setLang(state.settings.lang || 'de');
       paintTabbar();
+    }
+    if (reason === 'settings' || reason === 'hydrate' || reason === 'replace' || reason === 'reset') {
+      // Darstellung folgt der Einstellung, auch wenn sie aus einer Sicherung kommt.
+      applyTheme(state.settings.theme || 'auto');
     }
     if (reason === 'onboarding') {
       requestPersistentStorage();

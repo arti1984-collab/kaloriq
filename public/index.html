@@ -5,9 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <title>Kaloriq – Kalorien &amp; KI-Tracking</title>
 <meta name="description" content="Kalorien, Makros, Wasser, Gewicht und Fasten tracken – mit KI-Foto-Erkennung.">
-<meta name="theme-color" content="#f5f6f4" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0c100f" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f6f4">
 <meta name="color-scheme" content="light dark">
+<script>
+  // Darstellung sofort setzen, bevor das CSS greift (kein Aufblitzen).
+  (function () {
+    var pref = 'auto';
+    try {
+      var raw = localStorage.getItem('kaloriq.state.v1');
+      if (raw) {
+        var saved = JSON.parse(raw);
+        var value = saved && saved.settings ? saved.settings.theme : '';
+        if (value === 'light' || value === 'dark') pref = value;
+      }
+    } catch (error) { /* dann eben automatisch */ }
+
+    var dark = pref === 'dark';
+    if (pref === 'auto') {
+      try {
+        dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      } catch (error) { dark = false; }
+    }
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    document.documentElement.dataset.themePref = pref;
+    document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = dark ? '#0b100e' : '#f5f6f4';
+  })();
+</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">

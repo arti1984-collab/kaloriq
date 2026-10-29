@@ -74,13 +74,13 @@ entfernt, damit sie nicht doppelt vorgeschlagen werden.
 
 ## Bereits umgesetzt (nicht mehr Teil der Liste)
 
+- **Darstellung hell/dunkel** – Version 1.8.0 (Hell, Dunkel, Automatisch)
 - **Rezept-Import per URL** – Version 1.7.0 (JSON-LD, Mengen-Heuristik, Vorschau)
 - **Wochenplan + Einkaufsliste** – Version 1.5.0 (Plan-Tab seit 1.6.0)
 - **Monatsrückblick als Bild** – Version 1.6.0
 
 ## Weitere Kandidaten (nicht in den Top 5)
 
-- Dark-Mode-Schalter (manuell hell/dunkel)
 - Allergen-/Ernährungsfilter (vegetarisch, vegan, glutenfrei)
 - Kompletten Tag duplizieren / als Vorlage
 - Tablet-/Desktop-Layout mit zwei Spalten

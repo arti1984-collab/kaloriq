@@ -1,17 +1,17 @@
 {
-  "version": "1.7.0",
+  "version": "1.8.0",
   "date": "2026-10-29",
   "notes": [
-    "Neu: Rezept-Import per URL. Link-Symbol oben in den Rezepten antippen, Adresse einer Kochseite einfügen – Titel, Zutaten, Mengen, Portionen, Zeit und Schritte werden übernommen.",
-    "Vorschau vor dem Speichern: passende Zutaten bekommen Nährwerte aus deiner Datenbank, der Rest lässt sich über „Anpassen“ ergänzen.",
-    "Mengen wie „500 g“, „1 EL“, „½ TL“ oder „2 Tomaten“ werden automatisch in Gramm geschätzt.",
-    "In der Android-App lädt eine native Brücke die Seite, damit der Import auch bei Seiten ohne CORS-Freigabe klappt."
+    "Neu: manuelle Darstellung. Unter Profil → Darstellung wählst du Hell, Dunkel oder Automatisch (wie dein Gerät).",
+    "Die Wahl gilt sofort für die ganze App und bleibt gespeichert – auch die Statusleiste passt sich an.",
+    "Beim Start wird die Darstellung gesetzt, bevor die Oberfläche aufgebaut ist: kein weißes Aufblitzen im Dunkelmodus.",
+    "Die Rezept-Import-Funktion aus 1.7.0 bleibt unverändert enthalten."
   ],
   "notes_en": [
-    "New: recipe import from a URL. Tap the link icon in Recipes, paste a cooking site address – title, ingredients, amounts, servings, time and steps are imported.",
-    "Preview before saving: matching ingredients get nutrition from your database, the rest can be completed via “Adjust”.",
-    "Amounts such as “500 g”, “1 tbsp”, “½ tsp” or “2 tomatoes” are estimated in grams automatically.",
-    "In the Android app a native bridge loads the page, so import works even on sites without CORS."
+    "New: manual appearance. Under Profile → Appearance choose Light, Dark or Automatic (follow your device).",
+    "The choice applies to the whole app immediately and is remembered – the status bar colour follows too.",
+    "The theme is applied before the interface is painted, so there is no white flash in dark mode.",
+    "The recipe import from 1.7.0 is still included."
   ],
   "release": "https://github.com/arti1984-collab/kaloriq/releases/latest"
 }

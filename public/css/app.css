@@ -46,31 +46,35 @@
   --ease: cubic-bezier(.22, .8, .28, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0b100e;
-    --bg-2: #131a17;
-    --card: #151c19;
-    --card-2: #1a221f;
-    --text: #eaf1ed;
-    --text-2: #c3cec9;
-    --muted: #8b9a93;
-    --line: #253029;
-    --line-2: #1e2822;
-    --accent: #21c98c;
-    --accent-strong: #16b57c;
-    --accent-soft: #122b22;
-    --accent-ink: #04120c;
-    --protein-soft: #2c1a18;
-    --carbs-soft: #2b2413;
-    --fat-soft: #181f30;
-    --water-soft: #10222c;
-    --danger-soft: #2b1517;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
-    --shadow-md: 0 16px 40px rgba(0, 0, 0, .45);
-    --shadow-lg: 0 20px 60px rgba(0, 0, 0, .6);
-  }
+/* Dunkle Farben gelten, wenn die App sie per data-theme setzt (hell/dunkel/
+   automatisch). Den Wert setzt das kurze Inline-Skript in index.html vor dem
+   ersten Aufbau, damit beim Start nichts aufblitzt. */
+:root[data-theme="dark"] {
+  --bg: #0b100e;
+  --bg-2: #131a17;
+  --card: #151c19;
+  --card-2: #1a221f;
+  --text: #eaf1ed;
+  --text-2: #c3cec9;
+  --muted: #8b9a93;
+  --line: #253029;
+  --line-2: #1e2822;
+  --accent: #21c98c;
+  --accent-strong: #16b57c;
+  --accent-soft: #122b22;
+  --accent-ink: #04120c;
+  --protein-soft: #2c1a18;
+  --carbs-soft: #2b2413;
+  --fat-soft: #181f30;
+  --water-soft: #10222c;
+  --danger-soft: #2b1517;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+  --shadow-md: 0 16px 40px rgba(0, 0, 0, .45);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, .6);
+  color-scheme: dark;
 }
+
+:root[data-theme="light"] { color-scheme: light; }
 
 html, body { height: 100%; }
 
@@ -186,7 +190,7 @@ svg { display: block; }
   box-shadow: var(--shadow-sm);
   border: 1px solid transparent;
 }
-@media (prefers-color-scheme: dark) { .card { border-color: var(--line-2); } }
+:root[data-theme="dark"] .card { border-color: var(--line-2); }
 
 .card + .card { margin-top: 12px; }
 .card.flush { padding: 0; overflow: hidden; }
@@ -1231,7 +1235,7 @@ body:not([data-tab="diary"]):not([data-tab="progress"]) .fab { display: none; }
   line-height: 1.45;
   margin-top: 12px;
 }
-@media (prefers-color-scheme: dark) { .ai-note { color: #e8c17a; } }
+:root[data-theme="dark"] .ai-note { color: #e8c17a; }
 
 .spinner {
   width: 17px; height: 17px;

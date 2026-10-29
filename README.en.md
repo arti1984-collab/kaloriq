@@ -12,7 +12,7 @@ Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
 ![Kaloriq – diary, progress, fasting and profile](docs/screenshots/uebersicht.png?v=1.4.0)
 
-> Screenshots with demo data in the light theme. The app automatically follows the system theme (light/dark).
+> Screenshots with demo data in the light theme. Under Profile → Appearance you can choose Light, Dark or Automatic (follow the system).
 
 ---
 
@@ -63,6 +63,7 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
 | **Week** | Average calories, bar chart per day, macro average, daily history |
 | **Sharing** | Monthly recap as an image (1080×1350) with numbers, weight and calorie chart – save or share |
 | **Fasting** | 14:10 / 16:8 / 18:6 / 20:4 / 24 h, live timer, history of the last 7 days |
+| **Appearance** | Light, Dark or Automatic (system) – switches instantly, no restart, no flash on launch |
 | **Data** | JSON export/import, automatic backups, IndexedDB second copy, reset |
 | **Wellbeing** | Gentle mode with pause, **minimal mode** (no ring, target or macros) and **flex range** ±5–15 % – less perfection pressure, no red numbers |
 | **Grace days** | 0–3 blank days per month don’t break the streak – automatic, local, no points |
