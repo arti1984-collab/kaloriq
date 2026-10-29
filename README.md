@@ -2,11 +2,13 @@
 
 **Sprache:** [Deutsch](README.md) · [English](README.en.md)
 
-Kalorien-, Makro- und Fasten-Tracker mit KI-Foto-Erkennung – als installierbare Web-App (PWA), optimiert für **Android** (läuft genauso auf dem iPhone).
+Kalorien-, Makro- und Fasten-Tracker mit KI-Foto-Erkennung, Barcode-Scanner und über 200 lokalen Lebensmitteln – als installierbare Web-App (PWA), optimiert für **Android** (läuft genauso auf dem iPhone).
+
+**Ebenfalls drin:** Rezepte (auch per URL von Kochseiten importiert), Wochenplan mit Einkaufsliste, Wasser, Schritte, Gewichtsverlauf mit Prognose, Fasten-Timer, Pausen- und Minimalmodus, wählbare Darstellung (hell / dunkel / automatisch) und „Tag als Vorlage“ zum Kopieren eines kompletten Tages.
 
 Eigenständige Implementierung der Funktionen bekannter Kalorien-Tracker. Keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.** Für den Barcode-Scanner wird ZXing (Apache-2.0) verwendet – nativ in der Android-APK und als lokal mitgelieferte JavaScript-Bibliothek in Safari/Firefox – siehe [Drittanbieter-Hinweise](THIRD_PARTY_NOTICES.md).
 
-**Aktuelle Version: 1.6.1** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.6.1) · [Changelog](CHANGELOG.md)
+**Aktuelle Version: 1.9.0** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.9.0) · [Changelog](CHANGELOG.md)
 
 Folge Kaloriq auf [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 

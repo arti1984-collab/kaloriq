@@ -2,11 +2,13 @@
 
 **Language:** [Deutsch](README.md) · [English](README.en.md)
 
-Calorie, macro and fasting tracker with AI photo recognition – as an installable web app (PWA), optimized for **Android** (runs the same way on iPhone).
+Calorie, macro and fasting tracker with AI photo recognition, barcode scanner and over 200 built-in foods – as an installable web app (PWA), optimized for **Android** (runs the same way on iPhone).
+
+**Also included:** recipes (including import from a cooking-site URL), meal plan with shopping list, water, steps, weight history with projection, fasting timer, pause and minimal mode, selectable appearance (light / dark / automatic) and “day as template” to copy a whole day.
 
 An independent implementation of the features of well-known calorie trackers. No third-party brands or assets, no cloud: **all data stays on the device.** The barcode scanner uses ZXing (Apache-2.0) – natively in the Android APK and as a locally bundled JavaScript library in Safari/Firefox – see [third-party notices](THIRD_PARTY_NOTICES.md).
 
-**Current version: 1.6.1** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.6.1) · [Changelog](CHANGELOG.md)
+**Current version: 1.9.0** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.9.0) · [Changelog](CHANGELOG.md)
 
 Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
