@@ -48,6 +48,24 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.9.7] – 30.10.2026
+
+### Behoben
+
+- **Health Connect: „Aktivitäten erlauben“ ohne Wirkung.** Der Knopf und die
+  Statuszeile nutzten dasselbe `data-health-exercise`-Attribut. Der Selektor traf
+  die Zeile statt den Knopf, deshalb bekam der Knopf keinen Klick-Handler und die
+  Zeile zeigte dessen Text. Die Zeile behält `data-health-exercise`, der Knopf
+  heißt jetzt `data-health-exercise-btn`.
+
+### Getestet
+
+- Im Browser mit nachgebildeter Brücke: Knopf fragt `requestExtras('exercise')`
+  an, die Zeile wechselt danach von „fehlt“ auf „erteilt“; die übrigen Knöpfe
+  (Lesen, Schreiben, Import) unverändert.
+
+---
+
 ## [1.9.6] – 30.10.2026
 
 ### Geändert

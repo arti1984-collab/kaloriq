@@ -1,15 +1,15 @@
 {
-  "version": "1.9.6",
+  "version": "1.9.7",
   "date": "2026-10-30",
   "notes": [
-    "Feinschliff zu 1.9.1–1.9.4: Die neuen Funktionen sind jetzt auch auf Englisch vollständig übersetzt – App-Sperre, Barcode-Cache, Health Connect und Fasten-Erinnerung.",
-    "Auch die Fasten-Ansicht spricht Englisch: Status, Wochentage, Ziel-Hinweis und „h gefastet“ wechseln mit der Sprache.",
-    "Inhaltlich unverändert zu 1.9.4: gleiche Funktionen, gleiche Daten – nur die Texte in der zweiten Sprache sind vollständig."
+    "Behoben: Im Health-Connect-Sheet reagierte der Knopf „Aktivitäten erlauben“ nicht, und die Statuszeile zeigte den Knopftext an.",
+    "Jetzt fragt der Knopf die Berechtigung für Aktivitäten und Verbrauch an, die Zeile daneben zeigt wie gewohnt „erteilt“ oder „fehlt“.",
+    "Sonst unverändert zu 1.9.6 – gleiche Funktionen, gleiche Daten."
   ],
   "notes_en": [
-    "Polish for 1.9.1–1.9.4: the new features are now fully translated into English as well – app lock, barcode cache, Health Connect and the fasting reminder.",
-    "The fasting view speaks English too: status, weekdays, goal hint and “h fasted” follow the selected language.",
-    "No functional change compared to 1.9.4: same features, same data – only the second-language texts are complete now."
+    "Fixed: in the Health Connect sheet the “Allow activities” button did not respond, and the status row showed the button label.",
+    "The button now requests the permission for activities and burn, while the row next to it shows “granted” or “missing” as usual.",
+    "Otherwise unchanged from 1.9.6 – same features, same data."
   ],
   "release": "https://github.com/arti1984-collab/kaloriq/releases/latest"
 }

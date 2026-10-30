@@ -8,11 +8,11 @@ Calorie, macro and fasting tracker with AI photo recognition, barcode scanner an
 
 An independent implementation of the features of well-known calorie trackers. No third-party brands or assets, no cloud: **all data stays on the device.** The barcode scanner uses ZXing (Apache-2.0) – natively in the Android APK and as a locally bundled JavaScript library in Safari/Firefox – see [third-party notices](THIRD_PARTY_NOTICES.md).
 
-**Current version: 1.9.6** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.9.6) · [Changelog](CHANGELOG.md)
+**Current version: 1.9.7** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.9.7) · [Changelog](CHANGELOG.md)
 
 Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
-![Kaloriq – diary, progress, fasting and profile](docs/screenshots/uebersicht.png?v=1.4.0)
+![Kaloriq – diary, progress, fasting and profile](docs/screenshots/uebersicht.png?v=1.9)
 
 > Screenshots with demo data in the light theme. Under Profile → Appearance you can choose Light, Dark or Automatic (follow the system).
 
@@ -22,13 +22,13 @@ Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
 | Diary | Progress |
 |---|---|
-| [![Diary](docs/screenshots/tagebuch.png?v=1.4.0)](docs/screenshots/tagebuch.png) | [![Progress](docs/screenshots/fortschritt.png?v=1.4.0)](docs/screenshots/fortschritt.png) |
+| [![Diary](docs/screenshots/tagebuch.png?v=1.9)](docs/screenshots/tagebuch.png) | [![Progress](docs/screenshots/fortschritt.png?v=1.9)](docs/screenshots/fortschritt.png) |
 
 | Fasting | Profile |
 |---|---|
-| [![Fasting](docs/screenshots/fasten.png?v=1.4.0)](docs/screenshots/fasten.png) | [![Profile](docs/screenshots/profil.png?v=1.4.0)](docs/screenshots/profil.png) |
+| [![Fasting](docs/screenshots/fasten.png?v=1.9)](docs/screenshots/fasten.png) | [![Profile](docs/screenshots/profil.png?v=1.9)](docs/screenshots/profil.png) |
 
-### New in 1.9.1–1.9.6
+### New in 1.9.1–1.9.7
 
 **App lock:** Under **Profile → App lock** a 4- to 6-digit PIN protects the app
 on start and after the chosen pause. In the APK you can additionally use the
@@ -53,7 +53,16 @@ app is closed; in the PWA while it is open.
 the diary and take over a day, water optional.
 
 **1.9.6** translates all new texts fully into English as well; the language can
-be switched in the profile.
+be switched in the profile. **1.9.7** fixes the “Allow activities” button in the
+Health Connect sheet.
+
+| App lock | Barcode cache |
+|---|---|
+| [![App lock](docs/screenshots/app-sperre.png?v=1.9)](docs/screenshots/app-sperre.png) | [![Barcode cache](docs/screenshots/barcode-cache.png?v=1.9)](docs/screenshots/barcode-cache.png) |
+
+| Health Connect | Fasting reminder |
+|---|---|
+| [![Health Connect](docs/screenshots/health-connect-1.9.png?v=1.9)](docs/screenshots/health-connect-1.9.png) | [![Fasting reminder](docs/screenshots/fasten-erinnerung.png?v=1.9)](docs/screenshots/fasten-erinnerung.png) |
 
 ### 1.4.0: Health Connect, reminder, quick log
 
@@ -70,7 +79,8 @@ Health Connect and the daily system reminder are part of the Android APK; quick 
 17-second tour through diary, progress, fasting and profile – with the GitHub link at the end (1080×1920, no sound).
 
 All images are in [`docs/screenshots/`](docs/screenshots/) – as individual views, as a
-2×2 montage (`uebersicht.png`) and with the 1.4.0 feature screens.
+2×2 montage (`uebersicht.png`), with the 1.9 feature screens (app lock, barcode
+cache, Health Connect, fasting reminder) and those of the 1.4.0 features.
 
 ---
 
@@ -454,6 +464,7 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.9.7** | Health Connect: “Allow activities” responds again |
 | **1.9.6** | All new texts fully in English, fasting view follows the language |
 | **1.9.4** | Fasting reminder at the end (optionally 30 min before), also with the app closed |
 | **1.9.3** | Health Connect: read activities, write nutrition/water on request |

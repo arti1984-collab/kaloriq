@@ -8,11 +8,11 @@ Kalorien-, Makro- und Fasten-Tracker mit KI-Foto-Erkennung, Barcode-Scanner und 
 
 Eigenständige Implementierung der Funktionen bekannter Kalorien-Tracker. Keine fremden Marken oder Assets, keine Cloud: **alle Daten bleiben auf dem Gerät.** Für den Barcode-Scanner wird ZXing (Apache-2.0) verwendet – nativ in der Android-APK und als lokal mitgelieferte JavaScript-Bibliothek in Safari/Firefox – siehe [Drittanbieter-Hinweise](THIRD_PARTY_NOTICES.md).
 
-**Aktuelle Version: 1.9.6** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.9.6) · [Changelog](CHANGELOG.md)
+**Aktuelle Version: 1.9.7** · [Auf dem iPhone installieren](https://arti1984-collab.github.io/kaloriq/) · [Android-APK herunterladen](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.9.7) · [Changelog](CHANGELOG.md)
 
 Folge Kaloriq auf [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
-![Kaloriq – Tagebuch, Fortschritt, Fasten und Profil](docs/screenshots/uebersicht.png?v=1.4.0)
+![Kaloriq – Tagebuch, Fortschritt, Fasten und Profil](docs/screenshots/uebersicht.png?v=1.9)
 
 > Screenshots mit Demo-Daten im hellen Design. Die Darstellung lässt sich unter Profil → Darstellung auf Hell, Dunkel oder Automatisch (System) stellen.
 
@@ -22,13 +22,13 @@ Folge Kaloriq auf [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
 | Tagebuch | Fortschritt |
 |---|---|
-| [![Tagebuch](docs/screenshots/tagebuch.png?v=1.4.0)](docs/screenshots/tagebuch.png) | [![Fortschritt](docs/screenshots/fortschritt.png?v=1.4.0)](docs/screenshots/fortschritt.png) |
+| [![Tagebuch](docs/screenshots/tagebuch.png?v=1.9)](docs/screenshots/tagebuch.png) | [![Fortschritt](docs/screenshots/fortschritt.png?v=1.9)](docs/screenshots/fortschritt.png) |
 
 | Fasten | Profil |
 |---|---|
-| [![Fasten](docs/screenshots/fasten.png?v=1.4.0)](docs/screenshots/fasten.png) | [![Profil](docs/screenshots/profil.png?v=1.4.0)](docs/screenshots/profil.png) |
+| [![Fasten](docs/screenshots/fasten.png?v=1.9)](docs/screenshots/fasten.png) | [![Profil](docs/screenshots/profil.png?v=1.9)](docs/screenshots/profil.png) |
 
-### Neu in 1.9.1–1.9.6
+### Neu in 1.9.1–1.9.7
 
 **App-Sperre:** Unter **Profil → App-Sperre** schützt ein 4- bis 6-stelliger PIN
 die App beim Start und nach der gewählten Pause. In der APK lässt sich
@@ -53,7 +53,16 @@ App, in der PWA solange sie offen ist.
 Kopier-Symbol tippen und einen Tag übernehmen, Wasser optional.
 
 **1.9.6** übersetzt alle neuen Texte zusätzlich vollständig ins Englische; die
-Sprache lässt sich im Profil umschalten.
+Sprache lässt sich im Profil umschalten. **1.9.7** behebt den Knopf „Aktivitäten
+erlauben“ im Health-Connect-Sheet.
+
+| App-Sperre | Barcode-Cache |
+|---|---|
+| [![App-Sperre](docs/screenshots/app-sperre.png?v=1.9)](docs/screenshots/app-sperre.png) | [![Barcode-Cache](docs/screenshots/barcode-cache.png?v=1.9)](docs/screenshots/barcode-cache.png) |
+
+| Health Connect | Fasten-Erinnerung |
+|---|---|
+| [![Health Connect](docs/screenshots/health-connect-1.9.png?v=1.9)](docs/screenshots/health-connect-1.9.png) | [![Fasten-Erinnerung](docs/screenshots/fasten-erinnerung.png?v=1.9)](docs/screenshots/fasten-erinnerung.png) |
 
 ### 1.4.0: Health Connect, Erinnerung, Schnell eintragen
 
@@ -70,7 +79,9 @@ Health Connect und die tägliche System-Erinnerung gehören zur Android-APK; „
 17 Sekunden Rundgang durch Tagebuch, Fortschritt, Fasten und Profil – mit GitHub-Link am Ende (1080×1920, ohne Ton).
 
 Alle Bilder liegen unter [`docs/screenshots/`](docs/screenshots/) – als Einzelansicht, als
-2×2-Montage (`uebersicht.png`) und mit den Ansichten der 1.4.0-Funktionen.
+2×2-Montage (`uebersicht.png`), mit den Ansichten der 1.9-Funktionen
+(App-Sperre, Barcode-Cache, Health Connect, Fasten-Erinnerung) und denen der
+1.4.0-Funktionen.
 
 ---
 
@@ -465,6 +476,7 @@ sichtbar, und die APK wird aus demselben Quellstand gebaut wie die PWA.
 
 | Version | Schwerpunkt |
 |---|---|
+| **1.9.7** | Health Connect: „Aktivitäten erlauben“ reagiert wieder |
 | **1.9.6** | Alle neuen Texte vollständig auf Englisch, Fasten-Ansicht sprachabhängig |
 | **1.9.4** | Fasten-Erinnerung ans Ende (optional 30 Min. vorher), auch bei geschlossener APK |
 | **1.9.3** | Health Connect: Aktivitäten lesen, Nährwerte/Wasser auf Wunsch schreiben |

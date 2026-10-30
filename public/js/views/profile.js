@@ -709,7 +709,7 @@ function openHealthSheet(root) {
 
     <div class="vstack">
       <button class="btn btn-block" data-health-permission>Berechtigungen fürs Lesen</button>
-      <button class="btn btn-block" data-health-exercise>Aktivitäten erlauben</button>
+      <button class="btn btn-block" data-health-exercise-btn>Aktivitäten erlauben</button>
       <button class="btn btn-block" data-health-write-permission>Schreiben erlauben</button>
       <button class="btn btn-block" data-health-open>Health Connect öffnen</button>
       <button class="btn btn-primary btn-block" data-health-import>Schritte &amp; Gewicht importieren</button>
@@ -755,7 +755,7 @@ function openHealthSheet(root) {
   const statusEl = body.querySelector('[data-health-status]');
   const detailEl = body.querySelector('[data-health-detail]');
   const permBtn = body.querySelector('[data-health-permission]');
-  const exerciseBtn = body.querySelector('[data-health-exercise]');
+  const exerciseBtn = body.querySelector('[data-health-exercise-btn]');
   const writePermBtn = body.querySelector('[data-health-write-permission]');
   const importBtn = body.querySelector('[data-health-import]');
   const openBtn = body.querySelector('[data-health-open]');
