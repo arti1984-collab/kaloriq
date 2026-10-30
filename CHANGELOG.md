@@ -48,6 +48,175 @@ IndexedDB gespiegelt) und der JSON-Export.
 
 ---
 
+## [1.9.6] – 30.10.2026
+
+### Geändert
+
+- **Englische Texte vervollständigt:** App-Sperre (Sperrbildschirm, Sheet,
+  PIN-vergessen, Pausen-Auswahl), Barcode-Cache, Health Connect (Import-Button,
+  Abschnitt „Nährwerte & Wasser“, Aktivitäten-Hinweise) und die
+  Fasten-Erinnerung sind im englischen Modus vollständig übersetzt.
+- Fasten-Ansicht: Status („Heute abgeschlossen“), die Pille „✅ Ziel erreicht“,
+  Wochentage und „… h gefastet“ folgen jetzt der Sprache; Wochentage kommen aus
+  `toLocaleDateString(locale())` statt aus einer deutschen Tabelle.
+- Neue Übersetzungen als Wörterbuch-Einträge und Muster in `i18n.js` – keine
+  Änderung an Logik oder Daten.
+
+### Getestet
+
+- Englischer Modus im Browser: Sperrbildschirm inkl. „PIN vergessen“, App-Sperre-Sheet,
+  Barcode-Cache-Sheet, Health-Connect-Sheet (mit nachgebildeter Brücke) und
+  Fasten-Tab enthalten keine deutschen Reste mehr; deutscher Modus unverändert.
+- `npm run bump`, `npm run build:static` und `npm run apk` laufen durch.
+
+---
+
+## [1.9.4] – 30.10.2026
+
+### Hinzugefügt
+
+- **Fasten-Erinnerung:** Im Fasten-Tab zwei Schalter – „Erinnerung ans
+  Fasten-Ende“ und optional „30 Minuten vorher“. Die Einstellungen liegen unter
+  `settings.fastReminders` und `settings.fastReminderBefore` (0 oder 30).
+- **System-Alarme (APK):** `ReminderScheduler.scheduleFast()` plant zwei
+  separate Alarme (Ende + Vorab-Hinweis) mit eigenen Request-Codes und
+  `setAndAllowWhileIdle` (kein Sonderrecht für exakte Alarme nötig).
+  `cancelFast()` räumt beide ab, `rescheduleFast()` stellt sie nach einem
+  Geräteneustart wieder her (`BootReceiver`).
+- **Eigene Benachrichtigungen:** `ReminderReceiver` unterscheidet jetzt
+  `fast_end` und `fast_soon`; Texte in `strings.xml` („Fasten-Ziel erreicht“,
+  „Noch 30 Minuten“). Ein Tipp öffnet den Fasten-Tab.
+- **In-App-Fallback (PWA):** Ohne System-Erinnerungen meldet die App beim
+  Erreichen des Ziels einen ruhigen Toast, solange sie offen ist.
+
+### Geändert
+
+- `ReminderBridge` hat `scheduleFast`, `cancelFast` und `isFastEnabled`;
+  die Benachrichtigungs-Berechtigung wird auch für Fasten-Alarme angefragt und
+  ein verweigertes Recht schaltet die Erinnerung sauber ab.
+- `widget.js` versteht die Aktion `fasting` (Öffnen des Fasten-Tabs aus der
+  Benachrichtigung).
+
+### Getestet
+
+- `gradlew :app:compileDebugKotlin :app:compileDebugJavaWithJavac` läuft ohne
+  Fehler (nur eine Deprecation-Notiz für `startActivityForResult`).
+- Browser-Test mit nachgebildeter Reminder-Brücke: Schalter an → Schalter
+  „30 Minuten vorher“ erscheint, Fastenstart plant `end` exakt 16 h später mit
+  `before = 30`, Fasten beenden ruft `cancelFast` auf.
+- Auf echter Hardware noch nicht geprüft: Benachrichtigung kommt erst zur
+  Zielzeit; dafür APK installieren und einen kurzen Plan (14:10) nutzen.
+
+---
+
+## [1.9.3] – 30.10.2026
+
+### Hinzugefügt
+
+- **Health Connect – Aktivitäten lesen:** `readWorkouts()` liefert die
+  Trainingseinheiten der letzten sieben Tage mit Titel, Datum, Dauer und – falls
+  erlaubt – dem Verbrauch aus `TotalCaloriesBurnedRecord`. Das Sheet zeigt die
+  Liste und den Verbrauch von heute; das Tagesziel bleibt unverändert.
+- **Health Connect – schreiben (opt-in):** `writeDay()` schreibt die
+  Tageswerte als `NutritionRecord` (kcal, Protein, KH, Fett) und
+  `HydrationRecord` (Wasser). Eigene Einträge des Tages werden vorher gelöscht,
+  damit mehrfaches Schreiben keine Kalorien doppelt zählt. Schalter:
+  `settings.healthWriteNutrition` und `settings.healthWriteHydration`
+  (Standard aus), Schreiben nur über „Heutige Werte schreiben“.
+- **Getrennte Berechtigungen:** `requestExtras('exercise'|'write')` fragt
+  Aktivitäten bzw. Schreiben separat an; `status()` meldet jetzt `exercise`,
+  `nutrition` und `hydration`.
+- Manifest: `READ_EXERCISE`, `READ_TOTAL_CALORIES_BURNED`, `WRITE_NUTRITION`,
+  `WRITE_HYDRATION`.
+
+### Geändert
+
+- Das Health-Connect-Sheet zeigt fünf Berechtigungszeilen, drei
+  Berechtigungs-Buttons, die Aktivitätenliste und die zwei Schreib-Schalter.
+- Ohne erfasste Werte verweigert „Heutige Werte schreiben“ mit Hinweis, statt
+  einen 0-kcal-Eintrag anzulegen.
+
+### Getestet
+
+- Kotlin kompiliert (`gradlew :app:compileDebugKotlin`).
+- Browser-Test mit nachgebildeter Brücke: Statuszeilen, Aktivitätenliste
+  („Laufen · Heute · 32 Min · 280 kcal“, Verbrauch heute 280 kcal), Schalter
+  schreiben in die Einstellungen, „Heutige Werte schreiben“ sendet
+  `{date, kcal, protein, carbs, fat, water, nutrition, hydration}` und meldet
+  „Nach Health Connect geschrieben · Nährwerte, Wasser“.
+- Auf echter Hardware (Health-Connect-App) noch nicht geprüft – dafür APK
+  installieren und Berechtigungsdialoge einmal durchgehen.
+
+---
+
+## [1.9.2] – 30.10.2026
+
+### Hinzugefügt
+
+- **Barcode-Cache als Teil des App-Zustands:** Gescannte Produkte liegen jetzt
+  unter `barcodeCache` im gespeicherten Zustand (bis 500 Einträge) und werden
+  damit automatisch in Backup, Export, IndexedDB-Zweitkopie und Sicherungen
+  mitgeführt. Der frühere `localStorage`-Stand (`kaloriq.barcode.v1`) wird
+  einmalig übernommen (`settings.barcodeMigrated`), damit ein geleerter Cache
+  leer bleibt.
+- **Suche nutzt den Cache:** `searchBarcodeCache()` ergänzt die lokale
+  Lebensmittelliste um gescannte Produkte (Name, Marke oder Barcode).
+- **Profil → Barcode-Cache:** zeigt Anzahl und die neuesten Produkte, mit
+  „Cache leeren“ nach Rückfrage.
+- **Offline-Hinweis beim Scannen:** Ohne Netz und ohne Cache erklärt die App,
+  warum das Produkt fehlt, statt eine generische Fehlermeldung zu zeigen.
+
+### Geändert
+
+- `store.set(..., 'barcode')` löst kein Neu-Rendern der Ansicht aus, damit das
+  offene Hinzufügen-Sheet beim Cachen nicht springt.
+
+### Getestet
+
+- Scan mit nachgebildeter Open-Food-Facts-Antwort: Produkt landet unter
+  `barcodeCache`, ein zweiter Aufruf löst keinen Netzaufruf mehr aus.
+- Suche nach „müsli“ findet das gescannte Produkt; Alter Stand aus
+  `kaloriq.barcode.v1` wird beim Start einmalig übernommen (1 Produkt).
+- Cache leeren: Rückfrage, danach 0 Produkte, Zeile im Profil zeigt „Noch
+  keine gescannten Produkte gespeichert“; nach Neuladen bleibt der Cache leer.
+
+---
+
+## [1.9.1] – 30.10.2026
+
+### Hinzugefügt
+
+- **App-Sperre:** Neuer Eintrag unter **Profil → App-Sperre**. Ein 4- bis
+  6-stelliger PIN sperrt die App beim Start und – je nach Einstellung – nach
+  1, 5 oder 30 Minuten im Hintergrund. Bei „Sofort“ ist die App nach jedem
+  Wechsel wieder zu.
+- **`lock.js`:** PIN wird per PBKDF2/SHA-256 (210.000 Runden, zufälliges Salt)
+  gehasht; ohne `crypto.subtle` (unverschlüsseltes LAN) greift eine
+  SHA-256-Kette. Kein Klartext-PIN im Speicher, keine Wiederherstellung.
+- **Gerätesperre (APK):** `LockBridge.java` fragt über `KeyguardManager` den
+  Fingerabdruck, das Gesicht oder das Entsperrmuster des Handys ab. In der PWA
+  bleibt es beim PIN.
+- **PIN vergessen:** eigener Hinweis im Sperrbildschirm – ohne PIN bleibt nur
+  das Zurücksetzen (mit ausdrücklicher Bestätigung und Sicherung vorher).
+- Einstellungen unter `settings.appLock` (`salt`, `hash`, `iterations`,
+  `after`, `biometric`); `migrate()` ergänzt das Feld bei alten Ständen.
+
+### Geändert
+
+- `app.js` sperrt vor dem ersten Rendern, damit keine Daten aufblitzen.
+- Neues Schloss-Symbol in `ui.js`, Sperrbildschirm-Styles in `app.css`,
+  `/js/lock.js` in der `SHELL`-Liste des Service Workers.
+
+### Getestet
+
+- PIN gesetzt (1234): `settings.appLock` enthält Salt und Hash, keinen PIN.
+- Neustart: Sperrbildschirm erscheint, `.app` bleibt verdeckt; falscher PIN
+  meldet „PIN stimmt nicht“, der richtige entsperrt ohne Konsolenfehler.
+- Einstellungen: Pause, PIN ändern und „Sperre entfernen“ schreiben sofort in
+  den Zustand; bestehende Einträge bleiben unverändert.
+
+---
+
 ## [1.9.0] – 29.10.2026
 
 ### Hinzugefügt

@@ -4,7 +4,7 @@
 import {
   store, addEntries, todayKey, MEALS, recentFoods, isFavoriteFood, toggleFavoriteFood, rememberFood,
 } from '../store.js';
-import { searchLocal, searchRemote, lookupBarcode, foodEmoji, customFoodFromInput } from '../foods.js';
+import { searchLocal, searchRemote, searchBarcodeCache, lookupBarcode, foodEmoji, customFoodFromInput } from '../foods.js';
 import { estimate, prepareImage } from '../ai.js';
 import { esc, fmt, icon, toast, openSheet, haptic } from '../ui.js';
 import { tr } from '../i18n.js';
@@ -216,7 +216,11 @@ export function openAddSheet({ dateKey = todayKey(), meal = 'breakfast' } = {}) 
     });
 
     const paintLocal = (q) => {
-      const local = searchLocal(q, 25);
+      // Lokale Liste zuerst, danach gescannte Produkte aus dem Offline-Cache.
+      const localHits = searchLocal(q, 25);
+      const known = new Set(localHits.map((f) => String(f.name || '').toLowerCase()));
+      const cached = searchBarcodeCache(q, 25).filter((f) => !known.has(String(f.name || '').toLowerCase()));
+      const local = [...localHits, ...cached];
       results.innerHTML = local.length
         ? `<div class="card flush rows">${local.map((f, i) => foodRow(f, i)).join('')}</div>`
         : `<div class="empty"><span class="emoji">🔎</span><span>Nichts in der lokalen Liste gefunden</span><span class="tiny">Nutze die Online-Suche oder lege ein eigenes Lebensmittel an.</span></div>`;

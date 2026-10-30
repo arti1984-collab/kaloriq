@@ -1,7 +1,7 @@
 /* ============================================================
    Kaloriq – Profil & Einstellungen
    ============================================================ */
-import { store, exportJson, importJson, todayKey, streak, streakInfo, listBackups, backupNow, restoreBackup, activePause, applyTrackingStyle, setSteps, setWeight } from '../store.js';
+import { store, exportJson, importJson, todayKey, streak, streakInfo, listBackups, backupNow, restoreBackup, activePause, applyTrackingStyle, setSteps, setWeight, totals, getDay } from '../store.js';
 import { ACTIVITY, GOALS, MACRO_PRESETS, computeTargets, projection, round1, bmi, bmiCategory, flexStatus } from '../calc.js';
 import {
   esc, fmt, icon, toast, openSheet, confirmDialog, downloadFile, haptic, copyText,
@@ -9,13 +9,21 @@ import {
 import { estimate } from '../ai.js';
 import { FREE_MODELS, DEFAULT_MODEL, normalizeModel } from '../models.js';
 import { APP_VERSION } from '../version.js';
-import { getLang, setLang, locale, tr } from '../i18n.js';
+import { getLang, setLang, locale, tr, applyI18n } from '../i18n.js';
 import { applyTheme, normalizeTheme } from '../theme.js';
 import { openPauseSheet, pauseStateLabel } from '../pause.js';
 import { exportEntriesCsv, exportDaysCsv } from '../csv.js';
-import { healthBridgePresent, healthStatus, requestHealthPermissions, readHealthToday, openHealthSettings } from '../health.js';
+import { barcodeCacheFoods, barcodeCacheCount, clearBarcodeCache, BARCODE_CACHE_MAX } from '../foods.js';
+import {
+  healthBridgePresent, healthStatus, requestHealthPermissions, requestHealthExtras,
+  readHealthToday, readHealthWorkouts, writeHealthDay, openHealthSettings,
+} from '../health.js';
 import { scheduleSystemReminder, systemRemindersAvailable } from '../reminders.js';
 import { getUpdateState, checkForUpdate, openUpdateSheet } from '../update.js';
+import {
+  lockActive, lockConfig, setPin, removeLock, setLockAfter, setBiometric,
+  lockNow, deviceLockAvailable,
+} from '../lock.js';
 
 export function renderProfile(root) {
   const state = store.get();
@@ -38,8 +46,8 @@ export function renderProfile(root) {
     ? ''
     : healthState?.sdk === 'available'
       ? (healthState.steps || healthState.weight)
-        ? 'Schritte und Gewicht aus Android Health importieren'
-        : 'Verbinden, um Schritte und Gewicht zu importieren'
+        ? 'Schritte, Gewicht und Aktivitäten · Schreiben optional'
+        : 'Verbinden, um Daten zu lesen und auf Wunsch zu schreiben'
       : healthState?.sdk === 'update_required'
         ? 'App aktualisieren, um Daten zu lesen'
         : 'Zum Import aus Android Health installieren';
@@ -63,6 +71,11 @@ export function renderProfile(root) {
   const updateSub = updateState.available
     ? `Version ${APP_VERSION} · ${updateState.latest} verfügbar`
     : `Version ${APP_VERSION} · aktuell`;
+  const cachedProducts = barcodeCacheCount();
+  const lockOn = lockActive();
+  const lockSub = lockOn
+    ? `Aktiv · ${lockAfterLabel(lockConfig().after)}`
+    : 'Aus · keine PIN-Abfrage beim Öffnen';
 
   root.innerHTML = `
     <header class="topbar">
@@ -239,6 +252,10 @@ export function renderProfile(root) {
         <span class="grow"><span class="t">App-Update</span><span class="s">${updateSub}</span></span>
         ${updateState.available ? '<span class="pill">Neu</span>' : icon('refresh', 'chev')}
       </button>
+      <button class="row" data-lock>
+        <span class="grow"><span class="t">App-Sperre</span><span class="s">${lockSub}</span></span>
+        ${lockOn ? '<span class="pill neutral">PIN</span>' : icon('lock', 'chev')}
+      </button>
       <button class="row" data-theme>
         <span class="grow"><span class="t">Darstellung</span><span class="s">${themeLabel(state.settings.theme)}</span></span>
         ${icon(normalizeTheme(state.settings.theme) === 'dark' ? 'moon' : normalizeTheme(state.settings.theme) === 'light' ? 'sun' : 'contrast', 'chev')}
@@ -284,6 +301,16 @@ export function renderProfile(root) {
       <button class="row" data-import>
         <span class="grow"><span class="t">Daten importieren</span><span class="s">Backup zurückspielen</span></span>
         ${icon('upload', 'chev')}
+      </button>
+      <button class="row" data-barcode-cache>
+        <span class="grow">
+          <span class="t">Barcode-Cache</span>
+          <span class="s">${cachedProducts
+            ? (cachedProducts === 1 ? '1 Produkt offline verfügbar' : `${cachedProducts} Produkte offline verfügbar`)
+            : 'Noch keine gescannten Produkte gespeichert'}</span>
+        </span>
+        <span class="v">${cachedProducts ? fmt(cachedProducts) : '–'}</span>
+        ${icon('barcode', 'chev')}
       </button>
       <button class="row" data-backups>
         <span class="grow"><span class="t">Sicherungen</span><span class="s">${backupSub}</span></span>
@@ -355,6 +382,7 @@ export function renderProfile(root) {
   });
   root.querySelector('[data-csv]').addEventListener('click', openCsvSheet);
   root.querySelector('[data-import]').addEventListener('click', openImport);
+  root.querySelector('[data-barcode-cache]')?.addEventListener('click', () => openBarcodeCacheSheet(root));
   root.querySelector('[data-backups]').addEventListener('click', () => openBackups(root));
   root.querySelector('[data-reset]').addEventListener('click', resetAll);
   root.querySelector('[data-install]').addEventListener('click', installApp);
@@ -375,6 +403,7 @@ export function renderProfile(root) {
       btn.disabled = false;
     }
   });
+  root.querySelector('[data-lock]')?.addEventListener('click', () => openLockSheet(root));
   root.querySelector('[data-lang]').addEventListener('click', () => openLanguage(root));
   root.querySelector('[data-theme]')?.addEventListener('click', () => openTheme(root));
   root.querySelector('[data-feedback]').addEventListener('click', openFeedbackSheet);
@@ -656,30 +685,58 @@ function openFlexBandSheet(root) {
 
 function openHealthSheet(root) {
   const body = document.createElement('div');
+  const permRow = (key, label) => `
+      <div class="hstack" style="justify-content:space-between;margin-top:8px">
+        <span class="small">${label}</span>
+        <span class="pill neutral" data-health-${key}>–</span>
+      </div>`;
+
   body.innerHTML = `
-    <p class="small muted" style="margin-bottom:14px">Health Connect liest heute Schritte und das zuletzt eingetragene Gewicht aus Android Health. Kaloriq schreibt keine Daten zurück.</p>
+    <p class="small muted" style="margin-bottom:14px">Health Connect liest Schritte, Gewicht und Aktivitäten aus Android Health. Nährwerte und Wasser schreibt Kaloriq nur, wenn du es hier einschaltest – nie automatisch.</p>
 
     <div class="card" style="padding:14px;margin-bottom:14px">
       <div class="hstack" style="justify-content:space-between">
         <span class="small" style="font-weight:620">Health Connect</span>
         <span class="pill neutral" data-health-status>–</span>
       </div>
-      <div class="hstack" style="justify-content:space-between;margin-top:10px">
-        <span class="small">Schritte lesen</span>
-        <span class="pill neutral" data-health-steps>–</span>
-      </div>
-      <div class="hstack" style="justify-content:space-between;margin-top:6px">
-        <span class="small">Gewicht lesen</span>
-        <span class="pill neutral" data-health-weight>–</span>
-      </div>
+      ${permRow('steps', 'Schritte lesen')}
+      ${permRow('weight', 'Gewicht lesen')}
+      ${permRow('exercise', 'Aktivitäten &amp; Verbrauch lesen')}
+      ${permRow('nutrition', 'Nährwerte schreiben')}
+      ${permRow('hydration', 'Wasser schreiben')}
       <p class="tiny muted" data-health-detail style="margin-top:8px"></p>
     </div>
 
     <div class="vstack">
+      <button class="btn btn-block" data-health-permission>Berechtigungen fürs Lesen</button>
+      <button class="btn btn-block" data-health-exercise>Aktivitäten erlauben</button>
+      <button class="btn btn-block" data-health-write-permission>Schreiben erlauben</button>
       <button class="btn btn-block" data-health-open>Health Connect öffnen</button>
-      <button class="btn btn-block" data-health-permission>Berechtigung erteilen</button>
-      <button class="btn btn-primary btn-block" data-health-import>Daten importieren</button>
+      <button class="btn btn-primary btn-block" data-health-import>Schritte &amp; Gewicht importieren</button>
     </div>
+
+    <div class="section-title">Aktivitäten</div>
+    <div data-health-workouts></div>
+
+    <div class="section-title">Nährwerte &amp; Wasser</div>
+    <section class="card flush">
+      <button class="row" data-write-nutrition role="switch" aria-checked="false" aria-label="Nährwerte schreiben">
+        <span class="grow">
+          <span class="t">Nährwerte schreiben</span>
+          <span class="s" data-write-nutrition-sub>Aus</span>
+        </span>
+        <span class="switch" aria-hidden="true" aria-checked="false" style="pointer-events:none"></span>
+      </button>
+      <button class="row" data-write-hydration role="switch" aria-checked="false" aria-label="Wasser schreiben">
+        <span class="grow">
+          <span class="t">Wasser schreiben</span>
+          <span class="s" data-write-hydration-sub>Aus</span>
+        </span>
+        <span class="switch" aria-hidden="true" aria-checked="false" style="pointer-events:none"></span>
+      </button>
+    </section>
+    <button class="btn btn-block" data-health-write style="margin-top:12px">Heutige Werte schreiben</button>
+    <p class="tiny muted" style="margin-top:10px">Geschrieben wird nur auf Knopfdruck. Frühere Kaloriq-Einträge des Tages werden dabei ersetzt, damit keine Kalorien doppelt zählen.</p>
 
     <p class="tiny muted" style="margin-top:14px">
       Health Connect enthält nur Daten, die andere Apps (z. B. Google Fit oder Samsung Health)
@@ -696,12 +753,20 @@ function openHealthSheet(root) {
   });
 
   const statusEl = body.querySelector('[data-health-status]');
-  const stepsEl = body.querySelector('[data-health-steps]');
-  const weightEl = body.querySelector('[data-health-weight]');
   const detailEl = body.querySelector('[data-health-detail]');
   const permBtn = body.querySelector('[data-health-permission]');
+  const exerciseBtn = body.querySelector('[data-health-exercise]');
+  const writePermBtn = body.querySelector('[data-health-write-permission]');
   const importBtn = body.querySelector('[data-health-import]');
   const openBtn = body.querySelector('[data-health-open]');
+  const writeBtn = body.querySelector('[data-health-write]');
+  const workoutsEl = body.querySelector('[data-health-workouts]');
+  const nutritionRow = body.querySelector('[data-write-nutrition]');
+  const hydrationRow = body.querySelector('[data-write-hydration]');
+
+  const settings = () => store.get().settings;
+  const wantsNutrition = () => settings().healthWriteNutrition === true;
+  const wantsHydration = () => settings().healthWriteHydration === true;
 
   const paint = () => {
     const s = healthStatus();
@@ -714,18 +779,47 @@ function openHealthSheet(root) {
     statusEl.textContent = tr(labels[s.sdk] || 'unbekannt');
     statusEl.className = `pill ${s.sdk === 'available' ? '' : 'warn'}`;
 
-    const mark = (el, ok) => {
+    const mark = (key, ok) => {
+      const el = body.querySelector(`[data-health-${key}]`);
+      if (!el) return;
       el.textContent = ok ? tr('erteilt') : tr('fehlt');
       el.className = `pill ${ok ? '' : 'neutral'}`;
     };
-    mark(stepsEl, s.steps);
-    mark(weightEl, s.weight);
+    mark('steps', s.steps);
+    mark('weight', s.weight);
+    mark('exercise', s.exercise);
+    mark('nutrition', s.nutrition);
+    mark('hydration', s.hydration);
 
-    const anyPermission = s.steps || s.weight;
-    permBtn.textContent = tr(s.steps || s.weight ? 'Berechtigungen prüfen' : 'Berechtigungen erteilen');
+    const anyRead = s.steps || s.weight;
+    permBtn.textContent = tr(anyRead ? 'Berechtigungen fürs Lesen prüfen' : 'Berechtigungen fürs Lesen');
     permBtn.disabled = s.sdk !== 'available';
-    importBtn.disabled = s.sdk !== 'available' || !anyPermission;
+    exerciseBtn.disabled = s.sdk !== 'available';
+    exerciseBtn.textContent = tr(s.exercise ? 'Aktivitäten-Berechtigung prüfen' : 'Aktivitäten erlauben');
+    writePermBtn.disabled = s.sdk !== 'available';
+    writePermBtn.textContent = tr(s.nutrition && s.hydration ? 'Schreib-Berechtigung prüfen' : 'Schreiben erlauben');
+    importBtn.disabled = s.sdk !== 'available' || !anyRead;
     openBtn.textContent = s.sdk === 'available' ? tr('Health Connect öffnen') : tr('Health Connect installieren');
+
+    const guide = (on, allowed) => {
+      const key = on === 'nutrition' ? 'nutrition' : 'hydration';
+      const row = on === 'nutrition' ? nutritionRow : hydrationRow;
+      const active = allowed && (on === 'nutrition' ? wantsNutrition() : wantsHydration());
+      row?.setAttribute('aria-checked', String(active));
+      row?.querySelector('.switch')?.setAttribute('aria-checked', String(active));
+      const sub = body.querySelector(`[data-write-${key}-sub]`);
+      if (sub) {
+        sub.textContent = !allowed
+          ? tr('Berechtigung fehlt')
+          : active
+            ? tr('Aktiv · nur auf Knopfdruck')
+            : tr('Aus · nichts wird geschrieben');
+      }
+    };
+    guide('nutrition', s.nutrition);
+    guide('hydration', s.hydration);
+
+    writeBtn.disabled = !(s.nutrition && wantsNutrition()) && !(s.hydration && wantsHydration());
 
     detailEl.textContent = s.error
       ? `Details: ${s.error}`
@@ -733,25 +827,117 @@ function openHealthSheet(root) {
         ? tr('Bitte die Health-Connect-App im Play Store aktualisieren.')
         : s.sdk === 'unavailable'
           ? tr('Bitte Health Connect aus dem Play Store installieren (Android 13 und älter).')
-          : anyPermission
+          : anyRead || s.exercise
             ? tr('Berechtigungen können jederzeit in Health Connect widerrufen werden.')
             : tr('Noch keine Berechtigung erteilt.');
   };
 
+  const loadWorkouts = async () => {
+    const s = healthStatus();
+    if (s.sdk !== 'available') {
+      workoutsEl.innerHTML = '<p class="tiny muted">Health Connect ist nicht verfügbar.</p>';
+      return;
+    }
+    if (!s.exercise) {
+      workoutsEl.innerHTML = '<p class="tiny muted">Noch keine Berechtigung – „Aktivitäten erlauben“ antippen.</p>';
+      return;
+    }
+    workoutsEl.innerHTML = '<div class="vstack"><div class="skeleton"></div><div class="skeleton"></div></div>';
+    try {
+      const data = await readHealthWorkouts(7);
+      if (!data.workouts.length) {
+        workoutsEl.innerHTML = `<p class="tiny muted">Keine Aktivitäten gefunden${data.error ? ` (${esc(data.error)})` : ''}. Dort schreiben Apps wie Google Fit oder Samsung Health hinein.</p>`;
+        return;
+      }
+      const items = data.workouts.slice(0, 8);
+      const todayKcal = items
+        .filter((w) => w.date === data.today)
+        .reduce((sum, w) => sum + (Number(w.kcal) || 0), 0);
+      workoutsEl.innerHTML = `
+        <div class="card flush rows">
+          ${items.map((w) => {
+            const date = new Date(w.start);
+            const when = w.date === data.today
+              ? 'Heute'
+              : date.toLocaleDateString(locale(), { day: 'numeric', month: 'short' });
+            const minutes = Math.max(0, Math.round(Number(w.minutes) || 0));
+            const kcal = Number(w.kcal) > 0 ? `${fmt(w.kcal)} kcal` : 'ohne Verbrauch';
+            return `<div class="row static">
+              <span class="grow">
+                <span class="t">${esc(w.title || 'Aktivität')}</span>
+                <span class="s">${esc(when)} · ${minutes} Min · ${kcal}</span>
+              </span>
+              <span class="v">${kcal.startsWith('ohne') ? '–' : fmt(w.kcal)}</span>
+            </div>`;
+          }).join('')}
+        </div>
+        ${todayKcal > 0
+          ? `<p class="tiny muted" style="margin-top:8px">Verbrauch heute: <b>${fmt(todayKcal)} kcal</b> · das Tagesziel bleibt unverändert.</p>`
+          : '<p class="tiny muted" style="margin-top:8px">Für heute ist kein Verbrauch in Health Connect hinterlegt.</p>'}`;
+    } catch (err) {
+      workoutsEl.innerHTML = `<p class="tiny muted">${esc(err.message || 'Aktivitäten konnten nicht gelesen werden.')}</p>`;
+    }
+  };
+
   paint();
   repaintTimer = setInterval(paint, 2500);
+  loadWorkouts();
+
+  const afterPermission = (result, okText, partialText) => {
+    if (result.granted) toast(okText);
+    else if (result.steps || result.weight || result.exercise || result.nutrition || result.hydration) {
+      toast(partialText || 'Teilweise verbunden – verfügbare Werte lassen sich nutzen');
+    } else toast('Berechtigung nicht erteilt', 'err');
+    paint();
+    loadWorkouts();
+    renderProfile(root);
+  };
 
   permBtn?.addEventListener('click', async () => {
     try {
       const result = await requestHealthPermissions();
-      if (result.granted) toast('Health Connect verbunden');
-      else if (result.steps || result.weight) toast('Teilweise verbunden – Import ist möglich');
-      else toast('Berechtigung nicht erteilt', 'err');
-      paint();
-      renderProfile(root);
+      afterPermission(result, 'Health Connect verbunden');
     } catch (err) {
       toast(err.message || 'Berechtigung fehlgeschlagen', 'err');
     }
+  });
+
+  exerciseBtn?.addEventListener('click', async () => {
+    try {
+      const result = await requestHealthExtras('exercise');
+      afterPermission(result, 'Aktivitäten verbunden', 'Teilweise verbunden – Aktivitäten sind jetzt lesbar');
+    } catch (err) {
+      toast(err.message || 'Berechtigung fehlgeschlagen', 'err');
+    }
+  });
+
+  writePermBtn?.addEventListener('click', async () => {
+    try {
+      const result = await requestHealthExtras('write');
+      afterPermission(result, 'Schreiben erlaubt', 'Teilweise verbunden – nur erlaubte Werte werden geschrieben');
+    } catch (err) {
+      toast(err.message || 'Berechtigung fehlgeschlagen', 'err');
+    }
+  });
+
+  nutritionRow?.addEventListener('click', () => {
+    if (!healthStatus().nutrition) {
+      toast('Erst „Schreiben erlauben“ antippen', 'err');
+      return;
+    }
+    store.saveSettings({ healthWriteNutrition: !wantsNutrition() });
+    paint();
+    haptic();
+  });
+
+  hydrationRow?.addEventListener('click', () => {
+    if (!healthStatus().hydration) {
+      toast('Erst „Schreiben erlauben“ antippen', 'err');
+      return;
+    }
+    store.saveSettings({ healthWriteHydration: !wantsHydration() });
+    paint();
+    haptic();
   });
 
   openBtn?.addEventListener('click', () => openHealthSettings());
@@ -786,6 +972,52 @@ function openHealthSheet(root) {
       renderProfile(root);
     } catch (err) {
       toast(err.message || 'Import fehlgeschlagen', 'err');
+    }
+  });
+
+  writeBtn?.addEventListener('click', async () => {
+    const s = healthStatus();
+    const nutritionOn = s.nutrition && wantsNutrition();
+    const hydrationOn = s.hydration && wantsHydration();
+    if (!nutritionOn && !hydrationOn) {
+      toast('Keine Schreibfunktion aktiviert', 'err');
+      return;
+    }
+    const day = getDay(todayKey());
+    const sum = totals(day);
+    if (!(sum.kcal > 0) && !(Number(day.water) > 0)) {
+      toast('Heute ist noch nichts erfasst – erst eintragen, dann schreiben', 'err');
+      return;
+    }
+    const parts = [];
+    if (nutritionOn) parts.push(`${fmt(sum.kcal)} kcal mit Makros`);
+    if (hydrationOn) parts.push(`${fmt(day.water || 0)} ml Wasser`);
+    const ok = await confirmDialog({
+      title: 'Nach Health Connect schreiben?',
+      message: `${parts.join(' und ')} von heute werden als Kaloriq-Eintrag gespeichert. Frühere Kaloriq-Einträge von heute werden dabei ersetzt.`,
+      confirmLabel: 'Schreiben',
+    });
+    if (!ok) return;
+    writeBtn.disabled = true;
+    try {
+      const result = await writeHealthDay({
+        date: todayKey(),
+        kcal: Math.round(sum.kcal),
+        protein: round1(sum.protein),
+        carbs: round1(sum.carbs),
+        fat: round1(sum.fat),
+        water: Math.round(Number(day.water) || 0),
+        nutrition: nutritionOn,
+        hydration: hydrationOn,
+      });
+      toast(result.written.length
+        ? `${tr('Nach Health Connect geschrieben')} · ${result.written.map((w) => tr(w === 'nutrition' ? 'Nährwerte' : 'Wasser')).join(', ')}`
+        : 'Nichts zu schreiben – heute sind keine passenden Werte erfasst');
+    } catch (err) {
+      toast(err.message || 'Schreiben fehlgeschlagen', 'err');
+    } finally {
+      paint();
+      writeBtn.disabled = false;
     }
   });
 }
@@ -832,6 +1064,163 @@ function openReminderSheet(root) {
     sheet.close();
     renderProfile(root);
   });
+}
+
+/* ---------------- App-Sperre ---------------- */
+
+const LOCK_AFTER = [
+  { value: 0, label: 'Sofort' },
+  { value: 1, label: '1 Minute' },
+  { value: 5, label: '5 Minuten' },
+  { value: 30, label: '30 Minuten' },
+];
+
+function lockAfterLabel(minutes) {
+  const m = Math.max(0, Number(minutes) || 0);
+  if (m === 0) return 'Sperrt bei jedem Start und Wechsel';
+  return `Sperrt nach ${m} Min. im Hintergrund`;
+}
+
+function openLockSheet(root) {
+  let mode = lockActive() ? 'view' : 'pin';
+  const body = document.createElement('div');
+  const sheet = openSheet({
+    title: 'App-Sperre',
+    subtitle: 'PIN-Schutz beim Öffnen',
+    body,
+  });
+
+  const markup = () => {
+    const cfg = lockConfig();
+    if (mode === 'pin') {
+      return `
+        <p class="small muted" style="margin-bottom:14px">${lockActive()
+          ? 'Neuen PIN festlegen – der bisherige wird ersetzt.'
+          : 'Vier bis sechs Ziffern, die nur du kennst. Gefragt wird beim Start und nach der eingestellten Pause.'}</p>
+        <div class="field">
+          <label for="lock-pin1">PIN</label>
+          <input class="input" id="lock-pin1" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="4–6 Ziffern">
+        </div>
+        <div class="field" style="margin-top:10px">
+          <label for="lock-pin2">PIN wiederholen</label>
+          <input class="input" id="lock-pin2" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password" placeholder="4–6 Ziffern">
+        </div>
+        <p class="tiny muted" style="margin-top:8px">
+          Ohne PIN hilft nur das Zurücksetzen – dabei werden alle Daten auf diesem Gerät gelöscht. Der PIN liegt nur als Hash auf dem Gerät und verschlüsselt die Daten nicht.
+        </p>
+        <div class="hstack" style="gap:10px;margin-top:16px">
+          ${lockActive() ? '<button class="btn grow" data-lock-cancel>Abbrechen</button>' : ''}
+          <button class="btn btn-primary grow" data-lock-save>PIN speichern</button>
+        </div>`;
+    }
+
+    return `
+      <div class="card" style="padding:14px;margin-bottom:16px">
+        <div class="hstack" style="justify-content:space-between">
+          <span class="small" style="font-weight:620">Sperre aktiv</span>
+          <span class="pill">PIN</span>
+        </div>
+        <p class="tiny muted" style="margin-top:6px">
+          <span>${lockAfterLabel(cfg.after)}.</span>
+          <span>Der PIN schützt vor fremden Blicken auf dem entsperrten Handy – er verschlüsselt die Einträge nicht.</span>
+        </p>
+      </div>
+
+      <div class="field">
+        <label>Pause bis zur Sperre</label>
+        <div class="chips">
+          ${LOCK_AFTER.map((o) => `<button class="chip" data-lock-after="${o.value}" aria-pressed="${(Number(cfg.after) || 0) === o.value}">${o.label}</button>`).join('')}
+        </div>
+        <span class="hint">Beim Start ist die App immer gesperrt.</span>
+      </div>
+
+      ${deviceLockAvailable() ? `
+        <button class="row" data-lock-device role="switch" aria-checked="${Boolean(cfg.biometric)}" aria-label="Gerätesperre erlauben">
+          <span class="grow">
+            <span class="t">Gerätesperre erlauben</span>
+            <span class="s">${cfg.biometric ? 'Aktiv · Fingerabdruck, Gesicht oder Muster des Handys' : 'Aus · nur PIN'}</span>
+          </span>
+          <span class="switch" aria-hidden="true" aria-checked="${Boolean(cfg.biometric)}" style="pointer-events:none"></span>
+        </button>` : ''}
+
+      <div class="vstack" style="margin-top:16px">
+        <button class="btn btn-block" data-lock-change>PIN ändern</button>
+        <button class="btn btn-block" data-lock-now>Jetzt sperren</button>
+        <button class="btn btn-danger btn-block" data-lock-remove>Sperre entfernen</button>
+      </div>`;
+  };
+
+  const paint = () => {
+    body.innerHTML = markup();
+    applyI18n(body);
+    bind();
+  };
+
+  const bind = () => {
+    body.querySelectorAll('[data-lock-after]').forEach((b) => b.addEventListener('click', () => {
+      setLockAfter(Number(b.dataset.lockAfter));
+      paint();
+      renderProfile(root);
+      haptic();
+    }));
+
+    body.querySelector('[data-lock-device]')?.addEventListener('click', () => {
+      setBiometric(!lockConfig().biometric);
+      paint();
+      haptic();
+    });
+
+    body.querySelector('[data-lock-change]')?.addEventListener('click', () => { mode = 'pin'; paint(); });
+    body.querySelector('[data-lock-cancel]')?.addEventListener('click', () => { mode = 'view'; paint(); });
+
+    body.querySelector('[data-lock-save]')?.addEventListener('click', async (event) => {
+      const btn = event.currentTarget;
+      const first = String(body.querySelector('#lock-pin1')?.value || '').replace(/\D/g, '');
+      const second = String(body.querySelector('#lock-pin2')?.value || '').replace(/\D/g, '');
+      if (first.length < 4 || first.length > 6) {
+        toast('Bitte 4 bis 6 Ziffern eingeben', 'err');
+        return;
+      }
+      if (first !== second) {
+        toast('Die PINs stimmen nicht überein', 'err');
+        return;
+      }
+      btn.disabled = true;
+      try {
+        await setPin(first);
+        mode = 'view';
+        paint();
+        renderProfile(root);
+        toast('App-Sperre aktiviert');
+      } catch (err) {
+        toast(err.message || 'PIN konnte nicht gespeichert werden', 'err');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    body.querySelector('[data-lock-now]')?.addEventListener('click', () => {
+      sheet.close();
+      lockNow();
+    });
+
+    body.querySelector('[data-lock-remove]')?.addEventListener('click', async () => {
+      const ok = await confirmDialog({
+        title: 'Sperre entfernen?',
+        message: 'Danach lässt sich die App ohne PIN öffnen. Deine Daten bleiben unverändert.',
+        confirmLabel: 'Entfernen',
+        danger: true,
+      });
+      if (!ok) return;
+      removeLock();
+      mode = 'pin';
+      paint();
+      renderProfile(root);
+      toast('App-Sperre entfernt');
+    });
+  };
+
+  paint();
 }
 
 /* ---------------- Trackingsstil ---------------- */
@@ -1227,6 +1616,63 @@ function openBackups(root) {
     toast('Sicherung angelegt');
     sheet.close();
     openBackups(root);
+  });
+}
+
+/* ---------------- Barcode-Cache ---------------- */
+
+function openBarcodeCacheSheet(root) {
+  const items = barcodeCacheFoods();
+  const body = document.createElement('div');
+  body.innerHTML = `
+    <p class="small muted" style="margin-bottom:14px">
+      Jedes gescannte Produkt liegt mit Name, Marke und Nährwerten im App-Zustand.
+      Beim nächsten Scan und bei der Suche findet die App es auch ohne Netz –
+      und es wandert mit in Backup und Export.
+    </p>
+
+    <div class="card" style="padding:14px;margin-bottom:14px">
+      <div class="hstack" style="justify-content:space-between">
+        <span class="small" style="font-weight:620">Gespeicherte Produkte</span>
+        <span class="pill ${items.length ? '' : 'neutral'}">${items.length} / ${BARCODE_CACHE_MAX}</span>
+      </div>
+      <p class="tiny muted" style="margin-top:6px">${items.length
+        ? 'Die neuesten zuerst. Ist der Cache voll, fallen die ältesten Produkte heraus.'
+        : 'Noch nichts gespeichert – scanne ein Produkt, dann liegt es offline bereit.'}</p>
+    </div>
+
+    ${items.length ? `<div class="card flush rows" style="max-height:300px;overflow:auto">
+      ${items.slice(0, 25).map((f) => `<div class="row static">
+        <span class="grow">
+          <span class="t">${esc(f.name || 'Produkt')}</span>
+          <span class="s">${f.brand ? esc(f.brand) + ' · ' : ''}${f.code ? esc(f.code) + ' · ' : ''}${fmt(f.per100?.kcal)} kcal / 100 g</span>
+        </span>
+      </div>`).join('')}
+      ${items.length > 25 ? `<div class="row static"><span class="grow"><span class="s">… und ${fmt(items.length - 25)} weitere</span></span></div>` : ''}
+    </div>` : ''}
+  `;
+
+  const sheet = openSheet({
+    title: 'Barcode-Cache',
+    subtitle: 'Offline gespeicherte Produkte',
+    body,
+    footer: items.length
+      ? '<button class="btn btn-danger btn-block" data-clear-cache>Cache leeren</button>'
+      : '',
+  });
+
+  sheet.foot?.querySelector('[data-clear-cache]')?.addEventListener('click', async () => {
+    const ok = await confirmDialog({
+      title: 'Barcode-Cache leeren?',
+      message: `${items.length} gespeicherte ${items.length === 1 ? 'Produkt' : 'Produkte'} werden entfernt. Beim nächsten Scan werden sie wieder online geladen. Deine Einträge, Rezepte und Tage bleiben unverändert.`,
+      confirmLabel: 'Leeren',
+      danger: true,
+    });
+    if (!ok) return;
+    clearBarcodeCache();
+    sheet.close();
+    renderProfile(root);
+    toast('Barcode-Cache geleert');
   });
 }
 

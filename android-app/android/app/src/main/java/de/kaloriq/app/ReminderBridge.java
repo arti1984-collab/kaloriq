@@ -16,6 +16,8 @@ public class ReminderBridge {
     private final WebView webView;
     private int pendingHour = -1;
     private int pendingMinute = -1;
+    private long pendingFastEnd = 0;
+    private int pendingFastBefore = 0;
 
     public ReminderBridge(Activity activity, WebView webView) {
         this.activity = activity;
@@ -64,6 +66,39 @@ public class ReminderBridge {
         emitStatus(true);
     }
 
+    /** Plant die Fasten-Erinnerungen (Ende, optional vorher). */
+    @JavascriptInterface
+    public void scheduleFast(long endMillis, int beforeMinutes, boolean enabled) {
+        if (!enabled) {
+            ReminderScheduler.cancelFast(activity);
+            emitFast(true);
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+            && activity.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+            != PackageManager.PERMISSION_GRANTED) {
+            pendingFastEnd = endMillis;
+            pendingFastBefore = beforeMinutes;
+            activity.runOnUiThread(() -> activity.requestPermissions(
+                new String[] { Manifest.permission.POST_NOTIFICATIONS },
+                PERMISSION_REQUEST
+            ));
+            return;
+        }
+        ReminderScheduler.scheduleFast(activity, endMillis, beforeMinutes, true);
+        emitFast(true);
+    }
+
+    @JavascriptInterface
+    public void cancelFast() {
+        ReminderScheduler.cancelFast(activity);
+    }
+
+    @JavascriptInterface
+    public boolean isFastEnabled() {
+        return ReminderScheduler.isFastEnabled(activity);
+    }
+
     void onPermissionResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode != PERMISSION_REQUEST) return;
         boolean granted = grantResults.length > 0
@@ -71,13 +106,24 @@ public class ReminderBridge {
         if (granted && pendingHour >= 0) {
             ReminderScheduler.schedule(activity, pendingHour, pendingMinute);
         }
+        if (granted && pendingFastEnd > 0) {
+            ReminderScheduler.scheduleFast(activity, pendingFastEnd, pendingFastBefore, true);
+        }
+        if (!granted && pendingFastEnd > 0) emitFast(false);
         pendingHour = -1;
         pendingMinute = -1;
+        pendingFastEnd = 0;
+        pendingFastBefore = 0;
         emitStatus(granted);
     }
 
     private void emitStatus(boolean granted) {
         final String js = "window.__kaloriqReminderStatus&&window.__kaloriqReminderStatus(" + granted + ");";
+        webView.post(() -> webView.evaluateJavascript(js, null));
+    }
+
+    private void emitFast(boolean granted) {
+        final String js = "window.__kaloriqFastReminderStatus&&window.__kaloriqFastReminderStatus(" + granted + ");";
         webView.post(() -> webView.evaluateJavascript(js, null));
     }
 }

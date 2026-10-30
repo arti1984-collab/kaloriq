@@ -52,6 +52,8 @@ function handleAction(action) {
   handleAction.at = now;
   if (action === 'quick') {
     openQuickLogSheet({ meal: mealForNow() });
+  } else if (action === 'fasting') {
+    location.hash = '#/fasting';
   } else if (action === 'water') {
     const today = todayKey();
     setWater(today, (getDay(today).water || 0) + 250);

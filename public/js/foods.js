@@ -4,6 +4,7 @@
    • Open Food Facts für Suche + Barcode (online)
    ============================================================ */
 import { enOf } from './i18n.js';
+import { store } from './store.js';
 
 const SEED_RAW = [
   // name, Gruppe, kcal, Protein, KH, Fett, Portion-Label, Portion-Gramm
@@ -386,43 +387,73 @@ export async function lookupBarcode(code) {
   const clean = String(code || '').replace(/\D/g, '');
   if (clean.length < 6) throw new Error('Bitte einen gültigen Barcode eingeben.');
 
-  const cached = readBarcodeCache()[clean];
+  const cached = barcodeCache()[clean];
   if (cached) return cached;
 
   const url = `https://world.openfoodfacts.org/api/v2/product/${clean}.json?fields=${OFF_FIELDS}`;
-  const data = await fetchJson(url, 12000);
+  let data;
+  try {
+    data = await fetchJson(url, 12000);
+  } catch {
+    throw new Error(navigator.onLine === false
+      ? 'Offline – dieses Produkt ist noch nicht gespeichert. Sobald du es einmal online gescannt hast, funktioniert der Barcode auch ohne Netz.'
+      : 'Open Food Facts ist gerade nicht erreichbar. Bitte später erneut versuchen oder manuell eingeben.');
+  }
   if (data.status === 0 || !data.product) throw new Error('Produkt nicht gefunden. Bitte manuell eingeben.');
   const mapped = mapOffProduct(data.product);
   if (!mapped) throw new Error('Für dieses Produkt fehlen Nährwerte.');
-  writeBarcodeCache(clean, mapped);
+  rememberBarcode(clean, mapped);
   return mapped;
 }
 
-/* ---------- Barcode-Cache (offline wiederverwendbar) ---------- */
+/* ---------- Barcode-Cache
+   Jedes gescannte Produkt liegt im App-Zustand (`barcodeCache`) – damit wird
+   es offline gefunden, exportiert und gesichert. Begrenzt auf 500 Einträge:
+   die ältesten fallen zuerst heraus. ---------- */
 
-const BARCODE_CACHE_KEY = 'kaloriq.barcode.v1';
+export const BARCODE_CACHE_MAX = 500;
 
-function readBarcodeCache() {
-  try {
-    const raw = localStorage.getItem(BARCODE_CACHE_KEY);
-    const parsed = raw ? JSON.parse(raw) : null;
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch {
-    return {};
-  }
+export function barcodeCache() {
+  const map = store.get().barcodeCache;
+  return map && typeof map === 'object' ? map : {};
 }
 
-function writeBarcodeCache(code, food) {
-  try {
-    const map = readBarcodeCache();
-    map[code] = { ...food, cachedAt: Date.now() };
-    const keys = Object.keys(map).sort((a, b) => (map[b].cachedAt || 0) - (map[a].cachedAt || 0));
-    const next = {};
-    for (const key of keys.slice(0, 80)) next[key] = map[key];
-    localStorage.setItem(BARCODE_CACHE_KEY, JSON.stringify(next));
-  } catch {
-    /* Speicher voll oder nicht verfügbar – Suche funktioniert weiter. */
-  }
+export function barcodeCacheCount() {
+  return Object.keys(barcodeCache()).length;
+}
+
+/** Neueste zuerst. */
+export function barcodeCacheFoods() {
+  return Object.entries(barcodeCache())
+    .map(([code, food]) => ({ ...food, code: food.code || code }))
+    .sort((a, b) => (b.cachedAt || 0) - (a.cachedAt || 0));
+}
+
+/** Sucht in den gespeicherten Produkten (Name + Marke). */
+export function searchBarcodeCache(query, limit = 20) {
+  const needle = norm(query);
+  if (!needle) return [];
+  return barcodeCacheFoods()
+    .filter((food) => norm(`${food.name || ''} ${food.brand || ''} ${food.code || ''}`).includes(needle))
+    .slice(0, limit);
+}
+
+function rememberBarcode(code, food) {
+  store.set((state) => {
+    if (!state.barcodeCache || typeof state.barcodeCache !== 'object') state.barcodeCache = {};
+    state.barcodeCache[code] = { ...food, code, cachedAt: Date.now() };
+    const keys = Object.keys(state.barcodeCache)
+      .sort((a, b) => (state.barcodeCache[b].cachedAt || 0) - (state.barcodeCache[a].cachedAt || 0));
+    if (keys.length > BARCODE_CACHE_MAX) {
+      const next = {};
+      keys.slice(0, BARCODE_CACHE_MAX).forEach((key) => { next[key] = state.barcodeCache[key]; });
+      state.barcodeCache = next;
+    }
+  }, 'barcode');
+}
+
+export function clearBarcodeCache() {
+  store.set((state) => { state.barcodeCache = {}; }, 'barcode');
 }
 
 /* ---------------- Eigene Lebensmittel ---------------- */

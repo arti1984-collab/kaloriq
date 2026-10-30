@@ -31,6 +31,38 @@ export function scheduleSystemReminder(enabled, time = '18:00') {
   }
 }
 
+/**
+ * Plant oder löscht die Fasten-Erinnerungen (System, nur APK).
+ * @param {boolean} enabled
+ * @param {number} endMillis Zeitpunkt des Fasten-Endes
+ * @param {number} beforeMinutes 0 = keine Vorab-Erinnerung
+ */
+export function scheduleFastReminder(enabled, endMillis, beforeMinutes = 0) {
+  const b = bridge();
+  if (!b?.scheduleFast) return;
+  try {
+    b.scheduleFast(Math.round(Number(endMillis) || 0), Math.max(0, Math.round(Number(beforeMinutes) || 0)), Boolean(enabled));
+  } catch (err) {
+    toast(err.message || 'Fasten-Erinnerung konnte nicht geplant werden', 'err');
+  }
+}
+
+export function cancelFastReminder() {
+  try {
+    bridge()?.cancelFast?.();
+  } catch {
+    /* egal */
+  }
+}
+
+export function systemFastReminderActive() {
+  try {
+    return Boolean(bridge()?.isFastEnabled?.());
+  } catch {
+    return false;
+  }
+}
+
 export function initReminders() {
   const b = bridge();
   if (!b) return;
@@ -39,6 +71,12 @@ export function initReminders() {
     if (granted) return;
     store.saveSettings({ reminderEnabled: false });
     toast('Benachrichtigungen nicht erlaubt – Erinnerung aus', 'err');
+  };
+
+  window.__kaloriqFastReminderStatus = (granted) => {
+    if (granted) return;
+    store.saveSettings({ fastReminders: false });
+    toast('Benachrichtigungen nicht erlaubt – Fasten-Erinnerung aus', 'err');
   };
 
   const settings = store.get().settings;

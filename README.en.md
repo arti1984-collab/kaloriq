@@ -8,7 +8,7 @@ Calorie, macro and fasting tracker with AI photo recognition, barcode scanner an
 
 An independent implementation of the features of well-known calorie trackers. No third-party brands or assets, no cloud: **all data stays on the device.** The barcode scanner uses ZXing (Apache-2.0) – natively in the Android APK and as a locally bundled JavaScript library in Safari/Firefox – see [third-party notices](THIRD_PARTY_NOTICES.md).
 
-**Current version: 1.9.0** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.9.0) · [Changelog](CHANGELOG.md)
+**Current version: 1.9.6** · [Install on iPhone](https://arti1984-collab.github.io/kaloriq/) · [Download Android APK](https://github.com/arti1984-collab/kaloriq/releases/tag/v1.9.6) · [Changelog](CHANGELOG.md)
 
 Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 
@@ -28,12 +28,32 @@ Follow Kaloriq on [TikTok: @kaloriq](https://www.tiktok.com/@kaloriq).
 |---|---|
 | [![Fasting](docs/screenshots/fasten.png?v=1.4.0)](docs/screenshots/fasten.png) | [![Profile](docs/screenshots/profil.png?v=1.4.0)](docs/screenshots/profil.png) |
 
-### New in 1.9.0
+### New in 1.9.1–1.9.6
 
-**Day as template:** Tap the copy icon at the top of the diary, pick one of the
-suggested days (or type a date) – all entries come over with their amounts and
-nutrition. Water can be included optionally. The copies are independent entries;
-if the target day already has entries the app asks first.
+**App lock:** Under **Profile → App lock** a 4- to 6-digit PIN protects the app
+on start and after the chosen pause. In the APK you can additionally use the
+phone's device lock. The PIN is stored as a hash only and keeps other people
+from looking – it does not encrypt the data.
+
+**Barcode cache offline:** Every scanned product stays in the app state with
+name, brand and nutrition, so it works without a network – in search too. Under
+Profile → Barcode cache you can review and clear the cache (room for 500
+products).
+
+**Health Connect extended:** Activities of the last seven days are read with
+duration and burn. Nutrition and water can be written back to Health Connect on
+request and only on tap – earlier records of that day are replaced so nothing is
+counted twice.
+
+**Fasting reminder:** The fasting tab reminds you at the end of a fast,
+optionally 30 minutes before. In the APK as a system notification even when the
+app is closed; in the PWA while it is open.
+
+**Still included:** day as template (1.9.0) – tap the copy icon at the top of
+the diary and take over a day, water optional.
+
+**1.9.6** translates all new texts fully into English as well; the language can
+be switched in the profile.
 
 ### 1.4.0: Health Connect, reminder, quick log
 
@@ -83,9 +103,12 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
 | **Tracking style** | Precise / rough / overview – matching your day and pressure level |
 | **Weekly review** | Days, small wins, check-ins and water – without calorie judgement |
 | **CSV & feedback** | CSV export, in-app feedback, backup reminder and update notice with release notes |
-| **Health Connect** | Import steps and weight from Android Health (APK) |
+| **Health Connect** | Read steps, weight and activities from Android Health; write nutrition/water back on request (APK) |
+| **App lock** | PIN (4–6 digits) on start, optionally the phone's device lock (APK), pause until lock |
+| **Barcode cache** | Scanned products stay available offline, search finds them instantly, clear it in the profile (500 products) |
 | **Android widget** | Calories, water and steps on the home screen, including quick actions |
 | **System reminder** | Daily notification, optional and off by default (APK) |
+| **Fasting reminder** | Hint at the end of a fast, optionally 30 min before – system in the APK, otherwise in-app (APK/PWA) |
 | **Hand portions** | Small/medium/large instead of grams – with a rough gram guide, no scale |
 | **Quick log** | Light/regular/hearty per meal – rough estimate without grams |
 | **Language** | German / English – switch under **Profile → Language**, all screens translated instantly |
@@ -173,10 +196,13 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
 - Daily goal, manual correction and storage per day. In the PWA, the motion
   sensor only counts while the app is open; web apps cannot access Apple Health.
   Steps can be entered manually at any time.
-- **Health Connect (APK):** Optionally imports today’s steps and the latest
-  weight from Android Health. Kaloriq only reads; no health data is written
-  back. The app shows status and permissions separately and can open or install
-  Health Connect directly.
+- **Health Connect (APK):** Reads today’s steps, the latest weight and the
+  activities of the last days (duration and burn) on request. Nutrition and
+  water can additionally be written back as the app’s own daily record – only
+  after switching it on explicitly and only on tap; earlier Kaloriq records of
+  that day are replaced. The app shows status and permissions separately
+  (reading, activities, writing) and can open or install Health Connect
+  directly.
 - **Important about Health Connect:** it only contains data that other apps
   (e.g. Google Fit or Samsung Health) write to it. On a fresh device it is often
   empty – Kaloriq then says “No data found” and points to the built-in step
@@ -207,6 +233,9 @@ All images are in [`docs/screenshots/`](docs/screenshots/) – as individual vie
   last seven days.
 - A running fast survives closing the app and continues counting when you
   reopen it.
+- **Fasting reminder:** optional hint at the end of the fast, and 30 minutes
+  before if you want. In the APK it arrives as a system notification even when
+  the app is closed; in the PWA only while the app is open.
 
 ### Wellbeing (anti-burnout)
 
@@ -425,6 +454,11 @@ immediately visible, and the APK is built from the same source as the PWA.
 
 | Version | Focus |
 |---|---|
+| **1.9.6** | All new texts fully in English, fasting view follows the language |
+| **1.9.4** | Fasting reminder at the end (optionally 30 min before), also with the app closed |
+| **1.9.3** | Health Connect: read activities, write nutrition/water on request |
+| **1.9.2** | Barcode cache offline, in search and clearable in the profile |
+| **1.9.1** | App lock with PIN, device lock in the APK |
 | **1.9.0** | Copy a whole day as a template (water optional) |
 | **1.8.0** | Selectable appearance: light, dark or automatic |
 | **1.7.0** | Recipe import from a URL (JSON-LD, preview) |

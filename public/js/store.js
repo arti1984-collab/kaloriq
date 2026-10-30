@@ -190,6 +190,8 @@ function defaultState() {
     customFoods: [],
     favorites: [],
     recipes: [],
+    // Offline-Cache für gescannte Barcodes: { '4008400403928': { …food, cachedAt } }
+    barcodeCache: {},
     // Wochenplan: { 'YYYY-MM-DD': { breakfast: [{id, recipeId, portions}], … } }
     mealPlan: {},
     // Einkaufslisten: { 'YYYY-MM-DD' (Montag): { checked: {key: true}, extra: [{id, name, amount, checked}] } }
@@ -234,6 +236,9 @@ function defaultState() {
       // Sanfte Erinnerung beim Öffnen (keine Push-Nachricht).
       reminderEnabled: false,
       reminderTime: '18:00',
+      // Fasten-Erinnerungen: Ende (und optional 30 Min. vorher).
+      fastReminders: false,
+      fastReminderBefore: 0,
       reminderDismissedAt: '',
       // Update-Hinweis: Zeitpunkt der letzten Prüfung, zuletzt gemeldete
       // neue Version (überlebt einen Neustart) und weggetippte Version.
@@ -243,6 +248,14 @@ function defaultState() {
       // Letzter Stand des Geräte-Schrittsensors (kumulativ seit Neustart).
       // { date: 'YYYY-MM-DD', value: number, ts: number } oder null.
       stepCounter: null,
+      // Einmalige Übernahme des alten Barcode-Caches aus localStorage.
+      barcodeMigrated: false,
+      // Health Connect: Schreiben nur auf Wunsch (Standard aus).
+      healthWriteNutrition: false,
+      healthWriteHydration: false,
+      // App-Sperre: PIN nur als Hash, dazu Pause bis zur erneuten Sperre.
+      // { salt, hash, iterations, after (Minuten), biometric }
+      appLock: { salt: '', hash: '', iterations: 0, after: 0, biometric: false },
     },
   };
 }
@@ -266,7 +279,35 @@ function migrate(raw) {
     recipes: Array.isArray(raw.recipes) ? raw.recipes : [],
     mealPlan: raw.mealPlan && typeof raw.mealPlan === 'object' ? raw.mealPlan : {},
     shopping: raw.shopping && typeof raw.shopping === 'object' ? raw.shopping : {},
+    barcodeCache: raw.barcodeCache && typeof raw.barcodeCache === 'object' ? raw.barcodeCache : {},
   };
+
+  // Barcode-Cache: den früheren localStorage-Stand einmalig übernehmen und
+  // auf 500 Produkte begrenzen (älteste fallen zuerst heraus).
+  if (!state.barcodeCache || typeof state.barcodeCache !== 'object') state.barcodeCache = {};
+  // Einmalig übernehmen; danach nie wieder, damit ein geleerter Cache leer bleibt.
+  if (!state.settings.barcodeMigrated) {
+    if (!Object.keys(state.barcodeCache).length) {
+      try {
+        const legacy = JSON.parse(localStorage.getItem('kaloriq.barcode.v1') || 'null');
+        if (legacy && typeof legacy === 'object') {
+          for (const [code, food] of Object.entries(legacy)) {
+            if (food && typeof food === 'object') state.barcodeCache[code] = { ...food, code };
+          }
+        }
+      } catch {
+        /* kein übernehmbarer Altbestand */
+      }
+    }
+    state.settings.barcodeMigrated = true;
+  }
+  const cacheKeys = Object.keys(state.barcodeCache)
+    .sort((a, b) => (state.barcodeCache[b]?.cachedAt || 0) - (state.barcodeCache[a]?.cachedAt || 0));
+  if (cacheKeys.length > 500) {
+    const next = {};
+    cacheKeys.slice(0, 500).forEach((key) => { next[key] = state.barcodeCache[key]; });
+    state.barcodeCache = next;
+  }
 
   // Pausen-Historie normalisieren. Die frühere Gentle-Pause (boolean) wird
   // einmalig in einen offenen Pausenzeitraum übernommen.
@@ -294,7 +335,23 @@ function migrate(raw) {
   if (!['g', 'hand'].includes(settings.portionMode)) settings.portionMode = 'g';
   if (!['auto', 'light', 'dark'].includes(settings.theme)) settings.theme = 'auto';
   if (typeof settings.reminderEnabled !== 'boolean') settings.reminderEnabled = false;
+  if (typeof settings.healthWriteNutrition !== 'boolean') settings.healthWriteNutrition = false;
+  if (typeof settings.healthWriteHydration !== 'boolean') settings.healthWriteHydration = false;
   if (!/^\d{2}:\d{2}$/.test(settings.reminderTime || '')) settings.reminderTime = '18:00';
+  if (typeof settings.fastReminders !== 'boolean') settings.fastReminders = false;
+  settings.fastReminderBefore = Number(settings.fastReminderBefore) > 0 ? 30 : 0;
+  // App-Sperre ergänzend normalisieren (alte Stände kennen das Feld nicht).
+  const lock = settings.appLock && typeof settings.appLock === 'object' ? settings.appLock : {};
+  settings.appLock = {
+    salt: typeof lock.salt === 'string' ? lock.salt : '',
+    hash: typeof lock.hash === 'string' ? lock.hash : '',
+    iterations: Math.max(0, Number(lock.iterations) || 0),
+    after: Math.max(0, Math.min(240, Number(lock.after) || 0)),
+    biometric: Boolean(lock.biometric),
+  };
+  if (!settings.appLock.salt || !settings.appLock.hash) {
+    settings.appLock = { ...settings.appLock, salt: '', hash: '', iterations: 0 };
+  }
   // Nur Free-Tier-Modelle zulassen; alte oder bezahlte Namen fallen zurück.
   if (!isFreeModel(settings.model)) settings.model = DEFAULT_MODEL;
   // Der frühere Server-Proxy entfällt: Jede Person nutzt ihren eigenen Key.

@@ -20,6 +20,7 @@ import { openAiSheet, openQuickLogSheet, openAddSheet } from './views/add.js';
 import { initWidget } from './widget.js';
 import { initReminders } from './reminders.js';
 import { initUpdateNotice, applyUpdate } from './update.js';
+import { initLock } from './lock.js';
 
 const TABS = [
   { id: 'diary', label: 'Tagebuch', icon: 'book' },
@@ -180,6 +181,8 @@ async function boot() {
 
   setLang(store.get().settings.lang || 'de');
   initTheme(() => store.get().settings.theme || 'auto');
+  // Vor dem ersten Rendern sperren, damit keine Daten aufblitzen.
+  initLock();
   paintTabbar();
   watchI18n();
 
@@ -214,7 +217,7 @@ async function boot() {
     // Tagebuch-Ansicht. Ein vollständiger Re-Render bei jedem Sensor-Update
     // würde die Oberfläche nur unnötig alle paar hundert Millisekunden
     // neu aufbauen und die Anzeige träge wirken lassen.
-    if (reason === 'steps') return;
+    if (reason === 'steps' || reason === 'barcode') return;
     scheduleRender();
   });
   window.addEventListener('hashchange', () => {

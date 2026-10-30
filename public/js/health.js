@@ -1,6 +1,7 @@
 /* ============================================================
    Kaloriq – Health Connect (Android)
-   Liest heute Schritte und das letzte Gewicht. Keine Schreibzugriffe.
+   Liest Schritte, Gewicht und Aktivitäten. Schreibt Nährwerte und
+   Wasser nur auf ausdrücklichen Wunsch.
    ============================================================ */
 
 /** Rohe Brücke – auch wenn Health Connect (noch) nicht verfügbar ist. */
@@ -31,11 +32,14 @@ export function healthAvailable() {
 /**
  * Status für die Oberfläche:
  * { sdk: 'available' | 'update_required' | 'unavailable' | 'error',
- *   steps: boolean, weight: boolean, error: string|null }
+ *   steps, weight, exercise, nutrition, hydration: boolean, error: string|null }
  */
 export function healthStatus() {
   const b = rawBridge();
-  const empty = { sdk: 'unavailable', steps: false, weight: false, error: null };
+  const empty = {
+    sdk: 'unavailable', steps: false, weight: false,
+    exercise: false, nutrition: false, hydration: false, error: null,
+  };
   if (!b || typeof b.status !== 'function') return empty;
   try {
     const data = JSON.parse(b.status());
@@ -43,6 +47,9 @@ export function healthStatus() {
       sdk: data?.sdk || 'error',
       steps: Boolean(data?.steps),
       weight: Boolean(data?.weight),
+      exercise: Boolean(data?.exercise),
+      nutrition: Boolean(data?.nutrition),
+      hydration: Boolean(data?.hydration),
       error: data?.error || null,
     };
   } catch {
@@ -58,8 +65,8 @@ export function healthHasPermissions() {
   }
 }
 
-/** Fragt beide Berechtigungen an; liefert { granted, steps, weight }. */
-export function requestHealthPermissions() {
+/** Gemeinsamer Ablauf für alle Berechtigungs-Dialoge. */
+function askPermissions(group, start) {
   return new Promise((resolve, reject) => {
     const b = bridge();
     if (!b) {
@@ -73,20 +80,47 @@ export function requestHealthPermissions() {
       if (window.__kaloriqHealthPermission === handler) delete window.__kaloriqHealthPermission;
       resolve(value);
     };
-    const handler = (result) => finish({
-      granted: Boolean(result?.granted),
-      steps: Boolean(result?.steps),
-      weight: Boolean(result?.weight),
-    });
+    const handler = (result) => {
+      if (result?.scope && result.scope !== group) return;
+      finish({
+        granted: Boolean(result?.granted),
+        steps: Boolean(result?.steps),
+        weight: Boolean(result?.weight),
+        exercise: Boolean(result?.exercise),
+        nutrition: Boolean(result?.nutrition),
+        hydration: Boolean(result?.hydration),
+      });
+    };
     window.__kaloriqHealthPermission = handler;
     try {
-      b.requestPermissions();
+      start(b);
     } catch (err) {
       done = true;
       reject(err);
       return;
     }
-    setTimeout(() => finish({ granted: false, steps: false, weight: false }), 60000);
+    setTimeout(() => finish({
+      granted: false, steps: false, weight: false,
+      exercise: false, nutrition: false, hydration: false,
+    }), 60000);
+  });
+}
+
+/** Fragt Schritte und Gewicht an; liefert { granted, steps, weight, … }. */
+export function requestHealthPermissions() {
+  return askPermissions('read', (b) => b.requestPermissions());
+}
+
+/**
+ * Fragt zusätzliche Berechtigungen an.
+ * @param {'exercise'|'write'} group Aktivitäten lesen bzw. Nährwerte/Wasser schreiben
+ */
+export function requestHealthExtras(group) {
+  return askPermissions(group, (b) => {
+    if (typeof b.requestExtras !== 'function') {
+      throw new Error('Diese Health-Connect-Funktion braucht die aktuelle App-Version.');
+    }
+    b.requestExtras(group);
   });
 }
 
@@ -149,5 +183,90 @@ export function readHealthToday() {
       cleanup();
       reject(new Error('Zeitüberschreitung bei Health Connect.'));
     }, 20000);
+  });
+}
+
+/**
+ * Schreibt Nährwerte und/oder Wasser eines Tages.
+ * @param {{date:string, kcal:number, protein:number, carbs:number, fat:number,
+ *          water:number, nutrition:boolean, hydration:boolean}} payload
+ * @returns {Promise<{written:string[]}>}
+ */
+export function writeHealthDay(payload) {
+  return new Promise((resolve, reject) => {
+    const b = bridge();
+    if (!b || typeof b.writeDay !== 'function') {
+      reject(new Error('Diese Health-Connect-Funktion braucht die aktuelle App-Version.'));
+      return;
+    }
+    let done = false;
+    const cleanup = () => {
+      if (window.__kaloriqHealthWrite === handler) delete window.__kaloriqHealthWrite;
+    };
+    const handler = (result) => {
+      if (done) return;
+      done = true;
+      cleanup();
+      if (result?.ok) resolve({ written: Array.isArray(result.written) ? result.written : [] });
+      else reject(new Error(result?.error || 'Schreiben nach Health Connect fehlgeschlagen.'));
+    };
+    window.__kaloriqHealthWrite = handler;
+    try {
+      b.writeDay(JSON.stringify(payload));
+    } catch (err) {
+      done = true;
+      cleanup();
+      reject(err);
+      return;
+    }
+    setTimeout(() => {
+      if (done) return;
+      done = true;
+      cleanup();
+      reject(new Error('Zeitüberschreitung beim Schreiben.'));
+    }, 25000);
+  });
+}
+
+/**
+ * Liest Aktivitäten der letzten Tage.
+ * @returns {Promise<{workouts: Array<{title:string,date:string,minutes:number,kcal:number|null}>, today:string, error:string|null}>}
+ */
+export function readHealthWorkouts(days = 7) {
+  return new Promise((resolve, reject) => {
+    const b = bridge();
+    if (!b || typeof b.readWorkouts !== 'function') {
+      reject(new Error('Diese Health-Connect-Funktion braucht die aktuelle App-Version.'));
+      return;
+    }
+    let done = false;
+    const cleanup = () => {
+      if (window.__kaloriqHealthWorkouts === handler) delete window.__kaloriqHealthWorkouts;
+    };
+    const handler = (result) => {
+      if (done) return;
+      done = true;
+      cleanup();
+      resolve({
+        workouts: Array.isArray(result?.workouts) ? result.workouts : [],
+        today: result?.today || '',
+        error: result?.error || null,
+      });
+    };
+    window.__kaloriqHealthWorkouts = handler;
+    try {
+      b.readWorkouts(Number(days) || 7);
+    } catch (err) {
+      done = true;
+      cleanup();
+      reject(err);
+      return;
+    }
+    setTimeout(() => {
+      if (done) return;
+      done = true;
+      cleanup();
+      reject(new Error('Zeitüberschreitung beim Lesen der Aktivitäten.'));
+    }, 25000);
   });
 }

@@ -98,7 +98,7 @@ Updates mit demselben Schlüssel). Ein Backup liegt im Projekt-ZIP.
 | Key-Speicherung | auf dem Gerät (Profil → KI-Tracking) |
 | Barcode-Scan | ✅ nativer ZXing-Scanner (Kamera, offline) – zusätzlich bleibt die Nummer eintippbar |
 | Schrittzähler | ✅ Gerätesensor (`TYPE_STEP_COUNTER`) – trägt Schritte aus der Zeit mit geschlossener App beim nächsten Öffnen nach |
-| Health Connect | ✅ Schritte & Gewicht lesen (Android 8.0+, Health-Connect-App) – keine Schreibzugriffe |
+| Health Connect | ✅ Schritte, Gewicht und Aktivitäten lesen (Android 8.0+, Health-Connect-App); Nährwerte/Wasser schreiben nur auf Wunsch |
 | Widget | ✅ Home-Screen-Widget mit Kalorien, Wasser, Schritten und Schnellaktionen |
 | Erinnerungen | ✅ tägliche System-Benachrichtigung (optional, standardmäßig aus) |
 | Kamera/Fotos | ✅ über den Android-Dateiauswahl-Dialog |
@@ -117,6 +117,17 @@ Updates mit demselben Schlüssel). Ein Backup liegt im Projekt-ZIP.
   Gerät (Gerätesensor) und funktioniert auch ohne Health Connect.
 - Schritte und Gewicht werden **getrennt** gelesen: Fehlt eine Berechtigung,
   bleibt der andere Wert importierbar.
+- **Aktivitäten** (z. B. Laufen, Krafttraining) werden mit Dauer und – wenn
+  erlaubt – dem Verbrauch aus `TotalCaloriesBurnedRecord` gelesen. Kaloriq
+  ändert das Tagesziel dadurch nicht.
+- **Schreiben ist opt-in:** Nur mit den Schaltern „Nährwerte schreiben“ bzw.
+  „Wasser schreiben“ und nur über „Heutige Werte schreiben“ legt Kaloriq einen
+  eigenen Eintrag für den Tag an. Vorher werden eigene Einträge des Tages
+  gelöscht, damit nichts doppelt zählt. Die Rechte lauten
+  `WRITE_NUTRITION` und `WRITE_HYDRATION`.
+- Berechtigungen werden in drei Gruppen angefragt (Lesen, Aktivitäten,
+  Schreiben). Ein Widerruf in Health Connect lässt die App weiterlaufen und
+  wird im Sheet als „fehlt“ angezeigt.
 
 ---
 

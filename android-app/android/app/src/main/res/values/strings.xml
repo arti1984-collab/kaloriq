@@ -15,4 +15,9 @@
     <string name="reminder_title">Kurzer Check-in?</string>
     <string name="reminder_text">Trag ein, was du möchtest – oder lass es. Kein Druck.</string>
     <string name="reminder_action">Schnell eintragen</string>
+    <string name="fast_end_title">Fasten-Ziel erreicht</string>
+    <string name="fast_end_text">Du kannst das Fasten jetzt beenden – oder noch etwas dranhängen. Ganz wie es sich anfühlt.</string>
+    <string name="fast_soon_title">Noch 30 Minuten</string>
+    <string name="fast_soon_text">Dein Fasten-Ziel ist fast geschafft. Kein Muss – nur ein leiser Hinweis.</string>
+    <string name="fast_action">Fasten öffnen</string>
 </resources>

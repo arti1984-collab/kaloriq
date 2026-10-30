@@ -13,6 +13,7 @@ public class MainActivity extends BridgeActivity {
     private WidgetBridge widgetBridge;
     private ReminderBridge reminderBridge;
     private FetchBridge fetchBridge;
+    private LockBridge lockBridge;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -36,6 +37,9 @@ public class MainActivity extends BridgeActivity {
 
             fetchBridge = new FetchBridge(getBridge().getWebView());
             getBridge().getWebView().addJavascriptInterface(fetchBridge, "AndroidFetch");
+
+            lockBridge = new LockBridge(this, getBridge().getWebView());
+            getBridge().getWebView().addJavascriptInterface(lockBridge, "AndroidLock");
 
             handleWidgetIntent(getIntent());
         }
@@ -97,6 +101,9 @@ public class MainActivity extends BridgeActivity {
         if (barcodeScanner != null) {
             barcodeScanner.onActivityResult(requestCode, resultCode, data);
         }
+        if (lockBridge != null) {
+            lockBridge.onActivityResult(requestCode, resultCode, data);
+        }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -114,6 +121,7 @@ public class MainActivity extends BridgeActivity {
         widgetBridge = null;
         healthConnect = null;
         fetchBridge = null;
+        lockBridge = null;
         super.onDestroy();
     }
 }

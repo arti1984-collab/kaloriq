@@ -1,10 +1,10 @@
 # Kaloriq – Ideen & nächste Schritte
 
-Stand: 28.10.2026 · App-Version 1.6.1
+Stand: 30.10.2026 · App-Version 1.9.6
 Diese Datei ist die Arbeitsliste für kommende Features. Erledigte Vorschläge werden
 entfernt, damit sie nicht doppelt vorgeschlagen werden.
 
-## Top 5 (offen)
+## Top 5 – alle umgesetzt (bleiben als Nachweis stehen)
 
 ### 1. App-Sperre (PIN, optional Biometrie)
 
@@ -17,7 +17,7 @@ entfernt, damit sie nicht doppelt vorgeschlagen werden.
   niemals im Klartext. Biometrie in der APK über einen Capacitor-Plugin oder
   native Bridge; PWA bleibt bei PIN. Kein Server, keine Wiederherstellung.
 - **Aufwand:** klein
-- **Status:** offen
+- **Status:** umgesetzt in Version 1.9.1 (PIN als PBKDF2-Hash, Gerätesperre in der APK)
 
 ### 2. Barcode-Cache offline
 
@@ -29,7 +29,7 @@ entfernt, damit sie nicht doppelt vorgeschlagen werden.
 - **Technik:** Neuer Zustandsbereich `barcodeCache` (Migration ergänzend),
   Treffer über `barcode`; Open Food Facts nur bei Cache-Miss.
 - **Aufwand:** klein
-- **Status:** offen
+- **Status:** umgesetzt in Version 1.9.2 (App-Zustand, Suche, im Profil löschbar, 500 Produkte)
 
 ### 3. Health Connect erweitern
 
@@ -45,7 +45,7 @@ entfernt, damit sie nicht doppelt vorgeschlagen werden.
   Manifest-Permissions ergänzen, Datentypen `NutritionRecord`, `HydrationRecord`,
   `ExerciseSessionRecord`. Berechtigungsdialog und Teil-Erfolge wie bisher.
 - **Aufwand:** mittel
-- **Status:** offen (Lesen von Schritte/Gewicht ist seit 1.4.4 umgesetzt)
+- **Status:** umgesetzt in Version 1.9.3 (Workouts + Verbrauch lesen, Nährwerte/Wasser opt-in schreiben)
 
 ### 4. Fasten-Erinnerungen
 
@@ -57,7 +57,7 @@ entfernt, damit sie nicht doppelt vorgeschlagen werden.
   (eigene Request-Codes, eigener Kanal oder gemeinsamer Kanal), Zeiten aus
   `day.fast.start` + `hours`.
 - **Aufwand:** klein
-- **Status:** offen
+- **Status:** umgesetzt in Version 1.9.4 (System-Alarme in der APK, In-App-Hinweis in der PWA, optional 30 Min. vorher)
 
 ### 5. Rezept-Import per URL
 
@@ -74,6 +74,10 @@ entfernt, damit sie nicht doppelt vorgeschlagen werden.
 
 ## Bereits umgesetzt (nicht mehr Teil der Liste)
 
+- **Fasten-Erinnerungen** – Version 1.9.4 (Ende + optional 30 Min. vorher)
+- **Health Connect erweitern** – Version 1.9.3 (Aktivitäten lesen, Nährwerte/Wasser opt-in schreiben)
+- **Barcode-Cache** – Version 1.9.2 (offline, Suche, im Profil löschbar, 500 Produkte)
+- **App-Sperre** – Version 1.9.1 (PIN, Gerätesperre in der APK, Pause bis zur Sperre)
 - **Tag als Vorlage** – Version 1.9.0 (kompletten Tag kopieren, Wasser optional)
 - **Darstellung hell/dunkel** – Version 1.8.0 (Hell, Dunkel, Automatisch)
 - **Rezept-Import per URL** – Version 1.7.0 (JSON-LD, Mengen-Heuristik, Vorschau)

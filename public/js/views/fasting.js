@@ -4,6 +4,8 @@
 import { store, todayKey, getDay, startFast, stopFast, addDays } from '../store.js';
 import { FASTING_PLANS } from '../calc.js';
 import { esc, fmt, icon, toast, ring, haptic } from '../ui.js';
+import { scheduleFastReminder, cancelFastReminder, systemRemindersAvailable } from '../reminders.js';
+import { locale } from '../i18n.js';
 
 let ticker = null;
 let selectedPlan = '16:8';
@@ -23,6 +25,11 @@ export function renderFasting(root) {
   const elapsed = active ? Date.now() - fast.start : finished ? fast.end - fast.start : 0;
   const pct = Math.min(1, elapsed / target);
   const remaining = Math.max(0, target - elapsed);
+  const settings = store.get().settings;
+  const fastReminders = settings.fastReminders === true;
+  const before30 = Number(settings.fastReminderBefore) > 0;
+  const systemReminders = systemRemindersAvailable();
+  const endAt = fast ? fast.start + hours * 3600000 : 0;
 
   root.innerHTML = `
     <header class="topbar">
@@ -59,6 +66,31 @@ export function renderFasting(root) {
           : `<button class="btn btn-block btn-primary" data-start>${icon('play')} ${plan.label}-Fasten starten</button>`}
       </div>
     </section>
+
+    <div class="section-title">Erinnerung</div>
+    <section class="card flush">
+      <button class="row" data-fast-reminder role="switch" aria-checked="${fastReminders}" aria-label="Fasten-Erinnerung">
+        <span class="grow">
+          <span class="t">Erinnerung ans Fasten-Ende</span>
+          <span class="s">${!systemReminders
+            ? (fastReminders ? 'In-App, solange Kaloriq offen ist' : 'Aus · auch in der App kein Hinweis')
+            : fastReminders
+              ? (active ? 'System-Benachrichtigung geplant' : 'System-Benachrichtigung, sobald ein Fasten läuft')
+              : 'Aus · keine Benachrichtigung'}</span>
+        </span>
+        <span class="switch" aria-hidden="true" aria-checked="${fastReminders}" style="pointer-events:none"></span>
+      </button>
+      ${fastReminders ? `<button class="row" data-fast-before role="switch" aria-checked="${before30}" aria-label="30 Minuten vorher erinnern">
+        <span class="grow">
+          <span class="t">30 Minuten vorher</span>
+          <span class="s">${before30 ? 'Zweiter, leiser Hinweis vor dem Ziel' : 'Aus · nur zum Ende'}</span>
+        </span>
+        <span class="switch" aria-hidden="true" aria-checked="${before30}" style="pointer-events:none"></span>
+      </button>` : ''}
+    </section>
+    <p class="tiny muted" style="margin:8px 4px 0">${systemReminders
+      ? 'Benachrichtigungen kommen auch bei geschlossener App. Sie lassen sich jederzeit hier abschalten.'
+      : 'In der PWA gibt es keine System-Benachrichtigungen – der Hinweis erscheint nur, solange die App offen ist. In der Android-App kommt er auch bei geschlossener App.'}</p>
 
     <div class="section-title">Plan</div>
     <div class="chips">
@@ -99,14 +131,50 @@ export function renderFasting(root) {
     startFast(key, plan.id, plan.hours);
     haptic(15);
     toast(`${plan.label}-Fasten gestartet`);
+    if (fastReminders) {
+      const start = store.get().days[key]?.fast?.start || Date.now();
+      scheduleFastReminder(true, start + plan.hours * 3600000, before30 ? 30 : 0);
+    }
   });
 
   root.querySelector('[data-stop]')?.addEventListener('click', () => {
     stopFast(key);
+    cancelFastReminder();
     haptic(15);
   });
 
+  root.querySelector('[data-fast-reminder]')?.addEventListener('click', () => {
+    const next = store.get().settings.fastReminders !== true;
+    store.saveSettings({ fastReminders: next });
+    if (!next) {
+      cancelFastReminder();
+      toast('Fasten-Erinnerung aus');
+    } else if (active) {
+      scheduleFastReminder(true, endAt, before30 ? 30 : 0);
+      toast('Fasten-Erinnerung an');
+    } else {
+      toast('Fasten-Erinnerung an – gilt beim nächsten Start');
+    }
+    haptic();
+    renderFasting(root);
+  });
+
+  root.querySelector('[data-fast-before]')?.addEventListener('click', () => {
+    const next = Number(store.get().settings.fastReminderBefore) > 0 ? 0 : 30;
+    store.saveSettings({ fastReminderBefore: next });
+    if (active && fastReminders) scheduleFastReminder(true, endAt, next);
+    haptic();
+    renderFasting(root);
+  });
+
+  // Alarm nach einem App-Neustart wieder aufnehmen (System-Alarme überleben
+  // einen App-Abbruch nicht immer).
+  if (active && fastReminders && systemReminders) {
+    scheduleFastReminder(true, endAt, before30 ? 30 : 0);
+  }
+
   if (active) {
+    let announced = false;
     ticker = setInterval(() => {
       const el = document.getElementById('fast-time');
       if (!el) { clearInterval(ticker); return; }
@@ -115,20 +183,26 @@ export function renderFasting(root) {
       if (left <= 0) {
         const stateEl = document.getElementById('fast-state');
         if (stateEl) stateEl.textContent = 'Ziel erreicht';
+        // PWA: ohne System-Benachrichtigung wenigstens ein leiser Hinweis.
+        if (fastReminders && !systemReminders && !announced) {
+          announced = true;
+          toast('Fasten-Ziel erreicht – du kannst jetzt beenden');
+        }
       }
     }, 1000);
   }
 }
 
 function lastWeek() {
-  const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
   return Array.from({ length: 7 }, (_, i) => {
     const key = addDays(todayKey(), -i);
     const d = getDay(key);
     const date = new Date(key + 'T00:00:00');
+    // Wochentag in der aktuellen Sprache ("Mi" bzw. "Wed").
+    const weekday = date.toLocaleDateString(locale(), { weekday: 'short' });
     return {
       ...d,
-      label: i === 0 ? 'Heute' : i === 1 ? 'Gestern' : `${WD[date.getDay()]}, ${date.getDate()}.${date.getMonth() + 1}.`,
+      label: i === 0 ? 'Heute' : i === 1 ? 'Gestern' : `${weekday}, ${date.getDate()}.${date.getMonth() + 1}.`,
     };
   });
 }

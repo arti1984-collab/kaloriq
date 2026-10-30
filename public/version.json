@@ -1,17 +1,15 @@
 {
-  "version": "1.9.0",
-  "date": "2026-10-29",
+  "version": "1.9.6",
+  "date": "2026-10-30",
   "notes": [
-    "Neu: Tag als Vorlage. Im Tagebuch oben auf das Kopier-Symbol tippen und einen Tag auswählen – alle Einträge werden mit Mengen und Nährwerten übernommen.",
-    "Die letzten Tage mit Einträgen stehen direkt zur Auswahl, ein anderes Datum lässt sich eintippen. Wasser kann optional mitkommen.",
-    "Die Kopien sind eigenständige Einträge: einzeln ändern oder löschen ändert den Originaltag nicht. Ein Tag mit Einträgen wird vorher nachgefragt.",
-    "Die Darstellung aus 1.8.0 (Hell, Dunkel, Automatisch) bleibt unverändert enthalten."
+    "Feinschliff zu 1.9.1–1.9.4: Die neuen Funktionen sind jetzt auch auf Englisch vollständig übersetzt – App-Sperre, Barcode-Cache, Health Connect und Fasten-Erinnerung.",
+    "Auch die Fasten-Ansicht spricht Englisch: Status, Wochentage, Ziel-Hinweis und „h gefastet“ wechseln mit der Sprache.",
+    "Inhaltlich unverändert zu 1.9.4: gleiche Funktionen, gleiche Daten – nur die Texte in der zweiten Sprache sind vollständig."
   ],
   "notes_en": [
-    "New: day as template. Tap the copy icon at the top of the diary and pick a day – all entries come over with their amounts and nutrition.",
-    "Recent days with entries are offered directly and any other date can be typed in. Water can be included optionally.",
-    "Copies are independent entries: editing or deleting one never changes the source day. A day that already has entries asks first.",
-    "The appearance setting from 1.8.0 (Light, Dark, Automatic) is still included."
+    "Polish for 1.9.1–1.9.4: the new features are now fully translated into English as well – app lock, barcode cache, Health Connect and the fasting reminder.",
+    "The fasting view speaks English too: status, weekdays, goal hint and “h fasted” follow the selected language.",
+    "No functional change compared to 1.9.4: same features, same data – only the second-language texts are complete now."
   ],
   "release": "https://github.com/arti1984-collab/kaloriq/releases/latest"
 }

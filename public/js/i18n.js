@@ -364,6 +364,7 @@ const EN = {
   'nicht gefastet': 'not fasted',
   'Läuft gerade': 'Running now',
   '🔥 Fasten aktiv': '🔥 Fasting active',
+  '✅ Ziel erreicht': '✅ Goal reached',
   'Fasten beenden': 'End fasting',
 
   // Profil
@@ -959,6 +960,139 @@ const EN = {
   'Kalorien, Gewicht und kleine Erfolge zu sehen.': 'calories, weight and small wins here.',
   'Kalorien pro Tag': 'Calories per day',
   'Ø Kalorien': 'Avg. calories',
+
+  // App-Sperre
+  'App-Sperre': 'App lock',
+  'PIN-Schutz beim Öffnen': 'PIN protection on open',
+  'Kaloriq ist gesperrt': 'Kaloriq is locked',
+  'PIN eingeben, um deine Daten zu öffnen.': 'Enter your PIN to open your data.',
+  'Entsperren': 'Unlock',
+  'Mit Gerätesperre entsperren': 'Unlock with device lock',
+  'PIN vergessen?': 'Forgot PIN?',
+  'PIN stimmt nicht': 'Wrong PIN',
+  'Gerätesperre nicht bestätigt': 'Device lock not confirmed',
+  'Bestätige deine Gerätesperre.': 'Confirm your device lock.',
+  'Kaloriq entsperren': 'Unlock Kaloriq',
+  'Zurück': 'Back',
+  'Alles zurücksetzen': 'Reset everything',
+  'Aus · keine PIN-Abfrage beim Öffnen': 'Off · no PIN prompt on open',
+  'Sperrt bei jedem Start': 'Locks on every start',
+  'Sperrt bei jedem Start und Wechsel': 'Locks on every start and switch',
+  'Sperrt bei jedem Start und Wechsel.': 'Locks on every start and switch.',
+  'Sofort': 'Immediately',
+  '1 Minute': '1 minute',
+  '5 Minuten': '5 minutes',
+  '30 Minuten': '30 minutes',
+  'Der PIN schützt vor fremden Blicken auf dem entsperrten Handy – er verschlüsselt die Einträge nicht.':
+    'The PIN keeps other people from looking at your unlocked phone – it does not encrypt your entries.',
+  'Ohne PIN hilft nur das Zurücksetzen – dabei werden alle Daten auf diesem Gerät gelöscht. Der PIN liegt nur als Hash auf dem Gerät und verschlüsselt die Daten nicht.':
+    'Without the PIN only a reset helps – that deletes all data on this device. The PIN is stored as a hash only and does not encrypt the data.',
+  'Ohne PIN gibt es keinen Zugang zu deinen Einträgen. Aus Sicherheitsgründen hilft dann nur das Zurücksetzen – dabei werden alle Daten auf diesem Gerät gelöscht.':
+    'Without the PIN there is no access to your entries. For security reasons only a reset helps then – that deletes all data on this device.',
+  'Nährwerte': 'Nutrition',
+  'Sperre aktiv': 'Lock active',
+  'Pause bis zur Sperre': 'Pause until lock',
+  'Beim Start ist die App immer gesperrt.': 'The app is always locked on start.',
+  'PIN speichern': 'Save PIN',
+  'PIN wiederholen': 'Repeat PIN',
+  'PIN ändern': 'Change PIN',
+  'Jetzt sperren': 'Lock now',
+  'Sperre entfernen': 'Remove lock',
+  'Sperre entfernen?': 'Remove the lock?',
+  'Entfernen': 'Remove',
+  'Gerätesperre erlauben': 'Allow device lock',
+  'Aus · nur PIN': 'Off · PIN only',
+  'Aktiv · Fingerabdruck, Gesicht oder Muster des Handys': 'Active · fingerprint, face or phone pattern',
+  'Neuen PIN festlegen – der bisherige wird ersetzt.': 'Set a new PIN – the previous one is replaced.',
+  'Vier bis sechs Ziffern, die nur du kennst. Gefragt wird beim Start und nach der eingestellten Pause.':
+    'Four to six digits that only you know. Asked on start and after the selected pause.',
+  'Bitte 4 bis 6 Ziffern eingeben': 'Please enter 4 to 6 digits',
+  'Die PINs stimmen nicht überein': 'The PINs do not match',
+  'App-Sperre aktiviert': 'App lock enabled',
+  'App-Sperre entfernt': 'App lock removed',
+  'App-Sperre gespeichert': 'App lock saved',
+  'Danach lässt sich die App ohne PIN öffnen. Deine Daten bleiben unverändert.':
+    'Afterwards the app opens without a PIN. Your data stays untouched.',
+
+  // Fasten-Erinnerungen
+  'Erinnerung': 'Reminder',
+  'Erinnerung ans Fasten-Ende': 'Reminder for the end of the fast',
+  '30 Minuten vorher': '30 minutes before',
+  'Aus · keine Benachrichtigung': 'Off · no notification',
+  'System-Benachrichtigung geplant': 'System notification scheduled',
+  'System-Benachrichtigung, sobald ein Fasten läuft': 'System notification as soon as a fast runs',
+  'In-App, solange Kaloriq offen ist': 'In-app while Kaloriq is open',
+  'Aus · auch in der App kein Hinweis': 'Off · no hint in the app either',
+  'Zweiter, leiser Hinweis vor dem Ziel': 'Second, quiet hint before the goal',
+  'Aus · nur zum Ende': 'Off · only at the end',
+  'Fasten-Erinnerung aus': 'Fasting reminder off',
+  'Fasten-Erinnerung an': 'Fasting reminder on',
+  'Fasten-Erinnerung an – gilt beim nächsten Start': 'Fasting reminder on – applies at the next start',
+  'Fasten-Ziel erreicht – du kannst jetzt beenden': 'Fasting goal reached – you can stop now',
+  'Benachrichtigungen nicht erlaubt – Fasten-Erinnerung aus':
+    'Notifications not allowed – fasting reminder off',
+  'Benachrichtigungen kommen auch bei geschlossener App. Sie lassen sich jederzeit hier abschalten.':
+    'Notifications arrive even when the app is closed. You can switch them off here at any time.',
+  'In der PWA gibt es keine System-Benachrichtigungen – der Hinweis erscheint nur, solange die App offen ist. In der Android-App kommt er auch bei geschlossener App.':
+    'The PWA has no system notifications – the hint only appears while the app is open. In the Android app it arrives even when the app is closed.',
+
+  // Health Connect
+  'Aktivitäten & Verbrauch lesen': 'Read activities & burn',
+  'Nährwerte schreiben': 'Write nutrition',
+  'Wasser schreiben': 'Write water',
+  'Berechtigungen fürs Lesen': 'Permissions for reading',
+  'Berechtigungen fürs Lesen prüfen': 'Check read permissions',
+  'Aktivitäten erlauben': 'Allow activities',
+  'Aktivitäten-Berechtigung prüfen': 'Check activity permission',
+  'Schreiben erlauben': 'Allow writing',
+  'Schreib-Berechtigung prüfen': 'Check write permission',
+  'Aktivitäten': 'Activities',
+  'Aktivität': 'Activity',
+  'Berechtigung fehlt': 'Permission missing',
+  'Aktiv · nur auf Knopfdruck': 'Active · only on tap',
+  'Aus · nichts wird geschrieben': 'Off · nothing is written',
+  'Heutige Werte schreiben': 'Write today’s values',
+  'Verbrauch heute': 'Burn today',
+  'Nach Health Connect geschrieben': 'Written to Health Connect',
+  'Keine Schreibfunktion aktiviert': 'No write option enabled',
+  'Heute ist noch nichts erfasst – erst eintragen, dann schreiben':
+    'Nothing logged today yet – add something first, then write',
+  'Erst „Schreiben erlauben“ antippen': 'Tap “Allow writing” first',
+  'Nach Health Connect schreiben?': 'Write to Health Connect?',
+  'Schreiben': 'Write',
+  'ohne Verbrauch': 'no burn data',
+  'Noch keine Berechtigung – „Aktivitäten erlauben“ antippen.': 'No permission yet – tap “Allow activities”.',
+  'Health Connect liest Schritte, Gewicht und Aktivitäten aus Android Health. Nährwerte und Wasser schreibt Kaloriq nur, wenn du es hier einschaltest – nie automatisch.':
+    'Health Connect reads steps, weight and activities from Android Health. Kaloriq only writes nutrition and water when you enable it here – never automatically.',
+  'Geschrieben wird nur auf Knopfdruck. Frühere Kaloriq-Einträge des Tages werden dabei ersetzt, damit keine Kalorien doppelt zählen.':
+    'Writing only happens on tap. Earlier Kaloriq records of that day are replaced so calories are not counted twice.',
+  'Schritte, Gewicht und Aktivitäten · Schreiben optional':
+    'Steps, weight and activities · writing optional',
+  'Schritte & Gewicht importieren': 'Import steps & weight',
+  'Nährwerte & Wasser': 'Nutrition & water',
+  'Für heute ist kein Verbrauch in Health Connect hinterlegt.':
+    'No burn is stored in Health Connect for today.',
+  'Heute abgeschlossen': 'Completed today',
+  'geschafft': 'done',
+  'Keine Aktivitäten gefunden': 'No activities found',
+  'Verbinden, um Daten zu lesen und auf Wunsch zu schreiben':
+    'Connect to read data and write on request',
+
+  // Barcode-Cache
+  'Barcode-Cache': 'Barcode cache',
+  'Offline gespeicherte Produkte': 'Products saved offline',
+  'Gespeicherte Produkte': 'Saved products',
+  'Cache leeren': 'Clear cache',
+  'Leeren': 'Clear',
+  'Barcode-Cache leeren?': 'Clear barcode cache?',
+  'Barcode-Cache geleert': 'Barcode cache cleared',
+  'Noch keine gescannten Produkte gespeichert': 'No scanned products saved yet',
+  'Jedes gescannte Produkt liegt mit Name, Marke und Nährwerten im App-Zustand. Beim nächsten Scan und bei der Suche findet die App es auch ohne Netz – und es wandert mit in Backup und Export.':
+    'Every scanned product is stored with name, brand and nutrition. The next scan and the search find it offline too – and it is included in backups and exports.',
+  'Die neuesten zuerst. Ist der Cache voll, fallen die ältesten Produkte heraus.':
+    'Newest first. When the cache is full, the oldest products drop out.',
+  'Noch nichts gespeichert – scanne ein Produkt, dann liegt es offline bereit.':
+    'Nothing saved yet – scan a product and it is ready offline.',
 };
 
 /* ---------------- Lebensmittel (Datenbanknamen) ---------------- */
@@ -1339,6 +1473,17 @@ const RULES = [
   [/^Version ([\d.]+) · ([\d.]+) verfügbar$/, 'Version $1 · $2 available'],
   [/^Version ([\d.]+) · was ist neu\?$/, "Version $1 · what's new?"],
   [/^Installiert: ([\d.]+) · Neu: ([\d.]+)$/, 'Installed: $1 · New: $2'],
+  [/^Sperrt nach (\d+) Min\. im Hintergrund$/, 'Locks after $1 min in the background'],
+  [/^1 Produkt offline verfügbar$/, '1 product available offline'],
+  [/^Sperrt nach (\d+) Min\. im Hintergrund\.$/, 'Locks after $1 min in the background.'],
+  [/^Aktiv · Sperrt bei jedem Start und Wechsel$/, 'Active · locks on every start and switch'],
+  [/^([\d.,]+) h gefastet$/, '$1 h fasted'],
+  [/^Keine Aktivitäten gefunden( \(.+\))?\. Dort schreiben Apps wie Google Fit oder Samsung Health hinein\.$/,
+    'No activities found$1. Apps like Google Fit or Samsung Health write there.'],
+  [/^(\d+) Produkte offline verfügbar$/, '$1 products available offline'],
+  [/^… und (\d+) weitere$/, '… and $1 more'],
+  [/^(\d+) gespeicherte (Produkt|Produkte) werden entfernt\./, '$1 saved products will be removed.'],
+  [/^Aktiv · Sperrt nach (\d+) Min\. im Hintergrund$/, 'Active · locks after $1 min in the background'],
   [/^(.+) werden in Kaloriq übernommen\. Vorhandene Tageswerte werden überschrieben\.$/,
     '$1 will be imported into Kaloriq. Existing daily values will be overwritten.'],
 ];

@@ -11,15 +11,23 @@ import android.os.Build;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-/** Zeigt die tägliche, sanfte Check-in-Erinnerung. */
+/** Zeigt die tägliche, sanfte Check-in-Erinnerung und die Fasten-Hinweise. */
 public class ReminderReceiver extends BroadcastReceiver {
 
     private static final String CHANNEL_ID = "kaloriq_checkin";
     private static final int NOTIFICATION_ID = 4314;
+    private static final int FAST_NOTIFICATION_ID = 4318;
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (!ReminderScheduler.isEnabled(context)) return;
+        String type = intent == null ? null : intent.getStringExtra("type");
+        boolean fast = "fast_end".equals(type) || "fast_soon".equals(type);
+
+        if (fast) {
+            if (!ReminderScheduler.isFastEnabled(context)) return;
+        } else if (!ReminderScheduler.isEnabled(context)) {
+            return;
+        }
 
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -34,26 +42,46 @@ public class ReminderReceiver extends BroadcastReceiver {
 
         Intent open = new Intent(context, MainActivity.class);
         open.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        open.putExtra("widget_action", "quick");
+        open.putExtra("widget_action", fast ? "fasting" : "quick");
         PendingIntent contentIntent = PendingIntent.getActivity(
             context,
-            20,
+            fast ? 21 : 20,
             open,
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
+        String title;
+        String text;
+        if ("fast_soon".equals(type)) {
+            title = context.getString(R.string.fast_soon_title);
+            text = context.getString(R.string.fast_soon_text);
+        } else if ("fast_end".equals(type)) {
+            title = context.getString(R.string.fast_end_title);
+            text = context.getString(R.string.fast_end_text);
+        } else {
+            title = context.getString(R.string.reminder_title);
+            text = context.getString(R.string.reminder_text);
+        }
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle(context.getString(R.string.reminder_title))
-            .setContentText(context.getString(R.string.reminder_text))
-            .setStyle(new NotificationCompat.BigTextStyle().bigText(context.getString(R.string.reminder_text)))
+            .setContentTitle(title)
+            .setContentText(text)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(text))
             .setContentIntent(contentIntent)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .addAction(0, context.getString(R.string.reminder_action), contentIntent);
+            .addAction(
+                0,
+                context.getString(fast ? R.string.fast_action : R.string.reminder_action),
+                contentIntent
+            );
 
         try {
-            NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, builder.build());
+            NotificationManagerCompat.from(context).notify(
+                fast ? FAST_NOTIFICATION_ID : NOTIFICATION_ID,
+                builder.build()
+            );
         } catch (SecurityException ignored) {
             // Benachrichtigungsrecht wurde entzogen – App bleibt nutzbar.
         }
